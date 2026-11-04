@@ -40,7 +40,7 @@ h1 span:nth-child(3){animation-delay:.3s;color:var(--limao)}
 @keyframes sobe{to{opacity:1;transform:none}}
 
 /* celular animado */
-.palco{position:relative;margin:22px auto 0;width:100%;max-width:340px;height:300px}
+.palco{position:relative;margin:22px auto 0;width:100%;max-width:340px;height:330px}
 .zap{position:absolute;inset:0;background:#0E1A3D;border-radius:24px;padding:14px;overflow:hidden;box-shadow:0 18px 0 -6px rgba(0,0,0,.18)}
 .zap-topo{display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(244,241,234,.7);padding-bottom:10px;border-bottom:1px solid rgba(244,241,234,.1)}
 .zap-topo i{width:22px;height:22px;border-radius:50%;background:var(--cobalto);display:grid;place-items:center}
@@ -53,7 +53,7 @@ h1 span:nth-child(3){animation-delay:.3s;color:var(--limao)}
 .audio em{font-style:normal;font-size:11px;font-family:var(--m)}
 .digitando{left:14px;top:118px;background:#22305A;border-radius:14px 14px 14px 4px;padding:12px 14px;display:flex;gap:4px}
 .digitando b{width:6px;height:6px;border-radius:50%;background:var(--gesso);opacity:.4}
-.orc{left:14px;top:112px;width:258px;background:var(--gesso);color:var(--noite);border-radius:10px;padding:12px 14px;box-shadow:6px 6px 0 var(--noite);transform-origin:left top}
+.orc{left:14px;top:104px;width:258px;background:var(--gesso);color:var(--noite);border-radius:10px;padding:12px 14px;box-shadow:6px 6px 0 var(--noite);transform-origin:left top}
 .orc h4{font-family:var(--t);font-size:11px;letter-spacing:.02em;display:flex;justify-content:space-between;margin-bottom:8px}
 .orc h4 span{font-family:var(--b);font-weight:700;color:var(--cobalto)}
 .lin{display:flex;justify-content:space-between;gap:8px;font-size:11px;padding:4px 0;border-bottom:1px dashed var(--linha);opacity:0}
@@ -61,7 +61,7 @@ h1 span:nth-child(3){animation-delay:.3s;color:var(--limao)}
 .tot{display:flex;justify-content:space-between;align-items:baseline;margin-top:8px;opacity:0}
 .tot span:first-child{font-size:11px;font-weight:700}
 .tot strong{font-family:var(--m);font-size:20px;background:var(--noite);color:var(--limao);padding:2px 8px;border-radius:6px}
-.check{right:14px;bottom:14px;background:#1D6B4F;border-radius:14px 14px 4px 14px;padding:8px 12px;font-size:12.5px;font-weight:700}
+.check{right:14px;bottom:10px;background:#1D6B4F;border-radius:14px 14px 4px 14px;padding:8px 12px;font-size:12.5px;font-weight:700}
 
 .cta-area{margin-top:auto;padding-top:22px}
 .cta{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:60px;border-radius:16px;background:var(--limao);color:var(--noite);font-weight:700;font-size:18px;box-shadow:0 6px 0 var(--noite);transition:transform .12s,box-shadow .12s}
@@ -103,7 +103,13 @@ h1 span:nth-child(3){animation-delay:.3s;color:var(--limao)}
 .campo input{width:100%;min-height:58px;border-radius:14px;border:2px solid var(--linha);background:#fff;padding:0 16px;font:700 18px var(--b);color:var(--noite);outline:none;transition:border-color .15s}
 .campo input:focus{border-color:var(--cobalto)}
 .campo input.erro{border-color:#D6332E}
-.msg-erro{color:#B42318;font-size:13px;margin-top:6px;min-height:18px}
+.msg-erro{color:#B42318;font-size:14px;font-weight:700;margin-top:6px;min-height:0}
+.msg-erro:empty{display:none}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.lgpd{font-size:12.5px;color:var(--cinza);margin-top:12px;line-height:1.45}
+.lgpd a,.rodape a{color:var(--cobalto);font-weight:700}
+.rodape{font-size:12px;color:rgba(244,241,234,.75);text-align:center;margin-top:14px}
+.rodape a{color:var(--limao)}
 .aviso{display:flex;gap:12px;align-items:center;margin-top:14px;padding:12px 14px;border-radius:14px;background:#fff;border:2px solid var(--linha);font-size:15px;font-weight:700;width:100%;text-align:left;min-height:58px}
 .aviso .cx{width:26px;height:26px;border-radius:8px;border:2px solid var(--linha);flex:none;display:grid;place-items:center;transition:all .15s}
 .aviso[aria-checked=true] .cx{background:var(--cobalto);border-color:var(--cobalto)}
@@ -149,7 +155,7 @@ h1 span:nth-child(3){animation-delay:.3s;color:var(--limao)}
       <svg viewBox="-2 2 204 96" fill="#C8FF2E" aria-hidden="true"><rect x="0" y="18" width="14" height="64" rx="6"/><rect x="8" y="38" width="170" height="24" rx="10"/><rect x="22" y="27" width="26" height="46" rx="11"/><rect x="56" y="8" width="26" height="84" rx="11"/><rect x="90" y="19" width="26" height="62" rx="11"/><rect x="124" y="8" width="26" height="84" rx="11"/><rect x="158" y="27" width="26" height="46" rx="11"/><path d="M176 38 Q200 44 200 50 Q200 56 176 62 Z"/></svg>
       <span><small>na</small>bucha</span>
     </div>
-    <span class="selo">Começando pelos pintores</span>
+    <span class="selo">Em breve</span>
   </div>
 
   <div class="hero-txt">
@@ -158,7 +164,7 @@ h1 span:nth-child(3){animation-delay:.3s;color:var(--limao)}
 
   <div class="palco" aria-hidden="true">
     <div class="zap">
-      <div class="zap-topo"><i><svg viewBox="-2 2 204 96" fill="#C8FF2E"><rect x="8" y="38" width="170" height="24" rx="10"/><rect x="56" y="8" width="26" height="84" rx="11"/><rect x="124" y="8" width="26" height="84" rx="11"/><rect x="90" y="19" width="26" height="62" rx="11"/></svg></i>Na Bucha · online</div>
+      <div class="zap-topo"><i><svg viewBox="-2 2 204 96" fill="#C8FF2E"><rect x="8" y="38" width="170" height="24" rx="10"/><rect x="56" y="8" width="26" height="84" rx="11"/><rect x="124" y="8" width="26" height="84" rx="11"/><rect x="90" y="19" width="26" height="62" rx="11"/></svg></i>Na Bucha · exemplo</div>
       <div class="balao audio" id="aAudio"><span class="play"></span><span class="onda" id="onda"></span><em>0:38</em></div>
       <div class="balao digitando" id="aDig"><b></b><b></b><b></b></div>
       <div class="balao orc" id="aOrc">
@@ -177,7 +183,8 @@ h1 span:nth-child(3){animation-delay:.3s;color:var(--limao)}
     <button class="cta pulsa" id="comecar">Entrar na lista de espera
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
     </button>
-    <div class="mini"><span>Grátis</span><span>3 orçamentos por mês</span><span>Leva 30 segundos</span></div>
+    <div class="mini"><span>Grátis pra entrar</span><span>Leva 30 segundos</span></div>
+    <p class="rodape">Ainda sem data de lançamento. Preços e condições podem mudar antes de abrir. <a href="privacidade.html">Privacidade</a></p>
   </div>
 </section>
 
@@ -187,7 +194,7 @@ h1 span:nth-child(3){animation-delay:.3s;color:var(--limao)}
   <div class="barra-topo">
     <button class="voltar" id="voltar" aria-label="Voltar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
     <div class="prog"><i id="prog"></i></div>
-    <span class="passo-n" id="passoN">1/4</span>
+    <span class="passo-n" id="passoN">1/5</span>
   </div>
 
   <div class="passos">
@@ -204,6 +211,16 @@ h1 span:nth-child(3){animation-delay:.3s;color:var(--limao)}
       </div>
     </div>
 
+    <div class="passo" data-campo="qtd">
+      <h2>Quantos orçamentos você faz por mês?</h2>
+      <div class="ops grade">
+        <button class="op" data-v="Até 2"><span class="bola"></span>Até 2</button>
+        <button class="op" data-v="3 a 5"><span class="bola"></span>3 a 5</button>
+        <button class="op" data-v="6 a 10"><span class="bola"></span>6 a 10</button>
+        <button class="op" data-v="Mais de 10"><span class="bola"></span>Mais de 10</button>
+      </div>
+    </div>
+
     <div class="passo" data-campo="como">
       <h2>Hoje, como você faz o orçamento?</h2>
       <div class="ops">
@@ -216,24 +233,24 @@ h1 span:nth-child(3){animation-delay:.3s;color:var(--limao)}
 
     <div class="passo" data-campo="preco">
       <h2>Quanto pagaria por mês pra ter orçamento na hora, sem limite?</h2>
-      <p class="sub">Só pra gente acertar o preço. Os 3 por mês continuam grátis.</p>
+      <p class="sub">Só pra gente acertar o preço.</p>
       <div class="ops">
         <button class="op" data-v="Nada, só usaria o grátis"><span class="bola"></span>Só usaria o grátis</button>
-        <button class="op" data-v="Até R$ 10"><span class="bola"></span>Até<span class="preco">R$ 10</span></button>
-        <button class="op" data-v="De R$ 10 a R$ 20"><span class="bola"></span>De<span class="preco">R$ 10 a 20</span></button>
-        <button class="op" data-v="De R$ 20 a R$ 40"><span class="bola"></span>De<span class="preco">R$ 20 a 40</span></button>
-        <button class="op" data-v="Mais de R$ 40, se valer a pena"><span class="bola"></span>Mais, se valer a pena<span class="preco">R$ 40+</span></button>
+        <button class="op" data-v="Até R$ 10"><span class="bola"></span><span class="preco" style="margin-left:0">Até R$ 10</span></button>
+        <button class="op" data-v="De R$ 10 a R$ 20"><span class="bola"></span><span class="preco" style="margin-left:0">R$ 10 a 20</span></button>
+        <button class="op" data-v="De R$ 20 a R$ 40"><span class="bola"></span><span class="preco" style="margin-left:0">R$ 20 a 40</span></button>
+        <button class="op" data-v="Mais de R$ 40, se valer a pena"><span class="bola"></span><span class="preco" style="margin-left:0">Mais de R$ 40</span></button>
       </div>
     </div>
 
     <div class="passo" data-campo="contato">
       <h2>Pra onde a gente manda o aviso?</h2>
-      <div class="campo"><label for="nome">Seu nome</label><input id="nome" autocomplete="given-name" enterkeyhint="next" maxlength="60"></div>
-      <div class="campo"><label for="zap">WhatsApp com DDD</label><input id="zap" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="(37) 99999-9999" enterkeyhint="done" maxlength="16"></div>
-      <div class="msg-erro" id="erro" role="alert"></div>
-      <button class="aviso" id="aviso" role="checkbox" aria-checked="true"><span class="cx"><svg viewBox="0 0 24 24" fill="none" stroke="#C8FF2E" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Pode me chamar no WhatsApp quando abrir</button>
+      <div class="campo"><label for="nome">Seu nome</label><input id="nome" autocomplete="given-name" enterkeyhint="next" maxlength="60"><div class="msg-erro" id="erroNome" role="alert"></div></div>
+      <div class="campo"><label for="zap">WhatsApp com DDD</label><input id="zap" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="(37) 99999-9999" enterkeyhint="done" maxlength="16"><div class="msg-erro" id="erro" role="alert"></div></div>
+      <div class="hp" aria-hidden="true"><label>Não preencha<input id="site" tabindex="-1" autocomplete="off"></label></div>
+      <button class="aviso" id="aviso" role="checkbox" aria-checked="false"><span class="cx"><svg viewBox="0 0 24 24" fill="none" stroke="#C8FF2E" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Autorizo o Na Bucha a me chamar no WhatsApp quando abrir</button>
       <button class="cta enviar" id="enviar">Entrar na lista</button>
-      <p class="privado">Seu número fica só com o Na Bucha. Nada de spam.</p>
+      <p class="lgpd" id="lgpd">Usamos seu nome, WhatsApp e respostas só para avisar quando o Na Bucha abrir e para ajustar o produto. Não vendemos nem repassamos seus dados. Eles ficam guardados no Google. Responsável: Welbert Palmer Contins. Para sair da lista ou apagar seus dados: <a href="mailto:contato.nabucha@gmail.com">contato.nabucha@gmail.com</a>. <a href="privacidade.html">Política de privacidade</a></p>
     </div>
   </div>
  </div>
@@ -244,7 +261,7 @@ h1 span:nth-child(3){animation-delay:.3s;color:var(--limao)}
   <div class="fim-in">
     <div class="selo-ok"><svg viewBox="-2 2 204 96" fill="#1F3BFF"><rect x="0" y="18" width="14" height="64" rx="6"/><rect x="8" y="38" width="170" height="24" rx="10"/><rect x="22" y="27" width="26" height="46" rx="11" style="animation-delay:.1s"/><rect x="56" y="8" width="26" height="84" rx="11" style="animation-delay:.25s"/><rect x="90" y="19" width="26" height="62" rx="11" style="animation-delay:.05s"/><rect x="124" y="8" width="26" height="84" rx="11" style="animation-delay:.3s"/><rect x="158" y="27" width="26" height="46" rx="11" style="animation-delay:.15s"/><path d="M176 38 Q200 44 200 50 Q200 56 176 62 Z"/></svg></div>
     <h2 id="fimTit">Fechou! Você tá na lista.</h2>
-    <p>Quando abrir, os primeiros da lista testam antes.</p>
+    <p>Quando abrir, a gente te chama. Os primeiros da lista testam antes.</p>
     <div class="fim-bts">
       <a class="cta link" href="https://instagram.com/nabucha.app" target="_blank" rel="noopener">Seguir @nabucha.app</a>
       <a class="bt2" id="indicar" target="_blank" rel="noopener">Indicar pra um colega no WhatsApp</a>
@@ -256,7 +273,8 @@ h1 span:nth-child(3){animation-delay:.3s;color:var(--limao)}
 (function(){
   // Respostas vão para o Google Forms "Na Bucha - Lista de espera" (conta do Welbert)
   const FORM = "https://docs.google.com/forms/d/e/1FAIpQLSfesSoV9dgxzVTtDAdKia8K1fONnKVI4E6-URg46dtkJXiiiw/formResponse";
-  const E = {oficio:"entry.835321827", como:"entry.910046069", preco:"entry.1568587068", nome:"entry.1588394488", zap:"entry.304179207", origem:"entry.6001171", aviso:"entry.1448498885"};
+  const E = {oficio:"entry.835321827", como:"entry.910046069", preco:"entry.1568587068", nome:"entry.1588394488", zap:"entry.304179207", origem:"entry.6001171", qtd:"entry.1346544093", aviso:"entry.1448498885"};
+  const PEND="nb.pendente"; let t0=0;
   const reduz = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const $ = s=>document.querySelector(s), $$ = s=>[...document.querySelectorAll(s)];
   const telas = {hero:$("#hero"), fluxo:$("#fluxo"), fim:$("#fim")};
@@ -311,7 +329,7 @@ h1 span:nth-child(3){animation-delay:.3s;color:var(--limao)}
     passos.forEach((p,k)=>{ p.classList.toggle("ativo",k===i); p.classList.toggle("saiu",k<i); });
     atual=i; $("#prog").style.width=((i+1)/N*100)+"%"; $("#passoN").textContent=(i+1)+"/"+N;
   }
-  $("#comecar").onclick=()=>{ rodando=false; mostra("fluxo"); irPara(0); };
+  $("#comecar").onclick=()=>{ rodando=false; t0=Date.now(); mostra("fluxo"); irPara(0); };
   $("#voltar").onclick=()=>{ if(atual===0){ mostra("hero"); rodando=true; ciclo(); } else irPara(atual-1); };
   passos.forEach((p,i)=>{
     p.querySelectorAll(".op").forEach(b=>b.onclick=()=>{
@@ -328,7 +346,9 @@ h1 span:nth-child(3){animation-delay:.3s;color:var(--limao)}
     let v=d; if(d.length>2) v="("+d.slice(0,2)+") "+d.slice(2); if(d.length>7) v="("+d.slice(0,2)+") "+d.slice(2,d.length-4)+"-"+d.slice(-4);
     zap.value=v; zap.classList.remove("erro"); erro.textContent="";
   });
-  nome.addEventListener("input",()=>{nome.classList.remove("erro");erro.textContent="";});
+  const erroNome=$("#erroNome");
+  nome.addEventListener("input",()=>{nome.classList.remove("erro");erroNome.textContent="";});
+  zap.addEventListener("blur",()=>{ const d=zap.value.replace(/\D/g,""); if(d.length && d.length<10){ zap.classList.add("erro"); erro.textContent="Confere o WhatsApp: DDD + número."; } });
   nome.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); zap.focus(); }});
   zap.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); zap.blur(); }});
   const aviso=$("#aviso");
@@ -336,23 +356,39 @@ h1 span:nth-child(3){animation-delay:.3s;color:var(--limao)}
 
   $("#enviar").onclick=async()=>{
     const d=zap.value.replace(/\D/g,"");
-    if(!nome.value.trim()){ nome.classList.add("erro"); erro.textContent="Falta o seu nome."; nome.focus(); return; }
+    if(!nome.value.trim()){ nome.classList.add("erro"); erroNome.textContent="Falta o seu nome."; nome.focus(); return; }
     nome.classList.remove("erro");
     if(d.length<10){ zap.classList.add("erro"); erro.textContent="Confere o WhatsApp: DDD + número."; zap.focus(); return; }
-    const bt=$("#enviar"); bt.disabled=true; bt.textContent="Enviando…";
+    const bt=$("#enviar");
+    // robô: campo escondido preenchido ou rápido demais -> finge sucesso e não envia
+    if($("#site").value || Date.now()-t0<4000){ fim(); return; }
+    bt.disabled=true; bt.textContent="Enviando…";
     const f=new URLSearchParams();
     if(resp.oficio==="__outro__"){ f.append(E.oficio,"__other_option__"); f.append(E.oficio+".other_option_response","Outro (pelo site)"); } else f.append(E.oficio,resp.oficio||"");
     f.append(E.como,resp.como||""); f.append(E.preco,resp.preco||"");
     f.append(E.nome,nome.value.trim()); f.append(E.zap,zap.value);
     const q=new URLSearchParams(location.search); f.append(E.origem,"site"+(q.get("utm_source")?" · "+q.get("utm_source"):"")+(q.get("utm_content")?" · "+q.get("utm_content"):""));
+    if(resp.qtd) f.append(E.qtd,resp.qtd);
     f.append(E.aviso, aviso.getAttribute("aria-checked")==="true"?"Sim, pode me chamar":"Não, só quero acompanhar pelo Instagram");
-    try{ await fetch(FORM,{method:"POST",mode:"no-cors",body:f}); }catch(e){}
+    const corpo=f.toString();
+    try{ localStorage.setItem(PEND,corpo); }catch(e){}
+    const ok=await mandar(corpo) || await mandar(corpo);
+    if(!ok){ bt.disabled=false; bt.textContent="Tentar de novo"; erro.textContent="Sem conexão agora. Seus dados ficaram guardados neste celular: toque em Tentar de novo."; return; }
+    fim();
+  };
+  async function mandar(corpo){
+    try{ await fetch(FORM,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:corpo}); try{ localStorage.removeItem(PEND); }catch(e){} return true; }
+    catch(e){ await new Promise(r=>setTimeout(r,1500)); return false; }
+  }
+  // cadastro que ficou preso numa visita anterior sem sinal: reenvia sozinho
+  try{ const p=localStorage.getItem(PEND); if(p) mandar(p); }catch(e){}
+  function fim(){
     const primeiro=nome.value.trim().split(" ")[0];
     $("#fimTit").textContent="Fechou, "+primeiro+"! Você tá na lista.";
-    const txt="Ó isso aqui: orçamento pronto no WhatsApp, na hora. Tô na lista de espera do Na Bucha, entra também: https://nabucha.com.br";
+    const txt="Ó isso aqui: vai sair um app que monta o orçamento pelo WhatsApp. Tô na lista de espera do Na Bucha, entra também: https://nabucha.com.br";
     $("#indicar").href="https://wa.me/?text="+encodeURIComponent(txt);
     mostra("fim");
-  };
+  }
 })();
 </script>
 </body>
