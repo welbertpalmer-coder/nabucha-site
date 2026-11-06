@@ -138,6 +138,7 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
 .floor strong{font-family:var(--display);font-size:18px}
 .floor span{font-size:13px}
 .cmp .opt{min-height:96px}
+.jeito .opt{min-height:72px}.jeito .opt strong{font-size:16px}
 .bad{color:#C2410C!important;font-weight:700}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:99px;font-weight:600;font-size:14px;z-index:30;max-width:90vw;text-align:center}
 @media (max-width:380px){.row3{grid-template-columns:1fr 1fr}.tot strong{font-size:18px}.opt strong{font-size:16px}}
@@ -164,6 +165,16 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
 
     <section id="p1" style="display:flex;flex-direction:column;gap:14px">
       <div class="card">
+        <h2>Como vai cobrar este serviço?</h2>
+        <div class="cmp jeito" id="jeito">
+          <button class="opt" data-jeito="custo"><strong>Custos + lucro</strong><span>Dias, equipe e gastos, mais o seu lucro</span></button>
+          <button class="opt" data-jeito="diaria"><strong>Por diária</strong><span>Dias de serviço × diária</span></button>
+          <button class="opt" data-jeito="m2"><strong>Por m²</strong><span>Mede os cômodos, preço por m²</span></button>
+          <button class="opt" data-jeito="fechado"><strong>Preço fechado</strong><span>Você diz o valor no fim</span></button>
+        </div>
+        <p class="hint" id="jeito-hint"></p>
+      </div>
+      <div class="card">
         <h2>Cliente</h2>
         <label>Nome do cliente<input id="c-nome" autocomplete="off"></label>
         <details><summary>WhatsApp e endereço <span>Opcional</span></summary>
@@ -173,9 +184,12 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
           </div>
         </details>
       </div>
-      <div class="card">
-        <h2>Cômodos</h2>
-        <p class="hint">Só largura e comprimento, em metros. O resto vem do padrão: toque em "ajustar" se for diferente.</p>
+      <div id="slot1"></div>
+      <div class="card" id="rooms-card">
+        <h2 id="rooms-h">Cômodos</h2>
+        <p class="hint" id="rooms-hint">Só largura e comprimento, em metros. O resto vem do padrão: toque em "ajustar" se for diferente.</p>
+        <button class="chip add" id="medir" style="align-self:flex-start">Medir os cômodos</button>
+        <div id="rooms-in" style="display:flex;flex-direction:column;gap:10px">
         <div id="rooms" style="display:flex;flex-direction:column;gap:10px"></div>
         <div class="chips" id="add-room" aria-label="Adicionar cômodo">
           <button class="chip add" data-add="Sala">+ Sala</button>
@@ -184,6 +198,7 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
           <button class="chip add" data-add="Banheiro">+ Banheiro</button>
           <button class="chip add" data-add="Área externa">+ Área externa</button>
           <button class="chip add" data-add="Outro">+ Outro</button>
+        </div>
         </div>
       </div>
     </section>
@@ -210,14 +225,14 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
       </div>
       <div class="card">
         <h2>Serviços</h2>
-        <p class="hint">Mais demão, mais trabalho: o preço do m² sobe sozinho.</p>
+        <p class="hint" id="svcs-hint">Mais demão, mais trabalho: o preço do m² sobe sozinho.</p>
         <div id="svcs"></div>
         <details><summary>Outros serviços <span>Mostrar</span></summary><div class="in" id="svcs-off"></div></details>
       </div>
     </section>
 
     <section id="p3" style="display:flex;flex-direction:column;gap:14px" hidden>
-      <div class="card">
+      <div class="card" id="conta-card">
         <h2>Confira a conta</h2>
         <button class="conta" id="conta"></button>
         <div class="lines" id="lines"></div>
@@ -228,10 +243,12 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
           <button id="mat-no">Cliente compra</button><button id="mat-yes">Eu forneço</button>
         </div>
         <div class="lines" id="mat-list"></div>
+        <p class="hint" id="mat-hint"></p>
         <label id="mat-val-l" class="money">Valor cobrado pelo material<input id="mat-val" inputmode="decimal"></label>
         <label class="check"><input type="checkbox" id="show-mat">Mandar a lista de material para o cliente</label>
       </div>
-      <div class="card">
+      <div id="slot3"></div>
+      <div class="card" id="dias-card">
         <h2>Dias e equipe</h2>
         <div class="row">
           <label>Dias de serviço<input id="dias" inputmode="decimal"></label>
@@ -250,14 +267,15 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
         <div class="floor" id="floor"></div>
       </div>
       <div class="card">
-        <h2>Como cobrar este serviço</h2>
-        <p class="hint">Cada um tem seu jeito. Escolha o deste orçamento; os outros ficam aí para comparar.</p>
+        <h2 id="cobrar-h">Preço</h2>
+        <details id="cmp-d"><summary>Comparar com outros jeitos <span>Mostrar</span></summary><div class="in">
+        <p class="hint">Mesmo serviço, cobrado de outro jeito. Toque para trocar.</p>
         <div class="cmp">
           <button class="opt" data-modo="custo"><small>Custos + lucro</small><strong id="v-cu">R$ 0</strong><span id="d-cu"></span></button>
           <button class="opt" data-modo="diaria"><small>Por diária</small><strong id="v-di">R$ 0</strong><span id="d-di"></span></button>
           <button class="opt" data-modo="m2"><small>Por m²</small><strong id="v-m2">R$ 0</strong><span id="d-m2"></span></button>
           <button class="opt" data-modo="fechado"><small>Preço fechado</small><strong id="v-fe">R$ 0</strong><span id="d-fe">Você digita o valor</span></button>
-        </div>
+        </div></div></details>
         <div id="lucro-box" style="display:flex;flex-direction:column;gap:8px">
           <p class="sub">Margem de lucro sobre os custos</p>
           <div class="chips" id="lucro-chips"></div>
@@ -312,6 +330,7 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
       <div class="seg" role="group" aria-label="Modo padrão" id="cfg-modo">
         <button data-modo="custo">Custos + lucro</button><button data-modo="diaria">Diária</button><button data-modo="m2">m²</button><button data-modo="fechado">Fechado</button>
       </div>
+      <p class="hint" style="margin-top:-4px">Todo orçamento novo já começa com esse jeito marcado. Dá para trocar no 1º passo.</p>
       <div class="row">
         <label class="money">Sua diária<input id="cfg-diaria" inputmode="decimal"></label>
         <label class="money">Diária do ajudante<input id="cfg-ajud" inputmode="decimal"></label>
@@ -363,7 +382,7 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
 
 <script>
 (function(){
-const KEY='nabucha-proto-v5';
+const KEY='nabucha-proto-v5'; // v6 usa o mesmo lugar: só acrescenta campos
 const PAYS=['Pix','Dinheiro','Cartão','50% de entrada','Ao terminar'];
 const brl=n=>n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const brl0=n=>n.toLocaleString('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});
@@ -409,7 +428,7 @@ const MODOS={custo:'Custos + lucro',diaria:'Por diária',m2:'Por m²',fechado:'P
 function novoOrc(c,exemplo){
   const o={cliente:{nome:'',whats:'',local:''},rooms:[],situs:['repintura'],liso:false,linha:c.linha,sv:{},
     mat:{inclui:false,valor:'',auto:true},modo:c.modo,rep:{},acab:'fosco',diasM:'',erroM:'',ajud:false,
-    outros:{alim:'',comb:'',ferr:'',alug:''},lucro:c.lucro,fechado:'',prazo:'',prazoAuto:true,validade:c.validade,pay:c.pay.slice(),showMat:c.showMat,obs:'',step:1};
+    outros:{alim:'',comb:'',ferr:'',alug:''},medir:false,lucro:c.lucro,fechado:'',prazo:'',prazoAuto:true,validade:c.validade,pay:c.pay.slice(),showMat:c.showMat,obs:'',step:1};
   c.svcs.forEach(s=>o.sv[s.k]={on:false,dem:s.demBase});
   if(exemplo){o.cliente={nome:'Dona Marta (exemplo)',whats:'',local:'Centro'};o.situs=['cor'];
     o.rooms=[sala('Sala','4','5'),sala('Quarto','3','3,5')]}
@@ -531,26 +550,45 @@ function renderP2(){
     ${st(s.k).on?`<div class="step"><button data-dem="-1" aria-label="Menos uma demão">−</button><span>${demTxt(st(s.k).dem)}</span><button data-dem="1" aria-label="Mais uma demão">+</button></div>
     <div class="sv-price" data-pr="${s.k}" style="flex-basis:100%"></div>`:''}
   </div>`;
+  $('#svcs-hint').textContent=porM2()?'Mais demão, mais trabalho: o preço do m² sobe sozinho.':'Entram na lista do que está incluso'+(O.rooms.length?' e no cálculo do material.':'.');
   $('#svcs').innerHTML=on.map(row).join('')||'<p class="hint">Nenhum serviço marcado.</p>';
   $('#svcs-off').innerHTML=off.map(row).join('')||'<p class="hint">Todos os serviços estão no orçamento.</p>';
 }
 function renderP3(){
   $('#mat-no').classList.toggle('on',!O.mat.inclui);$('#mat-yes').classList.toggle('on',O.mat.inclui);
   $('#mat-val-l').hidden=!O.mat.inclui;$('#show-mat').checked=!!O.showMat;
-  $$('.opt').forEach(b=>{const on=b.dataset.modo===O.modo;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
+  $$('#p3 .opt').forEach(b=>{const on=b.dataset.modo===O.modo;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
   $('#pay').innerHTML=PAYS.map(p=>`<button class="chip ${O.pay.includes(p)?'on':''}" data-pay="${p}" aria-pressed="${O.pay.includes(p)}">${p}</button>`).join('');
   $('#prazo').value=O.prazo;$('#validade').value=O.validade;$('#obs').value=O.obs;$('#mat-val').value=O.mat.valor;
-  $('#dias').value=O.diasM;$('#erro').value=O.erroM;$('#ajud').checked=!!O.ajud;
-  ['alim','comb','ferr','alug'].forEach(k=>$('#o-'+k).value=O.outros[k]);
-  $('#lucro').value=O.lucro;$('#fech').value=O.fechado;
+  $('#lucro').value=O.lucro;$('#cobrar-h').textContent='Preço · '+MODOS[O.modo];$('#fech').value=O.fechado;
   $('#lucro-chips').innerHTML=LUCROS.map(([v,t])=>`<button class="chip ${num(O.lucro)===num(v)?'on':''}" data-lucro="${v}">${v}%${t?' · '+t:''}</button>`).join('');
   $('#lucro-box').hidden=O.modo!=='custo';$('#fech-l').hidden=O.modo!=='fechado';
 }
+const porM2=()=>O.modo==='m2';
+const JEITO_HINT={custo:'Diga os dias e a equipe abaixo. Não sabe os dias? Meça os cômodos e o Na Bucha sugere.',
+  diaria:'Diga os dias abaixo. Não sabe? Meça os cômodos e o Na Bucha sugere.',m2:'',
+  fechado:'O valor você digita na revisão. Os dias servem para o prazo e para o seu piso (o mínimo que pode cobrar).'};
+function renderJeito(){
+  $$('#jeito [data-jeito]').forEach(b=>{const on=b.dataset.jeito===O.modo;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
+  $('#jeito-hint').textContent=JEITO_HINT[O.modo]||'';
+  const m=porM2(),fech=!m&&!O.medir&&!O.rooms.length;
+  $('#rooms-h').textContent=m?'Cômodos':'Medidas (opcional)';
+  $('#rooms-hint').textContent=m?'Só largura e comprimento, em metros. O resto vem do padrão: toque em "ajustar" se for diferente.':'Servem para calcular o material e sugerir os dias. Só largura e comprimento, em metros.';
+  $('#medir').hidden=!fech;$('#rooms-in').hidden=fech;
+  // card de dias: no 1º passo quando não é por m²; na revisão quando é
+  const slot=m?$('#slot3'):$('#slot1');if($('#dias-card').parentNode!==slot)slot.appendChild($('#dias-card'));
+  $('.steps [data-go="1"]').textContent=m?'1 · Cômodos':'1 · Serviço';
+}
+function renderDias(){
+  $('#dias').value=O.diasM;$('#erro').value=O.erroM;$('#ajud').checked=!!O.ajud;
+  ['alim','comb','ferr','alug'].forEach(k=>$('#o-'+k).value=O.outros[k]);
+}
 function renderOrc(){
+  renderJeito();
   $('#c-nome').value=O.cliente.nome;$('#c-whats').value=O.cliente.whats;$('#c-local').value=O.cliente.local;
   ['p1','p2','p3'].forEach((p,i)=>$('#'+p).hidden=O.step!==i+1);
   $$('.steps button').forEach(b=>{const n=+b.dataset.go;b.classList.toggle('on',n===O.step);b.classList.toggle('done',n<O.step);b.setAttribute('aria-current',n===O.step?'step':'false')});
-  if(O.step===1)renderRooms();if(O.step===2)renderP2();if(O.step===3)renderP3();
+  renderDias();if(O.step===1)renderRooms();if(O.step===2)renderP2();if(O.step===3)renderP3();
   $('#first').hidden=!!C.visto;
 }
 
@@ -585,34 +623,43 @@ function renderCfg(){
 }
 
 // ---------- atualização dos números ----------
+function refreshDias(k){
+  $('#dias').placeholder=k.dias?dd(k.dias):'';$('#erro').placeholder=String(k.erroAuto);
+  $('#dias-hint').innerHTML=(k.dias?`Sugestão pelas medidas e pelo seu ritmo: <b>${dd(k.dias)} dias</b>${k.repDias?` (com ${dd(k.repDias)} de reparos)`:''}. Mude se souber melhor.`:(porM2()?'':'Sem medidas: digite os dias que você acha que leva.'))+
+    ` A margem de erro vale ${O.ajud?'para você e para o ajudante':'para a equipe toda'}.`;
+  $('#outros-sum').textContent=k.outros?brl0(k.outros):'Opcional';
+  const fl=$('#floor');fl.hidden=!k.piso;
+  fl.innerHTML=`<span>Seu piso · só você vê</span><strong>${brl(k.piso)}</strong><span>${dd(k.diasU+k.erro)} dias × ${brl0(k.dPint+k.dAj)}${k.dAj?' (você + ajudante)':''}${k.outros?' + '+brl0(k.outros)+' de outros custos':''}. Abaixo disso, se der problema, você paga para trabalhar.</span>`;
+}
 function refresh(){
   const k=calc();
   if(view==='orc'){
+    if(O.step===1&&!porM2())refreshDias(k);
     if(O.step===1)O.rooms.forEach(r=>{const a=areas(r);const el=document.querySelector(`[data-area="${r.id}"]`);if(el)el.textContent=`Paredes ${m2(a.p)}`+(a.t?` · Teto ${m2(a.t)}`:'')});
-    if(O.step===2)k.lines.forEach(l=>{const el=document.querySelector(`[data-pr="${l.k}"]`);if(!el)return;
+    if(O.step===2&&porM2())k.lines.forEach(l=>{const el=document.querySelector(`[data-pr="${l.k}"]`);if(!el)return;
       const d=l.dem-l.demBase;el.innerHTML=`<b>${brl(l.preco)}/m²</b>${d?` (${brl(l.base)} ${d>0?'+':'−'} ${Math.abs(d)} × ${brl(l.extra)})`:''} · ${m2(l.area)} = <b>${brl(l.sub)}</b>`});
     if(O.step===3){
       const det=O.rooms.map(r=>{const a=areas(r);return r.modo==='area'?`${esc(r.nome)}: ${m2(a.p+a.t)}`:`${esc(r.nome)} ${esc(r.l)}×${esc(r.c)}, pé-direito ${esc(r.h)}, ${r.teto?'com teto':'sem teto'}, ${r.portas}p/${r.janelas}j`}).join(' · ');
+      $('#conta-card').hidden=!(k.P+k.T);
       $('#conta').innerHTML=`<strong>Paredes ${m2(k.P)} + teto ${m2(k.T)}</strong><span>${det}</span><span style="color:var(--accent);font-weight:700">Tocar para corrigir</span>`;
-      $('#lines').innerHTML=k.lines.map(l=>`<div class="ln"><div>${esc(l.nome)}<small>${demTxt(l.dem)} · ${m2(l.area)} × ${brl(l.preco)}</small></div><div class="v">${O.modo==='diaria'?'':brl(l.sub)}</div></div>`).join('')+
+      $('#lines').innerHTML=k.lines.map(l=>`<div class="ln"><div>${esc(l.nome)}<small>${demTxt(l.dem)}${porM2()?` · ${m2(l.area)} × ${brl(l.preco)}`:''}</small></div><div class="v">${porM2()?brl(l.sub):''}</div></div>`).join('')+
         k.reps.filter(r=>!r.aviso).map(r=>`<div class="ln"><div>${esc(r.nome)}<small>reparo · ${dd(num(r.dias))} dia(s)</small></div><div class="v">${O.modo==='m2'?brl(num(r.preco)):''}</div></div>`).join('')+
         (O.modo!=='m2'?`<div class="ln"><div>Mão de obra<small>${MODOS[O.modo]}</small></div><div class="v">${brl(k.mao)}</div></div>`:'');
       $('#mat-list').innerHTML=k.mats.map(m=>`<div class="ln"><div>${esc(m.mat)}<small>${esc(m.txt)}</small></div><div class="v">${m.custo?brl(m.custo):''}</div></div>`).join('')+
         (k.mats.length?`<div class="ln"><div><strong>Material estimado</strong><small>10% de sobra · preços de referência em Meus preços</small></div><div class="v">${brl(k.matCusto)}</div></div>`:'');
-      if(O.mat.inclui&&O.mat.auto){$('#mat-val').value=k.matCusto.toFixed(2).replace('.',',')}
-      $('#dias').placeholder=k.dias?dd(k.dias):'';$('#erro').placeholder=String(k.erroAuto);
-      $('#dias-hint').innerHTML=(k.dias?`Sugestão pelo seu ritmo: <b>${dd(k.dias)} dias</b>${k.repDias?` (com ${dd(k.repDias)} de reparos)`:''}. Mude se souber melhor.`:'')+
-        ` A margem de erro vale ${O.ajud?'para você e para o ajudante':'para a equipe toda'}.`;
-      $('#outros-sum').textContent=k.outros?brl0(k.outros):'Opcional';
-      const fl=$('#floor');fl.hidden=!k.piso;
-      fl.innerHTML=`<span>Seu piso · só você vê</span><strong>${brl(k.piso)}</strong><span>${dd(k.diasU+k.erro)} dias × ${brl0(k.dPint+k.dAj)}${k.dAj?' (você + ajudante)':''}${k.outros?' + '+brl0(k.outros)+' de outros custos':''}. Abaixo disso, se der problema, você paga para trabalhar.</span>`;
+      const semMed=!(k.P+k.T);$('#mat-list').hidden=semMed;$('#show-mat').closest('label').hidden=semMed;
+      $('#mat-hint').innerHTML=semMed?(O.mat.inclui?'Sem medidas não dá para calcular: digite quanto vai cobrar pelo material.':'Sem medidas, sem lista de material. Para calcular, meça os cômodos no 1º passo.'):'';
+      if(semMed&&O.mat.inclui&&O.mat.auto)$('#mat-val').value='';
+      if(!semMed&&O.mat.inclui&&O.mat.auto){$('#mat-val').value=k.matCusto.toFixed(2).replace('.',',')}
+      refreshDias(k);
       const sub=(v)=>k.piso&&v&&v<k.piso-0.5?'<span class="bad">abaixo do piso</span>':'';
       $('#v-cu').textContent=brl0(k.maoCu);$('#d-cu').innerHTML=`piso + ${dd(k.lucroP)}%`;
       $('#v-di').textContent=brl0(k.maoDi);$('#d-di').innerHTML=sub(k.maoDi)||(k.diasU?`${dd(k.diasU)} dias × ${brl0(k.dPint+k.dAj)}`:'');
-      $('#v-m2').textContent=brl0(k.maoM2);$('#d-m2').innerHTML=sub(k.maoM2)||(k.diasU?`${brl0(k.maoM2/k.diasU)} por dia`:'');
+      $('#v-m2').textContent=k.P+k.T?brl0(k.maoM2):'—';$('#d-m2').innerHTML=!(k.P+k.T)?'Precisa das medidas':sub(k.maoM2)||(k.diasU?`${brl0(k.maoM2/k.diasU)} por dia`:'');
       $('#v-fe').textContent=k.maoFe?brl0(k.maoFe):'—';$('#d-fe').innerHTML=sub(k.maoFe)||'Você digita o valor';
       let v='';
       if(O.modo==='custo'&&k.piso){const luc=k.maoCu-k.piso;v=`Lucro de <b>${brl0(luc)}</b> (${dd(luc/k.maoCu*100)}% do preço). Se pedirem desconto, não desça de ${brl0(k.piso)}.`}
+      else if(O.modo==='diaria'&&k.erro&&k.mao&&Math.abs(k.mao+k.erro*(k.dPint+k.dAj)+k.outros-k.piso)<0.5)v=`Cobrando só os ${dd(k.diasU)} dias. Se a obra passar do prazo, os ${dd(k.erro)} dia(s) de margem (${brl0(k.erro*(k.dPint+k.dAj))})${k.outros?' e os outros custos':''} ficam por sua conta. Para cobrar a margem, use Custos + lucro.`;
       else if(k.piso&&k.mao&&k.mao<k.piso-0.5)v=`<span class="bad">Atenção:</span> ${brl0(k.mao)} fica ${brl0(k.piso-k.mao)} abaixo do seu piso. Se a obra atrasar, você tem prejuízo.`;
       else if(k.piso&&k.mao){const luc=k.mao-k.piso;v=`Sobra <b>${brl0(luc)}</b> acima do piso (${dd(luc/k.mao*100)}% do preço).`}
       $('#verdict').innerHTML=v;
@@ -632,7 +679,8 @@ function renderBar(){
 function show(v){view=v;if(v==='cfg'){C.visto=true;renderCfg()}else renderOrc();renderBar();refresh();save();window.scrollTo(0,0)}
 function goStep(n){
   const k=calc();
-  if(n>1&&k.P+k.T===0){toast('Preencha as medidas de um cômodo');O.step=1}
+  if(n>1&&porM2()&&k.P+k.T===0){toast('Preencha as medidas de um cômodo');O.step=1}
+  else if(n>1&&(O.modo==='diaria'||O.modo==='custo')&&!k.diasU){toast('Diga quantos dias o serviço leva (ou meça os cômodos)');O.step=1}
   else if(n>2&&!k.lines.length){toast('Marque pelo menos um serviço');O.step=2}
   else O.step=n;
   save();renderOrc();renderBar();refresh();window.scrollTo(0,0);
@@ -655,6 +703,8 @@ $('#add-room').addEventListener('click',e=>{const b=e.target.closest('[data-add]
   const r=sala(n==='Outro'?'Cômodo':n,'','');if(ext){r.modo='area';r.teto=false;r.portas=0;r.janelas=0}
   O.rooms.push(r);save();renderRooms();refresh();
   const el=document.querySelector(`[data-room="${r.id}"]`);el.scrollIntoView({behavior:'smooth',block:'center'});const inp=el.querySelector(ext?'[data-f="ap"]':'[data-f="l"]');if(inp)inp.focus({preventScroll:true})});
+$('#jeito').addEventListener('click',e=>{const b=e.target.closest('[data-jeito]');if(!b)return;O.modo=b.dataset.jeito;save();renderOrc();refresh()});
+$('#medir').addEventListener('click',()=>{O.medir=true;save();renderJeito()});
 $('#situ').addEventListener('click',e=>{const b=e.target.closest('[data-situ]');if(!b)return;const k=b.dataset.situ;let a=O.situs.slice();
   if(a.includes(k)){a=a.filter(x=>x!==k);if(!a.length)a=['repintura']}
   else{a.push(k);const cor=['cor','forte'];if(k==='repintura')a=a.filter(x=>!cor.includes(x));else if(cor.includes(k))a=a.filter(x=>x!=='repintura')}
@@ -674,7 +724,7 @@ $('#mat-no').addEventListener('click',()=>{O.mat.inclui=false;save();renderP3();
 $('#mat-yes').addEventListener('click',()=>{O.mat.inclui=true;O.mat.auto=true;save();renderP3();refresh()});
 $('#mat-val').addEventListener('input',e=>{O.mat.valor=e.target.value;O.mat.auto=e.target.value.trim()==='';save();refresh()});
 $('#show-mat').addEventListener('change',e=>{O.showMat=e.target.checked;save()});
-$$('.opt').forEach(b=>b.addEventListener('click',()=>{O.modo=b.dataset.modo;save();renderP3();refresh()}));
+$$('#p3 .opt').forEach(b=>b.addEventListener('click',()=>{O.modo=b.dataset.modo;save();renderJeito();renderP3();refresh();toast('Agora: '+MODOS[O.modo])}));
 $('#dias').addEventListener('input',e=>{O.diasM=e.target.value;save();refresh()});
 $('#erro').addEventListener('input',e=>{O.erroM=e.target.value;save();refresh()});
 $('#ajud').addEventListener('change',e=>{O.ajud=e.target.checked;save();refresh()});
@@ -697,7 +747,8 @@ $('#cfg-svcs').addEventListener('change',e=>{if(e.target.tagName!=='SELECT')retu
 $('#add-svc').addEventListener('click',()=>{const k='c'+id();C.svcs.push({k,nome:'Novo serviço',base:'',extra:'0',demBase:1,aplica:'paredes',prod:'20',m:null});O.sv[k]={on:false,dem:1};save();renderCfg();
   const all=$$('#cfg-svcs .sv-name');all[all.length-1].select()});
 $('#cfg-linha').addEventListener('click',e=>{const b=e.target.closest('[data-linha]');if(!b)return;C.linha=b.dataset.linha;save();renderCfg()});
-$('#cfg-modo').addEventListener('click',e=>{const b=e.target.closest('[data-modo]');if(!b)return;C.modo=b.dataset.modo;save();renderCfg()});
+$('#cfg-modo').addEventListener('click',e=>{const b=e.target.closest('[data-modo]');if(!b)return;C.modo=b.dataset.modo;
+  if(!O.rooms.length&&!O.cliente.nome&&O.step===1)O.modo=C.modo;save();renderCfg()});
 bind('#cfg-diaria',()=>C.diaria,v=>C.diaria=v);
 bind('#cfg-ajud',()=>C.ajud,v=>C.ajud=v);
 bind('#cfg-lucro',()=>C.lucro,v=>C.lucro=v,()=>{});
@@ -764,7 +815,7 @@ function sheet(k){
   <div class="sh-num">Orçamento<b>Nº ${numero()}</b>${hoje}</div></div>
   <div class="sh-body">
     <div class="sh-sec"><h4>Cliente</h4><strong>${esc(c.nome)||'—'}</strong>${c.local?'<br>'+esc(c.local):''}</div>
-    <div class="sh-sec"><h4>Áreas</h4><table class="sh-tab"><tr><th>Cômodo</th><th class="r">Paredes</th><th class="r">Teto</th></tr>${rooms}</table></div>
+    ${k.P+k.T?`<div class="sh-sec"><h4>Áreas</h4><table class="sh-tab"><tr><th>Cômodo</th><th class="r">Paredes</th><th class="r">Teto</th></tr>${rooms}</table></div>`:''}
     <div class="sh-sec"><h4>${m2m?'Serviços':'O que está incluso'}</h4><table class="sh-tab">${serv}
       ${k.mat?`<tr><td>Material</td><td class="r">${brl(k.mat)}</td></tr>`:''}</table></div>
     <div class="sh-total"><span>Total</span><strong>${brl(k.total)}</strong></div>
@@ -786,6 +837,7 @@ function abrirFolha(){
   const k=calc();
   if(!k.lines.length){toast('Marque pelo menos um serviço');return}
   if(O.modo==='fechado'&&!k.maoFe){toast('Digite o valor da mão de obra');return}
+  if((O.modo==='diaria'||O.modo==='custo')&&!k.diasU){toast('Diga quantos dias o serviço leva');goStep(1);return}
   if(O.modo!=='m2'&&O.modo!=='fechado'&&!k.mao){toast('Preencha sua diária em Meus preços');return}
   $('#sheet').innerHTML=sheet(k);
   const t=encodeURIComponent(texto(k));const ph=String(O.cliente.whats||'').replace(/\D/g,'').replace(/^55/,'');
