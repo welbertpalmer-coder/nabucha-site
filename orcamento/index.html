@@ -255,7 +255,7 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
           <label>Margem de erro (dias)<input id="erro" inputmode="decimal"></label>
         </div>
         <p class="hint" id="dias-hint"></p>
-        <label class="check"><input type="checkbox" id="ajud">Vai ter ajudante</label>
+        <div class="step" style="min-height:44px">Ajudantes <button id="aj-menos" aria-label="Menos um ajudante">−</button><span id="aj-n">0</span><button id="aj-mais" aria-label="Mais um ajudante">+</button></div>
         <details><summary>Outros custos da obra <span id="outros-sum">Opcional</span></summary>
           <div class="in row">
             <label class="money">Alimentação<input id="o-alim" inputmode="decimal"></label>
@@ -427,7 +427,7 @@ const LUCROS=[['15','Serviço simples'],['20','Normal'],['25',''],['30','Alto pa
 const MODOS={custo:'Custos + lucro',diaria:'Por diária',m2:'Por m²',fechado:'Preço fechado'};
 function novoOrc(c,exemplo){
   const o={cliente:{nome:'',whats:'',local:''},rooms:[],situs:['repintura'],liso:false,linha:c.linha,sv:{},
-    mat:{inclui:false,valor:'',auto:true},modo:c.modo,rep:{},acab:'fosco',diasM:'',erroM:'',ajud:false,
+    mat:{inclui:false,valor:'',auto:true},modo:c.modo,rep:{},acab:'fosco',diasM:'',erroM:'',ajud:0,
     outros:{alim:'',comb:'',ferr:'',alug:''},medir:false,lucro:c.lucro,fechado:'',prazo:'',prazoAuto:true,validade:c.validade,pay:c.pay.slice(),showMat:c.showMat,obs:'',step:1};
   c.svcs.forEach(s=>o.sv[s.k]={on:false,dem:s.demBase});
   if(exemplo){o.cliente={nome:'Dona Marta (exemplo)',whats:'',local:'Centro'};o.situs=['cor'];
@@ -490,7 +490,7 @@ function calc(){
   const diasU=vazio(O.diasM)?dias:num(O.diasM);
   const erroAuto=diasU?Math.max(1,Math.ceil(diasU*0.15)):0;
   const erro=vazio(O.erroM)?erroAuto:num(O.erroM);
-  const dPint=num(C.diaria),dAj=O.ajud?num(C.ajud):0;
+  const nAj=nAjud(),dPint=num(C.diaria),dAj=nAj*num(C.ajud);
   const outros=['alim','comb','ferr','alug'].reduce((x,k)=>x+num(O.outros[k]),0);
   const piso=(diasU+erro)*(dPint+dAj)+outros;
   const lucroP=num(O.lucro);
@@ -565,6 +565,7 @@ function renderP3(){
   $('#lucro-box').hidden=O.modo!=='custo';$('#fech-l').hidden=O.modo!=='fechado';
 }
 const porM2=()=>O.modo==='m2';
+function nAjud(){return O.ajud===true?1:Math.max(0,Math.floor(Number(O.ajud)||0))}
 const JEITO_HINT={custo:'Diga os dias e a equipe abaixo. Não sabe os dias? Meça os cômodos e o Na Bucha sugere.',
   diaria:'Diga os dias abaixo. Não sabe? Meça os cômodos e o Na Bucha sugere.',m2:'',
   fechado:'O valor você digita na revisão. Os dias servem para o prazo e para o seu piso (o mínimo que pode cobrar).'};
@@ -580,7 +581,7 @@ function renderJeito(){
   $('.steps [data-go="1"]').textContent=m?'1 · Cômodos':'1 · Serviço';
 }
 function renderDias(){
-  $('#dias').value=O.diasM;$('#erro').value=O.erroM;$('#ajud').checked=!!O.ajud;
+  $('#dias').value=O.diasM;$('#erro').value=O.erroM;$('#aj-n').textContent=nAjud();
   ['alim','comb','ferr','alug'].forEach(k=>$('#o-'+k).value=O.outros[k]);
 }
 function renderOrc(){
@@ -626,10 +627,10 @@ function renderCfg(){
 function refreshDias(k){
   $('#dias').placeholder=k.dias?dd(k.dias):'';$('#erro').placeholder=String(k.erroAuto);
   $('#dias-hint').innerHTML=(k.dias?`Sugestão pelas medidas e pelo seu ritmo: <b>${dd(k.dias)} dias</b>${k.repDias?` (com ${dd(k.repDias)} de reparos)`:''}. Mude se souber melhor.`:(porM2()?'':'Sem medidas: digite os dias que você acha que leva.'))+
-    ` A margem de erro vale ${O.ajud?'para você e para o ajudante':'para a equipe toda'}.`;
+    ` A margem de erro vale ${nAjud()?'para você e '+(nAjud()>1?'os ajudantes':'o ajudante'):'para a equipe toda'}.`;
   $('#outros-sum').textContent=k.outros?brl0(k.outros):'Opcional';
   const fl=$('#floor');fl.hidden=!k.piso;
-  fl.innerHTML=`<span>Seu piso · só você vê</span><strong>${brl(k.piso)}</strong><span>${dd(k.diasU+k.erro)} dias × ${brl0(k.dPint+k.dAj)}${k.dAj?' (você + ajudante)':''}${k.outros?' + '+brl0(k.outros)+' de outros custos':''}. Abaixo disso, se der problema, você paga para trabalhar.</span>`;
+  fl.innerHTML=`<span>Seu piso · só você vê</span><strong>${brl(k.piso)}</strong><span>${dd(k.diasU+k.erro)} dias × ${brl0(k.dPint+k.dAj)}${k.dAj?` (você + ${nAjud()} ajudante${nAjud()>1?'s':''})`:''}${k.outros?' + '+brl0(k.outros)+' de outros custos':''}. Abaixo disso, se der problema, você paga para trabalhar.</span>`;
 }
 function refresh(){
   const k=calc();
@@ -727,7 +728,8 @@ $('#show-mat').addEventListener('change',e=>{O.showMat=e.target.checked;save()})
 $$('#p3 .opt').forEach(b=>b.addEventListener('click',()=>{O.modo=b.dataset.modo;save();renderJeito();renderP3();refresh();toast('Agora: '+MODOS[O.modo])}));
 $('#dias').addEventListener('input',e=>{O.diasM=e.target.value;save();refresh()});
 $('#erro').addEventListener('input',e=>{O.erroM=e.target.value;save();refresh()});
-$('#ajud').addEventListener('change',e=>{O.ajud=e.target.checked;save();refresh()});
+const setAj=d=>{O.ajud=Math.min(10,Math.max(0,nAjud()+d));$('#aj-n').textContent=O.ajud;save();refresh()};
+$('#aj-menos').addEventListener('click',()=>setAj(-1));$('#aj-mais').addEventListener('click',()=>setAj(1));
 ['alim','comb','ferr','alug'].forEach(k=>$('#o-'+k).addEventListener('input',e=>{O.outros[k]=e.target.value;save();refresh()}));
 $('#lucro').addEventListener('input',e=>{O.lucro=e.target.value;$$('#lucro-chips [data-lucro]').forEach(b=>b.classList.toggle('on',num(b.dataset.lucro)===num(O.lucro)));save();refresh()});
 $('#lucro-chips').addEventListener('click',e=>{const b=e.target.closest('[data-lucro]');if(!b)return;O.lucro=b.dataset.lucro;save();renderP3();refresh()});
