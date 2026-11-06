@@ -134,6 +134,11 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
 .actions{display:grid;grid-template-columns:1fr;gap:8px}
 .wa{font:inherit;font-weight:700;font-size:16px;background:#C8FF2E;color:#0B1030;border:none;border-radius:12px;min-height:54px;cursor:pointer;text-decoration:none;display:grid;place-items:center}
 .note{font-size:13px;color:#E9EBFF;text-align:center;margin:0}
+.floor{background:var(--warn);color:var(--warn-ink);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:2px;font-variant-numeric:tabular-nums}
+.floor strong{font-family:var(--display);font-size:18px}
+.floor span{font-size:13px}
+.cmp .opt{min-height:96px}
+.bad{color:#C2410C!important;font-weight:700}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:99px;font-weight:600;font-size:14px;z-index:30;max-width:90vw;text-align:center}
 @media (max-width:380px){.row3{grid-template-columns:1fr 1fr}.tot strong{font-size:18px}.opt strong{font-size:16px}}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .25s ease-out}@keyframes up{from{transform:translateY(16px);opacity:.6}}}
@@ -188,6 +193,14 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
         <h2>Como está a parede?</h2>
         <div class="chips" id="situ"></div>
         <label class="check"><input type="checkbox" id="liso">Acabamento liso (massa corrida)</label>
+        <p class="sub">Reparos (marque o que tiver)</p>
+        <div class="chips" id="rep"></div>
+        <p class="hint" id="rep-hint"></p>
+        <p class="sub">Acabamento da tinta</p>
+        <div class="seg" role="group" aria-label="Acabamento" id="acab">
+          <button data-acab="fosco">Fosco</button><button data-acab="acet">Acetinado</button><button data-acab="semi">Semibrilho</button><button data-acab="brilho">Brilho</button>
+        </div>
+        <p class="hint" id="acab-hint"></p>
         <p class="sub">Linha da tinta</p>
         <div class="seg" role="group" aria-label="Linha da tinta" id="linha">
           <button data-linha="premium">Premium</button><button data-linha="standard">Standard</button><button data-linha="economica">Econômica</button>
@@ -217,11 +230,38 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
         <label class="check"><input type="checkbox" id="show-mat">Mandar a lista de material para o cliente</label>
       </div>
       <div class="card">
-        <h2>Cobrar por m² ou por diária?</h2>
-        <div class="cmp">
-          <button class="opt" data-modo="m2"><small>Por m²</small><strong id="v-m2">R$ 0</strong><span id="d-m2"></span></button>
-          <button class="opt" data-modo="diaria"><small>Por diária</small><strong id="v-di">R$ 0</strong><span id="d-di"></span></button>
+        <h2>Dias e equipe</h2>
+        <div class="row">
+          <label>Dias de serviço<input id="dias" inputmode="decimal"></label>
+          <label>Margem de erro (dias)<input id="erro" inputmode="decimal"></label>
         </div>
+        <p class="hint" id="dias-hint"></p>
+        <label class="check"><input type="checkbox" id="ajud">Vai ter ajudante</label>
+        <details><summary>Outros custos da obra <span id="outros-sum">Opcional</span></summary>
+          <div class="in row">
+            <label class="money">Alimentação<input id="o-alim" inputmode="decimal"></label>
+            <label class="money">Combustível<input id="o-comb" inputmode="decimal"></label>
+            <label class="money">Ferramentas e desgaste<input id="o-ferr" inputmode="decimal"></label>
+            <label class="money">Aluguel de equipamento<input id="o-alug" inputmode="decimal"></label>
+          </div>
+        </details>
+        <div class="floor" id="floor"></div>
+      </div>
+      <div class="card">
+        <h2>Como cobrar este serviço</h2>
+        <p class="hint">Cada um tem seu jeito. Escolha o deste orçamento; os outros ficam aí para comparar.</p>
+        <div class="cmp">
+          <button class="opt" data-modo="custo"><small>Custos + lucro</small><strong id="v-cu">R$ 0</strong><span id="d-cu"></span></button>
+          <button class="opt" data-modo="diaria"><small>Por diária</small><strong id="v-di">R$ 0</strong><span id="d-di"></span></button>
+          <button class="opt" data-modo="m2"><small>Por m²</small><strong id="v-m2">R$ 0</strong><span id="d-m2"></span></button>
+          <button class="opt" data-modo="fechado"><small>Preço fechado</small><strong id="v-fe">R$ 0</strong><span id="d-fe">Você digita o valor</span></button>
+        </div>
+        <div id="lucro-box" style="display:flex;flex-direction:column;gap:8px">
+          <p class="sub">Margem de lucro sobre os custos</p>
+          <div class="chips" id="lucro-chips"></div>
+          <label>Outro valor (%)<input id="lucro" inputmode="decimal"></label>
+        </div>
+        <label class="money" id="fech-l">Valor da mão de obra<input id="fech" inputmode="decimal"></label>
         <p class="verdict" id="verdict"></p>
       </div>
       <div class="card">
@@ -255,6 +295,12 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
       <button class="chip add" id="add-svc" style="align-self:flex-start">+ Outro serviço</button>
     </div>
     <div class="card">
+      <h2>Reparos</h2>
+      <p class="hint">Quanto tempo cada reparo soma na obra e quanto você cobra por ele quando o orçamento é por m².</p>
+      <div id="cfg-reps" style="display:flex;flex-direction:column;gap:10px"></div>
+      <button class="chip add" id="add-rep" style="align-self:flex-start">+ Outro reparo</button>
+    </div>
+    <div class="card">
       <h2>Seu jeito</h2>
       <p class="sub">Tinta que você mais usa</p>
       <div class="seg" role="group" aria-label="Linha padrão" id="cfg-linha">
@@ -262,12 +308,17 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
       </div>
       <p class="sub">Cobra normalmente por</p>
       <div class="seg" role="group" aria-label="Modo padrão" id="cfg-modo">
-        <button data-modo="m2">m²</button><button data-modo="diaria">Diária</button>
+        <button data-modo="custo">Custos + lucro</button><button data-modo="diaria">Diária</button><button data-modo="m2">m²</button><button data-modo="fechado">Fechado</button>
       </div>
       <div class="row">
         <label class="money">Sua diária<input id="cfg-diaria" inputmode="decimal"></label>
+        <label class="money">Diária do ajudante<input id="cfg-ajud" inputmode="decimal"></label>
+      </div>
+      <div class="row">
+        <label>Lucro padrão (%)<input id="cfg-lucro" inputmode="decimal"></label>
         <label>Orçamento vale por (dias)<input id="cfg-validade" inputmode="numeric"></label>
       </div>
+      <label>Garantia (sai no orçamento)<input id="cfg-garantia"></label>
       <div><p class="hint" style="margin-bottom:8px">Pagamento que você aceita</p><div class="chips" id="cfg-pay"></div></div>
       <label class="check"><input type="checkbox" id="cfg-showmat">Mandar a lista de material para o cliente</label>
     </div>
@@ -276,6 +327,7 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
         <div class="in">
           <p class="hint">Valores médios de referência. Mude só se souber o seu.</p>
           <label>Preparo e limpeza por obra (dias)<input id="cfg-prep" inputmode="decimal"></label>
+          <label>Serviço difícil (cor forte, semibrilho, brilho): % a mais de tempo e de preço na pintura<input id="cfg-dif" inputmode="decimal"></label>
           <div id="cfg-adv" style="display:flex;flex-direction:column;gap:10px"></div>
         </div>
       </details>
@@ -309,13 +361,13 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
 
 <script>
 (function(){
-const KEY='nabucha-proto-v4';
+const KEY='nabucha-proto-v5';
 const PAYS=['Pix','Dinheiro','Cartão','50% de entrada','Ao terminar'];
 const brl=n=>n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const brl0=n=>n.toLocaleString('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});
 const m2=n=>n.toLocaleString('pt-BR',{maximumFractionDigits:1})+' m²';
 const dd=n=>n.toLocaleString('pt-BR',{maximumFractionDigits:1});
-const num=v=>{if(v==null)return 0;let s=String(v).trim().replace(/\s/g,'');if(!s)return 0;if(s.includes(',')){s=s.replace(/\./g,'').replace(',','.')}const n=parseFloat(s);return isFinite(n)&&n>0?n:0};
+const num=v=>{if(v==null)return 0;let s=String(v).trim().replace(/\s/g,'');if(!s)return 0;if(s.includes(',')){s=s.replace(/\./g,'').replace(',','.')}else if(/^\d{1,3}(\.\d{3})+$/.test(s)){s=s.replace(/\./g,'')}const n=parseFloat(s);return isFinite(n)&&n>0?n:0};
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let uid=Date.now()%100000;const id=()=>'i'+(uid++);
 const clone=o=>JSON.parse(JSON.stringify(o));
@@ -339,11 +391,23 @@ const DEF_CFG={
     {k:'fundo',nome:'Fundo preparador',base:'6',extra:'3',demBase:1,aplica:'paredes',prod:'80',m:{mat:'Fundo preparador',g:'lata 18 L',p:'galão 3,6 L',rend:'150',pg:'220',pp:'60'}},
     {k:'textura',nome:'Textura / grafiato',base:'25',extra:'10',demBase:1,aplica:'paredes',prod:'12',m:{mat:'Textura',g:'balde 25 kg',p:'balde 5 kg',rend:'25',pg:'110',pp:'35'}}
   ],
-  linha:'standard',modo:'m2',diaria:'300',prep:'0,5',validade:'7',pay:['Pix','50% de entrada'],showMat:true,num:1,visto:false
+  reparos:[
+    {k:'mofo',nome:'Mofo',dias:'0,5',preco:'120',txt:'Limpeza com produto antimofo e tempo de secagem antes da tinta.'},
+    {k:'furos',nome:'Furos de parafuso e buchas',dias:'0,5',preco:'80',txt:'Tirar buchas, fechar com massa e lixar.'},
+    {k:'trinca',nome:'Trincas e rachaduras',dias:'1',preco:'150',txt:'Abrir, tratar e fechar a trinca (tela ou selante, se precisar).'},
+    {k:'descasca',nome:'Descascando ou bolhas',dias:'1',preco:'150',txt:'Raspar a tinta solta e firmar a parede.'},
+    {k:'infil',nome:'Infiltração ou umidade',dias:'0',preco:'0',aviso:true,txt:'Resolver a causa antes de pintar. Fica fora do serviço e da garantia.'}
+  ],
+  linha:'standard',modo:'custo',diaria:'300',ajud:'180',lucro:'20',dificil:'20',garantia:'1 ano com tinta premium; 6 meses nas outras linhas.',
+  prep:'0,5',validade:'7',pay:['Pix','50% de entrada'],showMat:true,num:1,visto:false
 };
+const ACAB={fosco:'Fosco',acet:'Acetinado',semi:'Semibrilho',brilho:'Brilho'};
+const LUCROS=[['15','Serviço simples'],['20','Normal'],['25',''],['30','Alto padrão']];
+const MODOS={custo:'Custos + lucro',diaria:'Por diária',m2:'Por m²',fechado:'Preço fechado'};
 function novoOrc(c,exemplo){
   const o={cliente:{nome:'',whats:'',local:''},rooms:[],situ:'repintura',liso:false,linha:c.linha,sv:{},
-    mat:{inclui:false,valor:'',auto:true},modo:c.modo,prazo:'',prazoAuto:true,validade:c.validade,pay:c.pay.slice(),showMat:c.showMat,obs:'',step:1};
+    mat:{inclui:false,valor:'',auto:true},modo:c.modo,rep:{},acab:'fosco',diasM:'',erroM:'',ajud:false,
+    outros:{alim:'',comb:'',ferr:'',alug:''},lucro:c.lucro,fechado:'',prazo:'',prazoAuto:true,validade:c.validade,pay:c.pay.slice(),showMat:c.showMat,obs:'',step:1};
   c.svcs.forEach(s=>o.sv[s.k]={on:false,dem:s.demBase});
   if(exemplo){o.cliente={nome:'Dona Marta (exemplo)',whats:'',local:'Centro'};o.situ='cor';
     o.rooms=[sala('Sala','4','5'),sala('Quarto','3','3,5')]}
@@ -353,6 +417,9 @@ function sala(nome,l,c){return{id:id(),nome,modo:'med',l,c,h:'2,80',teto:true,po
 
 let C,O;
 try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&s.C&&s.O){C=s.C;O=s.O}}catch(e){}
+if(!C){try{const v4=JSON.parse(localStorage.getItem('nabucha-proto-v4')||'null');if(v4&&v4.C&&v4.O){
+  const d=clone(DEF_CFG);C=Object.assign(d,v4.C);if(!C.reparos)C.reparos=d.reparos;
+  O=Object.assign(novoOrc(C,false),v4.O)}}catch(e){C=null;O=null}}
 if(!C){C=clone(DEF_CFG);try{const old=JSON.parse(localStorage.getItem('nabucha-proto-v3')||localStorage.getItem('nabucha-proto-v1')||'null');if(old&&old.pintor)C.pintor=old.pintor}catch(e){}
   O=novoOrc(C,true);aplicarSituacao()}
 let view='orc';
@@ -383,20 +450,34 @@ function embalagens(area,dem,m,rend){
   const parts=[];if(g)parts.push(`${g} ${g>1?plural(m.g):m.g}`);if(p)parts.push(`${p} ${p>1?plural(m.p):m.p}`);
   return{custo:g*num(m.pg)+p*num(m.pp),txt:parts.join(' + ')};
 }
+const dificil=()=>O.situ==='forte'||O.acab==='semi'||O.acab==='brilho';
+const vazio=v=>String(v==null?'':v).trim()==='';
 function calc(){
   let P=0,T=0;O.rooms.forEach(r=>{const a=areas(r);P+=a.p;T+=a.t});
+  const fat=dificil()?1+num(C.dificil)/100:1;
   const lines=C.svcs.filter(s=>st(s.k).on).map(s=>{const dem=st(s.k).dem;const a=s.aplica==='paredes'?P:s.aplica==='teto'?T:P+T;
-    const pr=preco(s,dem);const prod=num(s.prod);
-    return{k:s.k,nome:s.nome,dem,area:a,preco:pr,base:num(s.base),extra:num(s.extra),demBase:s.demBase,sub:a*pr,dias:prod?a*dem/prod:0,s}});
-  const maoM2=lines.reduce((x,l)=>x+l.sub,0);
+    const f=s.k==='pint'?fat:1;const pr=preco(s,dem)*f;const prod=num(s.prod);
+    return{k:s.k,nome:s.nome,dem,area:a,preco:pr,base:num(s.base)*f,extra:num(s.extra)*f,demBase:s.demBase,sub:a*pr,dias:prod?a*dem/prod*f:0,s}});
+  const reps=(C.reparos||[]).filter(r=>O.rep&&O.rep[r.k]);
+  const repDias=reps.reduce((x,r)=>x+num(r.dias),0),repPreco=reps.reduce((x,r)=>x+num(r.preco),0);
+  const maoM2=lines.reduce((x,l)=>x+l.sub,0)+repPreco;
   const ds=lines.reduce((x,l)=>x+l.dias,0);
-  const dias=ds>0?Math.ceil((ds+num(C.prep))*2)/2:0;
-  const maoDi=dias*num(C.diaria);
+  const dias=ds>0?Math.ceil((ds+num(C.prep)+repDias)*2)/2:0;
+  const diasU=vazio(O.diasM)?dias:num(O.diasM);
+  const erroAuto=diasU?Math.max(1,Math.ceil(diasU*0.15)):0;
+  const erro=vazio(O.erroM)?erroAuto:num(O.erroM);
+  const dPint=num(C.diaria),dAj=O.ajud?num(C.ajud):0;
+  const outros=['alim','comb','ferr','alug'].reduce((x,k)=>x+num(O.outros[k]),0);
+  const piso=(diasU+erro)*(dPint+dAj)+outros;
+  const lucroP=num(O.lucro);
+  const maoCu=piso*(1+lucroP/100);
+  const maoDi=diasU*(dPint+dAj);
+  const maoFe=num(O.fechado);
   const mats=lines.filter(l=>l.s.m).map(l=>({k:l.k,mat:l.s.m.mat,...embalagens(l.area,l.dem,l.s.m,rendOf(l.s))}));
   const matCusto=mats.reduce((x,m)=>x+m.custo,0);
   const mat=O.mat.inclui?(O.mat.auto?matCusto:num(O.mat.valor)):0;
-  const mao=O.modo==='diaria'?maoDi:maoM2;
-  return{P,T,lines,maoM2,maoDi,dias,mao,mats,matCusto,mat,total:mao+mat};
+  const mao={m2:maoM2,diaria:maoDi,custo:maoCu,fechado:maoFe}[O.modo]||0;
+  return{P,T,lines,reps,repDias,repPreco,fat,maoM2,maoDi,maoCu,maoFe,dias,diasU,erro,erroAuto,dPint,dAj,outros,piso,lucroP,mao,mats,matCusto,mat,total:mao+mat};
 }
 
 const $=s=>document.querySelector(s);
@@ -432,6 +513,11 @@ function renderRooms(){
 function renderP2(){
   $('#situ').innerHTML=Object.entries(SITU).map(([k,v])=>`<button class="chip ${O.situ===k?'on':''}" data-situ="${k}" aria-pressed="${O.situ===k}">${v.t}</button>`).join('');
   $('#liso').checked=!!O.liso;
+  $('#rep').innerHTML=(C.reparos||[]).map(r=>`<button class="chip ${O.rep[r.k]?'on':''}" data-rep="${r.k}" aria-pressed="${!!O.rep[r.k]}">${esc(r.nome)}</button>`).join('');
+  const av=(C.reparos||[]).filter(r=>O.rep[r.k]&&r.aviso);
+  $('#rep-hint').innerHTML=av.map(r=>`<b>${esc(r.nome)}:</b> ${esc(r.txt)}`).join('<br>');
+  $$('#acab [data-acab]').forEach(b=>b.classList.toggle('on',b.dataset.acab===O.acab));
+  $('#acab-hint').textContent=dificil()?`Serviço difícil: não aceita retoque e o recorte vai junto com a parede. Pintura com ${num(C.dificil)}% a mais de tempo e de preço (ajuste em Meus preços › Avançado).`:'';
   $$('#linha [data-linha]').forEach(b=>b.classList.toggle('on',b.dataset.linha===O.linha));
   const on=C.svcs.filter(s=>st(s.k).on),off=C.svcs.filter(s=>!st(s.k).on);
   const row=s=>`<div class="sv" data-sv="${s.k}">
@@ -448,6 +534,11 @@ function renderP3(){
   $$('.opt').forEach(b=>{const on=b.dataset.modo===O.modo;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
   $('#pay').innerHTML=PAYS.map(p=>`<button class="chip ${O.pay.includes(p)?'on':''}" data-pay="${p}" aria-pressed="${O.pay.includes(p)}">${p}</button>`).join('');
   $('#prazo').value=O.prazo;$('#validade').value=O.validade;$('#obs').value=O.obs;$('#mat-val').value=O.mat.valor;
+  $('#dias').value=O.diasM;$('#erro').value=O.erroM;$('#ajud').checked=!!O.ajud;
+  ['alim','comb','ferr','alug'].forEach(k=>$('#o-'+k).value=O.outros[k]);
+  $('#lucro').value=O.lucro;$('#fech').value=O.fechado;
+  $('#lucro-chips').innerHTML=LUCROS.map(([v,t])=>`<button class="chip ${num(O.lucro)===num(v)?'on':''}" data-lucro="${v}">${v}%${t?' · '+t:''}</button>`).join('');
+  $('#lucro-box').hidden=O.modo!=='custo';$('#fech-l').hidden=O.modo!=='fechado';
 }
 function renderOrc(){
   $('#c-nome').value=O.cliente.nome;$('#c-whats').value=O.cliente.whats;$('#c-local').value=O.cliente.local;
@@ -472,6 +563,11 @@ function renderCfg(){
   </div>`).join('');
   $$('#cfg-linha [data-linha]').forEach(b=>b.classList.toggle('on',b.dataset.linha===C.linha));
   $$('#cfg-modo [data-modo]').forEach(b=>b.classList.toggle('on',b.dataset.modo===C.modo));
+  $('#cfg-ajud').value=C.ajud;$('#cfg-lucro').value=C.lucro;$('#cfg-garantia').value=C.garantia;$('#cfg-dif').value=C.dificil;
+  $('#cfg-reps').innerHTML=(C.reparos||[]).map(r=>`<div class="cfg-svc" data-cr="${r.k}">
+    <div class="room-top"><input class="sv-name" data-rf="nome" value="${esc(r.nome)}" aria-label="Nome do reparo"><button class="x" data-rdel="${r.k}">Remover</button></div>
+    <div class="row"><label>Soma na obra (dias)<input inputmode="decimal" data-rf="dias" value="${esc(r.dias)}"></label>
+    <label class="money">Preço no orçamento por m²<input inputmode="decimal" data-rf="preco" value="${esc(r.preco)}"></label></div></div>`).join('');
   $('#cfg-diaria').value=C.diaria;$('#cfg-validade').value=C.validade;$('#cfg-prep').value=C.prep;$('#cfg-showmat').checked=!!C.showMat;
   $('#cfg-pay').innerHTML=PAYS.map(p=>`<button class="chip ${C.pay.includes(p)?'on':''}" data-pay="${p}" aria-pressed="${C.pay.includes(p)}">${p}</button>`).join('');
   $('#cfg-adv').innerHTML=C.svcs.map(s=>`<div class="cfg-svc" data-ca="${s.k}"><strong>${esc(s.nome)}</strong>
@@ -493,21 +589,31 @@ function refresh(){
       const det=O.rooms.map(r=>{const a=areas(r);return r.modo==='area'?`${esc(r.nome)}: ${m2(a.p+a.t)}`:`${esc(r.nome)} ${esc(r.l)}×${esc(r.c)}, pé-direito ${esc(r.h)}, ${r.teto?'com teto':'sem teto'}, ${r.portas}p/${r.janelas}j`}).join(' · ');
       $('#conta').innerHTML=`<strong>Paredes ${m2(k.P)} + teto ${m2(k.T)}</strong><span>${det}</span><span style="color:var(--accent);font-weight:700">Tocar para corrigir</span>`;
       $('#lines').innerHTML=k.lines.map(l=>`<div class="ln"><div>${esc(l.nome)}<small>${demTxt(l.dem)} · ${m2(l.area)} × ${brl(l.preco)}</small></div><div class="v">${O.modo==='diaria'?'':brl(l.sub)}</div></div>`).join('')+
-        (O.modo==='diaria'?`<div class="ln"><div>Mão de obra<small>${dd(k.dias)} diárias × ${brl(num(C.diaria))}</small></div><div class="v">${brl(k.maoDi)}</div></div>`:'');
+        k.reps.filter(r=>!r.aviso).map(r=>`<div class="ln"><div>${esc(r.nome)}<small>reparo · ${dd(num(r.dias))} dia(s)</small></div><div class="v">${O.modo==='m2'?brl(num(r.preco)):''}</div></div>`).join('')+
+        (O.modo!=='m2'?`<div class="ln"><div>Mão de obra<small>${MODOS[O.modo]}</small></div><div class="v">${brl(k.mao)}</div></div>`:'');
       $('#mat-list').innerHTML=k.mats.map(m=>`<div class="ln"><div>${esc(m.mat)}<small>${esc(m.txt)}</small></div><div class="v">${m.custo?brl(m.custo):''}</div></div>`).join('')+
         (k.mats.length?`<div class="ln"><div><strong>Material estimado</strong><small>10% de sobra · preços de referência em Meus preços</small></div><div class="v">${brl(k.matCusto)}</div></div>`:'');
       if(O.mat.inclui&&O.mat.auto){$('#mat-val').value=k.matCusto.toFixed(2).replace('.',',')}
-      $('#v-m2').textContent=brl0(k.maoM2);$('#d-m2').textContent=k.dias?`${brl0(k.maoM2/k.dias)} por dia`:'';
-      $('#v-di').textContent=brl0(k.maoDi);$('#d-di').textContent=k.dias?`${dd(k.dias)} dias × ${brl0(num(C.diaria))}`:'';
-      let v='';if(k.dias&&k.maoM2&&k.maoDi){const dif=k.maoM2-k.maoDi,pct=Math.abs(dif)/Math.min(k.maoM2,k.maoDi);
-        if(pct<0.08)v='Os dois dão quase o mesmo. Por m² costuma fechar mais fácil.';
-        else if(dif>0)v=`Por m² você ganha <b>${brl0(dif)} a mais</b>, se terminar em ${dd(k.dias)} dias.`;
-        else v=`Por diária você ganha <b>${brl0(-dif)} a mais</b>. Seu m² está abaixo da sua diária.`}
+      $('#dias').placeholder=k.dias?dd(k.dias):'';$('#erro').placeholder=String(k.erroAuto);
+      $('#dias-hint').innerHTML=(k.dias?`Sugestão pelo seu ritmo: <b>${dd(k.dias)} dias</b>${k.repDias?` (com ${dd(k.repDias)} de reparos)`:''}. Mude se souber melhor.`:'')+
+        ` A margem de erro vale ${O.ajud?'para você e para o ajudante':'para a equipe toda'}.`;
+      $('#outros-sum').textContent=k.outros?brl0(k.outros):'Opcional';
+      const fl=$('#floor');fl.hidden=!k.piso;
+      fl.innerHTML=`<span>Seu piso · só você vê</span><strong>${brl(k.piso)}</strong><span>${dd(k.diasU+k.erro)} dias × ${brl0(k.dPint+k.dAj)}${k.dAj?' (você + ajudante)':''}${k.outros?' + '+brl0(k.outros)+' de outros custos':''}. Abaixo disso, se der problema, você paga para trabalhar.</span>`;
+      const sub=(v)=>k.piso&&v&&v<k.piso-0.5?'<span class="bad">abaixo do piso</span>':'';
+      $('#v-cu').textContent=brl0(k.maoCu);$('#d-cu').innerHTML=`piso + ${dd(k.lucroP)}%`;
+      $('#v-di').textContent=brl0(k.maoDi);$('#d-di').innerHTML=sub(k.maoDi)||(k.diasU?`${dd(k.diasU)} dias × ${brl0(k.dPint+k.dAj)}`:'');
+      $('#v-m2').textContent=brl0(k.maoM2);$('#d-m2').innerHTML=sub(k.maoM2)||(k.diasU?`${brl0(k.maoM2/k.diasU)} por dia`:'');
+      $('#v-fe').textContent=k.maoFe?brl0(k.maoFe):'—';$('#d-fe').innerHTML=sub(k.maoFe)||'Você digita o valor';
+      let v='';
+      if(O.modo==='custo'&&k.piso){const luc=k.maoCu-k.piso;v=`Lucro de <b>${brl0(luc)}</b> (${dd(luc/k.maoCu*100)}% do preço). Se pedirem desconto, não desça de ${brl0(k.piso)}.`}
+      else if(k.piso&&k.mao&&k.mao<k.piso-0.5)v=`<span class="bad">Atenção:</span> ${brl0(k.mao)} fica ${brl0(k.piso-k.mao)} abaixo do seu piso. Se a obra atrasar, você tem prejuízo.`;
+      else if(k.piso&&k.mao){const luc=k.mao-k.piso;v=`Sobra <b>${brl0(luc)}</b> acima do piso (${dd(luc/k.mao*100)}% do preço).`}
       $('#verdict').innerHTML=v;
-      if(O.prazoAuto){O.prazo=k.dias?String(Math.ceil(k.dias)):'';$('#prazo').value=O.prazo}
+      if(O.prazoAuto){const pz=k.diasU+k.erro;O.prazo=pz?String(Math.ceil(pz)):'';$('#prazo').value=O.prazo}
     }
   }
-  $('#tot-l').textContent=O.modo==='diaria'?'Total (diária)':'Total';
+  $('#tot-l').textContent='Total';
   $('#total').textContent=brl(k.total);
 }
 function renderBar(){
@@ -544,6 +650,9 @@ $('#add-room').addEventListener('click',e=>{const b=e.target.closest('[data-add]
   O.rooms.push(r);save();renderRooms();refresh();
   const el=document.querySelector(`[data-room="${r.id}"]`);el.scrollIntoView({behavior:'smooth',block:'center'});const inp=el.querySelector(ext?'[data-f="ap"]':'[data-f="l"]');if(inp)inp.focus({preventScroll:true})});
 $('#situ').addEventListener('click',e=>{const b=e.target.closest('[data-situ]');if(!b)return;O.situ=b.dataset.situ;aplicarSituacao();save();renderP2();refresh();toast(SITU[O.situ].txt)});
+$('#rep').addEventListener('click',e=>{const b=e.target.closest('[data-rep]');if(!b)return;const k=b.dataset.rep;O.rep[k]=!O.rep[k];save();renderP2();refresh();
+  const r=C.reparos.find(x=>x.k===k);if(O.rep[k]&&r&&!r.aviso)toast(r.txt)});
+$('#acab').addEventListener('click',e=>{const b=e.target.closest('[data-acab]');if(!b)return;O.acab=b.dataset.acab;save();renderP2();refresh()});
 $('#liso').addEventListener('change',e=>{O.liso=e.target.checked;const x=st('massa');x.on=O.liso;x.dem=2;save();renderP2();refresh()});
 $('#linha').addEventListener('click',e=>{const b=e.target.closest('[data-linha]');if(!b)return;const antes=O.linha==='economica'?1:0;O.linha=b.dataset.linha;const depois=O.linha==='economica'?1:0;
   const p=st('pint');if(p.on)p.dem=Math.max(1,p.dem-antes+depois);save();renderP2();refresh()});
@@ -557,6 +666,13 @@ $('#mat-yes').addEventListener('click',()=>{O.mat.inclui=true;O.mat.auto=true;sa
 $('#mat-val').addEventListener('input',e=>{O.mat.valor=e.target.value;O.mat.auto=e.target.value.trim()==='';save();refresh()});
 $('#show-mat').addEventListener('change',e=>{O.showMat=e.target.checked;save()});
 $$('.opt').forEach(b=>b.addEventListener('click',()=>{O.modo=b.dataset.modo;save();renderP3();refresh()}));
+$('#dias').addEventListener('input',e=>{O.diasM=e.target.value;save();refresh()});
+$('#erro').addEventListener('input',e=>{O.erroM=e.target.value;save();refresh()});
+$('#ajud').addEventListener('change',e=>{O.ajud=e.target.checked;save();refresh()});
+['alim','comb','ferr','alug'].forEach(k=>$('#o-'+k).addEventListener('input',e=>{O.outros[k]=e.target.value;save();refresh()}));
+$('#lucro').addEventListener('input',e=>{O.lucro=e.target.value;$$('#lucro-chips [data-lucro]').forEach(b=>b.classList.toggle('on',num(b.dataset.lucro)===num(O.lucro)));save();refresh()});
+$('#lucro-chips').addEventListener('click',e=>{const b=e.target.closest('[data-lucro]');if(!b)return;O.lucro=b.dataset.lucro;save();renderP3();refresh()});
+$('#fech').addEventListener('input',e=>{O.fechado=e.target.value;save();refresh()});
 $('#prazo').addEventListener('input',e=>{O.prazo=e.target.value;O.prazoAuto=e.target.value.trim()==='';save()});
 $('#validade').addEventListener('input',e=>{O.validade=e.target.value;save()});
 $('#obs').addEventListener('input',e=>{O.obs=e.target.value;save()});
@@ -574,6 +690,14 @@ $('#add-svc').addEventListener('click',()=>{const k='c'+id();C.svcs.push({k,nome
 $('#cfg-linha').addEventListener('click',e=>{const b=e.target.closest('[data-linha]');if(!b)return;C.linha=b.dataset.linha;save();renderCfg()});
 $('#cfg-modo').addEventListener('click',e=>{const b=e.target.closest('[data-modo]');if(!b)return;C.modo=b.dataset.modo;save();renderCfg()});
 bind('#cfg-diaria',()=>C.diaria,v=>C.diaria=v);
+bind('#cfg-ajud',()=>C.ajud,v=>C.ajud=v);
+bind('#cfg-lucro',()=>C.lucro,v=>C.lucro=v,()=>{});
+bind('#cfg-garantia',()=>C.garantia,v=>C.garantia=v,()=>{});
+bind('#cfg-dif',()=>C.dificil,v=>C.dificil=v);
+$('#cfg-reps').addEventListener('input',e=>{const box=e.target.closest('[data-cr]');const f=e.target.dataset.rf;if(!box||!f)return;C.reparos.find(r=>r.k===box.dataset.cr)[f]=e.target.value;save();refresh()});
+$('#cfg-reps').addEventListener('click',e=>{const b=e.target.closest('[data-rdel]');if(!b)return;C.reparos=C.reparos.filter(r=>r.k!==b.dataset.rdel);delete O.rep[b.dataset.rdel];save();renderCfg();refresh()});
+$('#add-rep').addEventListener('click',()=>{const k='r'+id();C.reparos.push({k,nome:'Novo reparo',dias:'0,5',preco:'',txt:''});save();renderCfg();
+  const all=$$('#cfg-reps .sv-name');all[all.length-1].select()});
 bind('#cfg-validade',()=>C.validade,v=>C.validade=v,()=>{});
 bind('#cfg-prep',()=>C.prep,v=>C.prep=v);
 $('#cfg-showmat').addEventListener('change',e=>{C.showMat=e.target.checked;save()});
@@ -590,17 +714,29 @@ $('#next').addEventListener('click',()=>{if(view==='cfg'){toast('Preços salvos'
 
 // ---------- folha ----------
 const numero=()=>String(C.num).padStart(4,'0');
+function escopo(k){
+  const it=k.lines.map(l=>`${l.nome} (${demTxt(l.dem)})`);
+  if(k.lines.some(l=>l.k==='pint')&&O.acab!=='fosco')it.push(`Acabamento ${ACAB[O.acab].toLowerCase()}`);
+  k.reps.filter(r=>!r.aviso).forEach(r=>it.push(`Reparo: ${r.nome.toLowerCase()}`));
+  return['Proteção e isolamento da área, limpeza ao final',...it];
+}
+function naoIncl(){const n=[];if(!O.mat.inclui)n.push('Material (por conta do cliente)');n.push('Aluguel de equipamento, se precisar');
+  (C.reparos||[]).filter(r=>O.rep[r.k]&&r.aviso).forEach(r=>n.push(`${r.nome}: ${r.txt}`));return n}
 function texto(k){
-  const p=C.pintor,c=O.cliente;const L=[];const di=O.modo==='diaria';
+  const p=C.pintor,c=O.cliente;const L=[];const m2m=O.modo==='m2';
   L.push(`*Orçamento de pintura* — Nº ${numero()}`);
   if(c.nome)L.push(`Cliente: ${c.nome}${c.local?' ('+c.local+')':''}`);
-  L.push('');
-  k.lines.forEach(l=>L.push(di?`• ${l.nome} (${demTxt(l.dem)}): ${m2(l.area)}`:`• ${l.nome} (${demTxt(l.dem)}): ${m2(l.area)} × ${brl(l.preco)} = ${brl(l.sub)}`));
-  if(di)L.push(`• Mão de obra: ${dd(k.dias)} diárias × ${brl(num(C.diaria))} = ${brl(k.maoDi)}`);
-  if(k.mat)L.push(`• Material: ${brl(k.mat)}`);
-  L.push('',`*Total: ${brl(k.total)}*`);
-  if(O.prazo)L.push(`Prazo: ${O.prazo} dias de serviço`);
+  L.push('','*Serviço:*');
+  if(m2m){k.lines.forEach(l=>L.push(`• ${l.nome} (${demTxt(l.dem)}): ${m2(l.area)} × ${brl(l.preco)} = ${brl(l.sub)}`));
+    k.reps.filter(r=>!r.aviso).forEach(r=>L.push(`• Reparo: ${r.nome}: ${brl(num(r.preco))}`))}
+  else escopo(k).forEach(t=>L.push('• '+t));
+  L.push('',`Mão de obra: ${brl(k.mao)}`);
+  if(k.mat)L.push(`Material: ${brl(k.mat)}`);
+  L.push(`*Total: ${brl(k.total)}*`,'');
+  L.push('*Não incluso:*');naoIncl().forEach(t=>L.push('• '+t));L.push('');
+  if(O.prazo)L.push(`Prazo estimado: ${O.prazo} dias`);
   if(O.pay.length)L.push(`Pagamento: ${O.pay.join(', ')}`);
+  if(C.garantia)L.push(`Garantia: ${C.garantia}`);
   if(O.validade)L.push(`Válido por ${O.validade} dias`);
   if(O.showMat&&k.mats.length){L.push('',O.mat.inclui?'*Material incluso:*':'*Material para comprar:*');k.mats.forEach(m=>L.push(`• ${m.mat}: ${m.txt}`))}
   if(O.obs)L.push('',O.obs);
@@ -609,27 +745,30 @@ function texto(k){
   return L.join('\n');
 }
 function sheet(k){
-  const p=C.pintor,c=O.cliente;const hoje=new Date().toLocaleDateString('pt-BR');const di=O.modo==='diaria';
+  const p=C.pintor,c=O.cliente;const hoje=new Date().toLocaleDateString('pt-BR');const m2m=O.modo==='m2';
   const rooms=O.rooms.map(r=>{const a=areas(r);return`<tr><td>${esc(r.nome)}</td><td class="r">${m2(a.p)}</td><td class="r">${a.t?m2(a.t):'—'}</td></tr>`}).join('');
-  const lines=k.lines.map(l=>`<tr><td>${esc(l.nome)}<br><small style="color:#565B75">${demTxt(l.dem)} · ${m2(l.area)}${di?'':' × '+brl(l.preco)}</small></td><td class="r">${di?'':brl(l.sub)}</td></tr>`).join('');
+  const serv=m2m?k.lines.map(l=>`<tr><td>${esc(l.nome)}<br><small style="color:#565B75">${demTxt(l.dem)} · ${m2(l.area)} × ${brl(l.preco)}</small></td><td class="r">${brl(l.sub)}</td></tr>`).join('')+
+      k.reps.filter(r=>!r.aviso).map(r=>`<tr><td>Reparo: ${esc(r.nome)}</td><td class="r">${brl(num(r.preco))}</td></tr>`).join('')
+    :escopo(k).map(t=>`<tr><td>${esc(t)}</td><td class="r">✓</td></tr>`).join('')+`<tr><td><strong>Mão de obra</strong></td><td class="r">${brl(k.mao)}</td></tr>`;
   return`
   <div class="sh-head"><div><h3>${esc(p.nome)||'<span style="opacity:.7">Seu nome aqui</span>'}</h3><p>${esc(p.whats)}${p.cidade?' · '+esc(p.cidade):''}</p></div>
   <div class="sh-num">Orçamento<b>Nº ${numero()}</b>${hoje}</div></div>
   <div class="sh-body">
     <div class="sh-sec"><h4>Cliente</h4><strong>${esc(c.nome)||'—'}</strong>${c.local?'<br>'+esc(c.local):''}</div>
     <div class="sh-sec"><h4>Áreas</h4><table class="sh-tab"><tr><th>Cômodo</th><th class="r">Paredes</th><th class="r">Teto</th></tr>${rooms}</table></div>
-    <div class="sh-sec"><h4>Serviços</h4><table class="sh-tab">${lines}
-      ${di?`<tr><td><strong>Mão de obra</strong><br><small style="color:#565B75">${dd(k.dias)} diárias × ${brl(num(C.diaria))}</small></td><td class="r">${brl(k.maoDi)}</td></tr>`:''}
+    <div class="sh-sec"><h4>${m2m?'Serviços':'O que está incluso'}</h4><table class="sh-tab">${serv}
       ${k.mat?`<tr><td>Material</td><td class="r">${brl(k.mat)}</td></tr>`:''}</table></div>
     <div class="sh-total"><span>Total</span><strong>${brl(k.total)}</strong></div>
+    <div class="sh-sec"><h4>Não incluso</h4>${naoIncl().map(esc).join('<br>')}</div>
     ${O.showMat&&k.mats.length?`<div class="sh-sec"><h4>${O.mat.inclui?'Material incluso':'Material para comprar'}</h4><table class="sh-tab">${k.mats.map(m=>`<tr><td>${esc(m.mat)}</td><td class="r">${esc(m.txt)}</td></tr>`).join('')}</table><small style="color:#565B75">Quantidade estimada com 10% de sobra.</small></div>`:''}
     <div class="sh-sec"><h4>Condições</h4>
-      ${O.mat.inclui?'Material incluso.':'Só mão de obra; material por conta do cliente.'}<br>
-      ${O.prazo?`Prazo: ${esc(O.prazo)} dias de serviço.<br>`:''}
+      ${O.prazo?`Prazo estimado: ${esc(O.prazo)} dias.<br>`:''}
       ${O.pay.length?`Pagamento: ${esc(O.pay.join(', '))}.<br>`:''}
+      ${C.garantia?`Garantia: ${esc(C.garantia)}<br>`:''}
       ${O.validade?`Orçamento válido por ${esc(O.validade)} dias.`:''}
       ${O.obs?`<p style="margin:8px 0 0">${esc(O.obs)}</p>`:''}
     </div>
+    <div class="sh-sec"><h4>Aceite do cliente</h4><div style="border-bottom:1px solid #0B1030;height:34px"></div><small style="color:#565B75">Nome e data</small></div>
   </div>
   <div class="sh-foot"><span>Feito no <b>Na Bucha</b></span><span>nabucha.com.br</span></div>`;
 }
@@ -637,7 +776,8 @@ let lastFocus;
 function abrirFolha(){
   const k=calc();
   if(!k.lines.length){toast('Marque pelo menos um serviço');return}
-  if(O.modo==='diaria'&&!k.maoDi){toast('Preencha sua diária em Meus preços');return}
+  if(O.modo==='fechado'&&!k.maoFe){toast('Digite o valor da mão de obra');return}
+  if(O.modo!=='m2'&&O.modo!=='fechado'&&!k.mao){toast('Preencha sua diária em Meus preços');return}
   $('#sheet').innerHTML=sheet(k);
   const t=encodeURIComponent(texto(k));const ph=String(O.cliente.whats||'').replace(/\D/g,'').replace(/^55/,'');
   $('#wa').href=ph.length>=10?`https://wa.me/55${ph}?text=${t}`:`https://wa.me/?text=${t}`;
