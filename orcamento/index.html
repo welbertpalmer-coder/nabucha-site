@@ -191,7 +191,9 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
     <section id="p2" style="display:flex;flex-direction:column;gap:14px" hidden>
       <div class="card">
         <h2>Como está a parede?</h2>
+        <p class="hint" style="margin-top:-6px">Marque tudo o que tiver.</p>
         <div class="chips" id="situ"></div>
+        <p class="hint" id="situ-hint"></p>
         <label class="check"><input type="checkbox" id="liso">Acabamento liso (massa corrida)</label>
         <p class="sub">Reparos (marque o que tiver)</p>
         <div class="chips" id="rep"></div>
@@ -376,7 +378,7 @@ const demTxt=d=>d+(d>1?' demãos':' demão');
 // Estimativas de referência (ajustáveis): rendimento por demão da embalagem grande; ritmo em m² por dia por demão
 const LINHA={premium:'Premium',standard:'Standard',economica:'Econômica'};
 const SITU={
-  repintura:{t:'Repintura, mesma cor',txt:'Só tinta, sem fundo.',pint:2},
+  repintura:{t:'Repintura, mesma cor',txt:'Tinta em 2 demãos.',pint:2},
   cor:{t:'Mudar de cor',txt:'Uma demão a mais para cobrir a cor antiga.',pint:3},
   forte:{t:'Cor forte',txt:'Vermelho, amarelo, laranja e tons escuros cobrem pouco. Pode precisar de 4: confira na lata.',pint:3},
   novo:{t:'Reboco novo',txt:'Selador antes da tinta, com o reboco curado (cerca de 28 dias).',pint:2,sel:1},
@@ -405,11 +407,11 @@ const ACAB={fosco:'Fosco',acet:'Acetinado',semi:'Semibrilho',brilho:'Brilho'};
 const LUCROS=[['15','Serviço simples'],['20','Normal'],['25',''],['30','Alto padrão']];
 const MODOS={custo:'Custos + lucro',diaria:'Por diária',m2:'Por m²',fechado:'Preço fechado'};
 function novoOrc(c,exemplo){
-  const o={cliente:{nome:'',whats:'',local:''},rooms:[],situ:'repintura',liso:false,linha:c.linha,sv:{},
+  const o={cliente:{nome:'',whats:'',local:''},rooms:[],situs:['repintura'],liso:false,linha:c.linha,sv:{},
     mat:{inclui:false,valor:'',auto:true},modo:c.modo,rep:{},acab:'fosco',diasM:'',erroM:'',ajud:false,
     outros:{alim:'',comb:'',ferr:'',alug:''},lucro:c.lucro,fechado:'',prazo:'',prazoAuto:true,validade:c.validade,pay:c.pay.slice(),showMat:c.showMat,obs:'',step:1};
   c.svcs.forEach(s=>o.sv[s.k]={on:false,dem:s.demBase});
-  if(exemplo){o.cliente={nome:'Dona Marta (exemplo)',whats:'',local:'Centro'};o.situ='cor';
+  if(exemplo){o.cliente={nome:'Dona Marta (exemplo)',whats:'',local:'Centro'};o.situs=['cor'];
     o.rooms=[sala('Sala','4','5'),sala('Quarto','3','3,5')]}
   return o;
 }
@@ -424,13 +426,16 @@ if(!C){C=clone(DEF_CFG);try{const old=JSON.parse(localStorage.getItem('nabucha-p
   O=novoOrc(C,true);aplicarSituacao()}
 let view='orc';
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify({C,O}))}catch(e){}};
+// v5 guardava uma situação só (O.situ); passa a ser lista
+if(O.situ||!Array.isArray(O.situs)){O.situs=[O.situ&&SITU[O.situ]?O.situ:'repintura'];delete O.situ;save()}
 function svByK(k){return C.svcs.find(s=>s.k===k)}
 function st(k){if(!O.sv[k]){const s=svByK(k);O.sv[k]={on:false,dem:s?s.demBase:1}}return O.sv[k]}
 
 function aplicarSituacao(){
-  const sit=SITU[O.situ];const extra=O.linha==='economica'?1:0;
+  const lst=(O.situs||[]).map(k=>SITU[k]).filter(Boolean);const extra=O.linha==='economica'?1:0;
+  const pint=Math.max(2,...lst.map(x=>x.pint)),sel=lst.some(x=>x.sel),fundo=lst.some(x=>x.fundo);
   const set=(k,on,dem)=>{if(!svByK(k))return;const x=st(k);x.on=on;if(dem)x.dem=dem};
-  set('pint',true,sit.pint+extra);set('sel',!!sit.sel,sit.sel);set('fundo',!!sit.fundo,sit.fundo);set('massa',!!O.liso,2);
+  set('pint',true,pint+extra);set('sel',sel,sel?1:0);set('fundo',fundo,fundo?1:0);set('massa',!!O.liso,2);
 }
 function areas(r){
   if(r.modo==='area')return{p:num(r.ap),t:num(r.at)};
@@ -450,7 +455,7 @@ function embalagens(area,dem,m,rend){
   const parts=[];if(g)parts.push(`${g} ${g>1?plural(m.g):m.g}`);if(p)parts.push(`${p} ${p>1?plural(m.p):m.p}`);
   return{custo:g*num(m.pg)+p*num(m.pp),txt:parts.join(' + ')};
 }
-const dificil=()=>O.situ==='forte'||O.acab==='semi'||O.acab==='brilho';
+const dificil=()=>(O.situs||[]).includes('forte')||O.acab==='semi'||O.acab==='brilho';
 const vazio=v=>String(v==null?'':v).trim()==='';
 function calc(){
   let P=0,T=0;O.rooms.forEach(r=>{const a=areas(r);P+=a.p;T+=a.t});
@@ -511,7 +516,8 @@ function renderRooms(){
   </div>`).join('')||'<p class="hint">Toque em um cômodo abaixo para começar.</p>';
 }
 function renderP2(){
-  $('#situ').innerHTML=Object.entries(SITU).map(([k,v])=>`<button class="chip ${O.situ===k?'on':''}" data-situ="${k}" aria-pressed="${O.situ===k}">${v.t}</button>`).join('');
+  $('#situ').innerHTML=Object.entries(SITU).map(([k,v])=>{const on=O.situs.includes(k);return`<button class="chip ${on?'on':''}" data-situ="${k}" aria-pressed="${on}">${v.t}</button>`}).join('');
+  $('#situ-hint').innerHTML=O.situs.length>1?O.situs.map(k=>`<b>${SITU[k].t}:</b> ${SITU[k].txt}`).join('<br>'):'';
   $('#liso').checked=!!O.liso;
   $('#rep').innerHTML=(C.reparos||[]).map(r=>`<button class="chip ${O.rep[r.k]?'on':''}" data-rep="${r.k}" aria-pressed="${!!O.rep[r.k]}">${esc(r.nome)}</button>`).join('');
   const av=(C.reparos||[]).filter(r=>O.rep[r.k]&&r.aviso);
@@ -649,7 +655,10 @@ $('#add-room').addEventListener('click',e=>{const b=e.target.closest('[data-add]
   const r=sala(n==='Outro'?'Cômodo':n,'','');if(ext){r.modo='area';r.teto=false;r.portas=0;r.janelas=0}
   O.rooms.push(r);save();renderRooms();refresh();
   const el=document.querySelector(`[data-room="${r.id}"]`);el.scrollIntoView({behavior:'smooth',block:'center'});const inp=el.querySelector(ext?'[data-f="ap"]':'[data-f="l"]');if(inp)inp.focus({preventScroll:true})});
-$('#situ').addEventListener('click',e=>{const b=e.target.closest('[data-situ]');if(!b)return;O.situ=b.dataset.situ;aplicarSituacao();save();renderP2();refresh();toast(SITU[O.situ].txt)});
+$('#situ').addEventListener('click',e=>{const b=e.target.closest('[data-situ]');if(!b)return;const k=b.dataset.situ;let a=O.situs.slice();
+  if(a.includes(k)){a=a.filter(x=>x!==k);if(!a.length)a=['repintura']}
+  else{a.push(k);const cor=['cor','forte'];if(k==='repintura')a=a.filter(x=>!cor.includes(x));else if(cor.includes(k))a=a.filter(x=>x!=='repintura')}
+  O.situs=a;aplicarSituacao();save();renderP2();refresh();toast(a.includes(k)?SITU[k].txt:'Desmarcado: '+SITU[k].t)});
 $('#rep').addEventListener('click',e=>{const b=e.target.closest('[data-rep]');if(!b)return;const k=b.dataset.rep;O.rep[k]=!O.rep[k];save();renderP2();refresh();
   const r=C.reparos.find(x=>x.k===k);if(O.rep[k]&&r&&!r.aviso)toast(r.txt)});
 $('#acab').addEventListener('click',e=>{const b=e.target.closest('[data-acab]');if(!b)return;O.acab=b.dataset.acab;save();renderP2();refresh()});
