@@ -118,6 +118,12 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
 .sh-head{background:#1F3BFF;color:#FFFFFF;padding:18px 20px;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
 .sh-head h3{font-family:var(--display);font-size:18px;margin:0;line-height:1.2}
 .sh-head p{margin:2px 0 0;font-size:13px;opacity:.9}
+.sh-who{display:flex;gap:12px;align-items:center;min-width:0}
+.sh-logo{background:#FFFFFF;border-radius:10px;padding:6px;width:64px;height:64px;flex:none;display:flex;align-items:center;justify-content:center}
+.sh-logo img{max-width:100%;max-height:100%;object-fit:contain}
+.logo-row{display:flex;gap:12px;align-items:center}
+.logo-prev{width:72px;height:72px;flex:none;border:1.5px dashed var(--line);border-radius:12px;background:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:12px;color:#565B75;text-align:center;overflow:hidden}
+.logo-prev img{max-width:90%;max-height:90%;object-fit:contain}
 .sh-num{text-align:right;font-size:12px;white-space:nowrap}
 .sh-num b{display:block;font-family:var(--display);font-size:14px;color:#C8FF2E}
 .sh-body{padding:16px 20px;display:flex;flex-direction:column;gap:14px}
@@ -306,6 +312,17 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
       <div class="row">
         <label>Seu WhatsApp<input id="p-whats" inputmode="tel" autocomplete="tel"></label>
         <label>Cidade<input id="p-cidade" autocomplete="address-level2"></label>
+      </div>
+      <label>CNPJ ou MEI <span style="font-weight:500;color:var(--muted)">(opcional)</span><input id="p-cnpj" inputmode="numeric" autocomplete="off" placeholder="00.000.000/0001-00"></label>
+      <p class="sub">Sua logo <span style="font-weight:500;text-transform:none;letter-spacing:0">(opcional)</span></p>
+      <div class="logo-row">
+        <div class="logo-prev" id="logo-prev">Sem logo</div>
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start">
+          <label class="chip add" style="display:inline-flex;align-items:center" for="logo-f" id="logo-btn">Pôr a logo</label>
+          <input type="file" id="logo-f" accept="image/*" hidden>
+          <button class="link" id="logo-del" hidden>Tirar a logo</button>
+          <span class="hint" style="margin:0">Sai no topo da folha do orçamento.</span>
+        </div>
       </div>
     </div>
     <div class="card">
@@ -595,6 +612,7 @@ function renderOrc(){
 
 // ---------- MEUS PREÇOS ----------
 function renderCfg(){
+  renderLogo();$('#p-cnpj').value=C.pintor.cnpj||'';
   $('#p-nome').value=C.pintor.nome;$('#p-whats').value=C.pintor.whats;$('#p-cidade').value=C.pintor.cidade;
   $('#cfg-svcs').innerHTML=C.svcs.map(s=>`<div class="cfg-svc" data-cs="${s.k}">
     <input class="sv-name" data-cf="nome" value="${esc(s.nome)}" aria-label="Nome do serviço">
@@ -744,6 +762,19 @@ $$('.steps button').forEach(b=>b.addEventListener('click',()=>goStep(+b.dataset.
 bind('#p-nome',()=>C.pintor.nome,v=>C.pintor.nome=v,()=>{});
 bind('#p-whats',()=>C.pintor.whats,v=>C.pintor.whats=v,()=>{});
 bind('#p-cidade',()=>C.pintor.cidade,v=>C.pintor.cidade=v,()=>{});
+bind('#p-cnpj',()=>C.pintor.cnpj||'',v=>C.pintor.cnpj=v,()=>{});
+const okLogo=()=>{const l=C.pintor.logo;return typeof l==='string'&&l.startsWith('data:image/png;base64,')?l:''};
+function renderLogo(){const l=okLogo();$('#logo-prev').innerHTML=l?`<img src="${l}" alt="Sua logo">`:'Sem logo';
+  $('#logo-btn').textContent=l?'Trocar a logo':'Pôr a logo';$('#logo-del').hidden=!l}
+$('#logo-f').addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
+  if(!/^image\//.test(f.type)){toast('Escolha uma imagem');return}
+  const rd=new FileReader();rd.onload=()=>{const im=new Image();im.onload=()=>{
+    const M=400,k=Math.min(1,M/Math.max(im.width,im.height));const cv=document.createElement('canvas');
+    cv.width=Math.max(1,Math.round(im.width*k));cv.height=Math.max(1,Math.round(im.height*k));cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
+    const antes=C.pintor.logo;C.pintor.logo=cv.toDataURL('image/png');
+    try{localStorage.setItem(KEY,JSON.stringify({C,O}));toast('Logo salva')}catch(err){C.pintor.logo=antes;toast('Imagem grande demais. Tente outra.')}
+    renderLogo()};im.onerror=()=>toast('Não deu para abrir essa imagem');im.src=rd.result};rd.readAsDataURL(f)});
+$('#logo-del').addEventListener('click',()=>{delete C.pintor.logo;save();renderLogo();toast('Logo tirada')});
 $('#cfg-svcs').addEventListener('input',e=>{const box=e.target.closest('[data-cs]');const f=e.target.dataset.cf;if(!box||!f)return;svByK(box.dataset.cs)[f]=e.target.value;save();refresh()});
 $('#cfg-svcs').addEventListener('change',e=>{if(e.target.tagName!=='SELECT')return;svByK(e.target.closest('[data-cs]').dataset.cs).aplica=e.target.value;save();refresh()});
 $('#add-svc').addEventListener('click',()=>{const k='c'+id();C.svcs.push({k,nome:'Novo serviço',base:'',extra:'0',demBase:1,aplica:'paredes',prod:'20',m:null});O.sv[k]={on:false,dem:1};save();renderCfg();
@@ -802,7 +833,7 @@ function texto(k){
   if(O.validade)L.push(`Válido por ${O.validade} dias`);
   if(O.showMat&&k.mats.length){L.push('',O.mat.inclui?'*Material incluso:*':'*Material para comprar:*');k.mats.forEach(m=>L.push(`• ${m.mat}: ${m.txt}`))}
   if(O.obs)L.push('',O.obs);
-  L.push('',`${p.nome||'Seu nome'}${p.whats?' · '+p.whats:''}`);
+  L.push('',`${p.nome||'Seu nome'}${p.whats?' · '+p.whats:''}`);if(p.cnpj)L.push(`CNPJ ${p.cnpj}`);
   L.push('Orçamento feito no Na Bucha · nabucha.com.br');
   return L.join('\n');
 }
@@ -813,7 +844,7 @@ function sheet(k){
       k.reps.filter(r=>!r.aviso).map(r=>`<tr><td>Reparo: ${esc(r.nome)}</td><td class="r">${brl(num(r.preco))}</td></tr>`).join('')
     :escopo(k).map(t=>`<tr><td>${esc(t)}</td><td class="r">✓</td></tr>`).join('')+`<tr><td><strong>Mão de obra</strong></td><td class="r">${brl(k.mao)}</td></tr>`;
   return`
-  <div class="sh-head"><div><h3>${esc(p.nome)||'<span style="opacity:.7">Seu nome aqui</span>'}</h3><p>${esc(p.whats)}${p.cidade?' · '+esc(p.cidade):''}</p></div>
+  <div class="sh-head"><div class="sh-who">${okLogo()?`<div class="sh-logo"><img src="${okLogo()}" alt=""></div>`:''}<div><h3>${esc(p.nome)||'<span style="opacity:.7">Seu nome aqui</span>'}</h3><p>${esc(p.whats)}${p.cidade?' · '+esc(p.cidade):''}</p>${p.cnpj?`<p>CNPJ ${esc(p.cnpj)}</p>`:''}</div></div>
   <div class="sh-num">Orçamento<b>Nº ${numero()}</b>${hoje}</div></div>
   <div class="sh-body">
     <div class="sh-sec"><h4>Cliente</h4><strong>${esc(c.nome)||'—'}</strong>${c.local?'<br>'+esc(c.local):''}</div>
