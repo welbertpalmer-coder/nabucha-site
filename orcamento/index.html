@@ -83,7 +83,7 @@ button:focus-visible,.chip:focus-visible,a:focus-visible,summary:focus-visible{o
 .voz[data-estado="enviando"] .voz-links,.voz[data-estado="gravando"] #voz-mao,.voz[data-estado="gravando"] #voz-todos{display:none}
 .ic{width:22px;height:22px;flex:none}
 .trena{display:block;width:100%;height:auto;overflow:visible}
-.tr-mini{width:72px;flex:none}
+.tr-mini{width:60px;flex:none}
 .voz-cab{display:flex;align-items:center;gap:12px}
 .ondas{display:flex;align-items:center;justify-content:center;gap:5px;height:64px}
 .ondas i{width:7px;border-radius:4px;background:var(--accent);height:14px;animation:onda 1s ease-in-out infinite}
@@ -92,7 +92,8 @@ button:focus-visible,.chip:focus-visible,a:focus-visible,summary:focus-visible{o
 .voz .relogio{font-family:var(--display);font-size:28px;font-variant-numeric:tabular-nums;text-align:center;justify-content:center;align-items:center;gap:10px}
 .voz .enviar-g{min-height:64px;font-size:19px}
 .lendo{flex-direction:column;align-items:center;text-align:center;gap:6px}
-.lendo .trena{width:150px}
+.lendo .trena{width:96px}
+.capi{animation:capi .5s cubic-bezier(.2,.9,.3,1.15) both}@keyframes capi{from{opacity:0;transform:translateY(10px) scale(.96)}}
 .tr-fita{animation:mede 1.4s ease-in-out infinite;transform-box:fill-box}
 @keyframes mede{0%,100%{transform:translateX(-20px)}50%{transform:translateX(4px)}}
 .trena .tr-pup{animation:olha 2.8s ease-in-out infinite}
@@ -100,17 +101,17 @@ button:focus-visible,.chip:focus-visible,a:focus-visible,summary:focus-visible{o
 .tr-conf{animation:pula .9s ease-in-out infinite alternate}
 @keyframes pula{to{transform:translateY(-4px)}}
 .ola{display:flex;gap:12px;align-items:center}
-.ola .tr-mini{width:76px}
+.ola .tr-mini{width:64px}
 .ola h2{font-size:17px!important}
 .room-mini{font:inherit;text-align:left;width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:10px 12px;min-height:52px;cursor:pointer}
 .room-mini b{font-weight:700}.room-mini span{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}.room-mini em{font-style:normal;font-weight:700;color:var(--accent);font-size:14px;white-space:nowrap}
 .festa{background:#1F3BFF;color:#F4F1EA;border-radius:16px;padding:16px;display:flex;gap:12px;align-items:center}
-.festa .tr-mini{width:84px}.festa h3{font-family:var(--display);font-size:18px;margin:0}.festa p{margin:4px 0 0;font-size:14px;opacity:.9}
+.festa .tr-mini{width:64px}.festa h3{font-family:var(--display);font-size:18px;margin:0}.festa p{margin:4px 0 0;font-size:14px;opacity:.9}
 .acts-min{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 14px}
 .acts-min .link{color:#F4F1EA}
 .cfg-sec>summary{font-family:var(--display);font-weight:600;font-size:15px}
 .cfg-sec>summary span{font-family:var(--body)}
-@media (prefers-reduced-motion:reduce){.ondas i,.tr-fita,.trena .tr-pup,.tr-conf{animation:none}}
+@media (prefers-reduced-motion:reduce){.ondas i,.tr-fita,.trena .tr-pup,.tr-conf,.capi{animation:none}}
 .parede-res{background:var(--soft);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:4px}
 @media (prefers-reduced-motion:reduce){.voz .ponto,.voz .roda{animation:none}}
 
@@ -245,7 +246,7 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
         <p class="hint" data-v="gravando" style="justify-content:center">Fale à vontade: cliente, cômodos, medidas e como está a parede.</p>
         <button class="mic enviar-g" id="voz-enviar" data-v="gravando">Pronto, enviar <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
         <div class="voz-links" data-v="gravando"><button class="link" id="voz-cancelar">Cancelar</button></div>
-        <div class="lendo" data-v="enviando" role="status"><span id="voz-tr-lendo" style="display:block;width:150px"></span><b>A Trena tá medindo seu áudio…</b><span class="hint">Leva uns 15 segundos.</span></div>
+        <div class="lendo" data-v="enviando" role="status"><span id="voz-tr-lendo" style="display:block;width:96px"></span><b>Fazendo a conta do seu áudio…</b><span class="hint">Leva uns 15 segundos.</span></div>
         <div id="voz-res" data-v="feito erro" aria-live="polite"></div>
         <div class="row2" data-v="feito"><button class="sec" id="voz-desfazer">Desfazer</button><button class="mic" id="voz-mais"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg> Gravar mais</button></div>
         <div class="voz-links"><button class="link" id="voz-mao" data-entrada="mao">Prefiro preencher na mão</button><button class="link" id="voz-todos" data-entrada="mao">Ver todos os campos</button></div>
@@ -1114,39 +1115,14 @@ function renderEntrada(){
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-entrada]');if(!b)return;O.entrada=b.dataset.entrada;save();renderOrc();refresh();
   if(O.entrada==='voz')vozGravar();else window.scrollTo(0,0)});
-// Mascote Trena (desenho próprio do Na Bucha): caixa de trena laranja, faixa de régua limão, boné cobalto, gancho na boca, pezinhos
+// Mascote: a capivara do Na Bucha (imagens em /img/capi). Expressões: oi, medindo (pensando), feliz, triste (ops)
 function trenaSVG(expr,cls){
-  const ink='#0B1030',lar='#FF7A00',lim='#C8FF2E',cob='#1F3BFF';
-  const ticks=n=>Array.from({length:n},(_,i)=>`<line x1="${22+i*9}" y1="84" x2="${22+i*9}" y2="${i%2?89:92}" stroke="${ink}" stroke-width="2"/>`).join('');
-  let olhos,boca,extra='',bracos='';
-  if(expr==='feliz'){ // comemorando
-    olhos=`<path d="M40 52q6-7 12 0M68 52q6-7 12 0" fill="none" stroke="${ink}" stroke-width="4" stroke-linecap="round"/>`;
-    boca=`<path d="M48 64q12 12 24 0z" fill="${ink}"/><rect x="56" y="64" width="8" height="5" rx="1.5" fill="#C9CED8" stroke="${ink}" stroke-width="1.5"/>`;
-    bracos=`<path d="M12 60L2 38M108 60l10-22" stroke="${ink}" stroke-width="5" stroke-linecap="round"/><circle cx="2" cy="36" r="5" fill="${lar}" stroke="${ink}" stroke-width="3"/><circle cx="118" cy="36" r="5" fill="${lar}" stroke="${ink}" stroke-width="3"/>`;
-    extra=`<g class="tr-conf"><rect x="6" y="8" width="6" height="6" fill="${lim}" transform="rotate(20 9 11)"/><rect x="104" y="10" width="6" height="6" fill="${cob}" transform="rotate(-15 107 13)"/><circle cx="96" cy="2" r="3" fill="${lim}"/><circle cx="20" cy="2" r="3" fill="${cob}"/></g>`;
-  }else if(expr==='triste'){ // sem graça
-    olhos=`<ellipse cx="46" cy="54" rx="6" ry="7" fill="#fff" stroke="${ink}" stroke-width="2.5"/><ellipse cx="74" cy="54" rx="6" ry="7" fill="#fff" stroke="${ink}" stroke-width="2.5"/><circle cx="46" cy="57" r="3" fill="${ink}"/><circle cx="74" cy="57" r="3" fill="${ink}"/><path d="M38 49l14-5M82 49l-14-5" stroke="${ink}" stroke-width="3.5" stroke-linecap="round"/>`;
-    boca=`<path d="M48 72q4-4 8 0t8 0t8 0" fill="none" stroke="${ink}" stroke-width="3.5" stroke-linecap="round"/>`;
-    extra=`<path d="M96 30q5 8 0 11q-5-3 0-11z" fill="#8FD3FF" stroke="${ink}" stroke-width="1.5"/>`;
-  }else{ // medindo (padrão)
-    olhos=`<ellipse cx="46" cy="53" rx="6.5" ry="8" fill="#fff" stroke="${ink}" stroke-width="2.5"/><ellipse cx="74" cy="53" rx="6.5" ry="8" fill="#fff" stroke="${ink}" stroke-width="2.5"/><circle class="tr-pup" cx="49" cy="54" r="3.4" fill="${ink}"/><circle class="tr-pup" cx="77" cy="54" r="3.4" fill="${ink}"/>`;
-    boca=`<path d="M50 66q10 8 20 0" fill="none" stroke="${ink}" stroke-width="3.5" stroke-linecap="round"/><rect x="56" y="66" width="8" height="5" rx="1.5" fill="#C9CED8" stroke="${ink}" stroke-width="1.5"/>`;
-    extra=`<g class="tr-fita"><rect x="106" y="80" width="40" height="13" fill="${lim}" stroke="${ink}" stroke-width="3"/>${Array.from({length:4},(_,i)=>`<line x1="${114+i*9}" y1="80" x2="${114+i*9}" y2="${i%2?85:88}" stroke="${ink}" stroke-width="2"/>`).join('')}<rect x="144" y="76" width="5" height="21" rx="1.5" fill="#C9CED8" stroke="${ink}" stroke-width="2"/></g>`;
-  }
-  return `<svg class="trena ${cls||''}" viewBox="-6 -4 ${expr==='medindo'||!expr?160:132} 140" role="img" aria-label="Trena, o mascote do Na Bucha">
-  ${extra}${bracos}
-  <ellipse cx="38" cy="124" rx="14" ry="7" fill="${ink}"/><ellipse cx="82" cy="124" rx="14" ry="7" fill="${ink}"/>
-  <rect x="10" y="26" width="100" height="92" rx="24" fill="${lar}" stroke="${ink}" stroke-width="4"/>
-  <rect x="10" y="80" width="100" height="13" fill="${lim}" stroke="${ink}" stroke-width="3"/>${ticks(10)}
-  <rect x="22" y="100" width="76" height="9" rx="4.5" fill="#E86A00"/>
-  <path d="M18 34q0-26 42-26t42 26z" fill="${cob}" stroke="${ink}" stroke-width="4" stroke-linejoin="round"/>
-  <path d="M60 34h52q4 0 2 5q-2 4-8 4H60z" fill="${cob}" stroke="${ink}" stroke-width="4" stroke-linejoin="round"/>
-  <circle cx="60" cy="10" r="4" fill="${lim}" stroke="${ink}" stroke-width="2"/>
-  ${olhos}${boca}
-</svg>`;
+  const f={oi:'celular',medindo:'pensando',feliz:'feliz',triste:'ops'}[expr]||'pensando';
+  const alt={oi:'mandando um áudio',medindo:'fazendo a conta',feliz:'comemorando',triste:'sem graça'}[expr]||'fazendo a conta';
+  return `<img class="trena capi ${cls||''}" src="../img/capi/capi-${f}.webp" alt="Capivara do Na Bucha ${alt}" decoding="async">`;
 }
 
-$('#ola-trena').innerHTML=trenaSVG('medindo');$('#voz-tr-lendo').innerHTML=trenaSVG('medindo');$('#voz-tr-erro').innerHTML=trenaSVG('triste');
+$('#ola-trena').innerHTML=trenaSVG('oi');$('#voz-tr-lendo').innerHTML=trenaSVG('medindo');$('#voz-tr-erro').innerHTML=trenaSVG('triste');
 document.addEventListener('click',e=>{if(e.target.closest('[data-cfg]'))show('cfg');if(e.target.closest('[data-usar-dias]')){O.diasM=dd(calc().dias);save();renderDias();refresh()}});
 show('orc');
 })();
