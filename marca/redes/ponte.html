@@ -1,0 +1,9 @@
+<!doctype html><meta charset="utf-8"><title>ponte</title><body style="font:16px sans-serif;padding:20px">Enviando imagem…
+<script>
+(async()=>{const p=new URLSearchParams(location.search);const n=p.get('img');const alvo=p.get('alvo')||'https://www.instagram.com';
+try{const b=await (await fetch(n,{cache:'no-store'})).arrayBuffer();
+ if(!window.opener){document.body.textContent='Sem janela de origem';return}
+ window.opener.postMessage({ponteNabucha:1,nome:n,tipo:n.endsWith('.png')?'image/png':'image/jpeg',buf:b},alvo,[b]);
+ document.body.textContent='Enviado: '+n; setTimeout(()=>window.close(),800);
+}catch(e){document.body.textContent='Erro: '+e}})();
+</script>
