@@ -246,7 +246,7 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
         <p class="hint" data-v="gravando" style="justify-content:center">Fale à vontade: cliente, cômodos, medidas e como está a parede.</p>
         <button class="mic enviar-g" id="voz-enviar" data-v="gravando">Pronto, enviar <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
         <div class="voz-links" data-v="gravando"><button class="link" id="voz-cancelar">Cancelar</button></div>
-        <div class="lendo" data-v="enviando" role="status"><span id="voz-tr-lendo" style="display:block;width:96px"></span><b>Fazendo a conta do seu áudio…</b><span class="hint">Leva uns 15 segundos.</span></div>
+        <div class="lendo" data-v="enviando" role="status"><span id="voz-tr-lendo" style="display:block;width:96px"></span><b>A Capi tá fazendo a conta do seu áudio…</b><span class="hint">Leva uns 15 segundos.</span></div>
         <div id="voz-res" data-v="feito erro" aria-live="polite"></div>
         <div class="row2" data-v="feito"><button class="sec" id="voz-desfazer">Desfazer</button><button class="mic" id="voz-mais"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg> Gravar mais</button></div>
         <div class="voz-links"><button class="link" id="voz-mao" data-entrada="mao">Prefiro preencher na mão</button><button class="link" id="voz-todos" data-entrada="mao">Ver todos os campos</button></div>
@@ -1119,7 +1119,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-entrada]')
 function trenaSVG(expr,cls){
   const f={oi:'celular',medindo:'pensando',feliz:'feliz',triste:'ops'}[expr]||'pensando';
   const alt={oi:'mandando um áudio',medindo:'fazendo a conta',feliz:'comemorando',triste:'sem graça'}[expr]||'fazendo a conta';
-  return `<img class="trena capi ${cls||''}" src="../img/capi/capi-${f}.webp" alt="Capivara do Na Bucha ${alt}" decoding="async">`;
+  return `<img class="trena capi ${cls||''}" src="../img/capi/capi-${f}.webp" alt="Capi, a capivara do Na Bucha, ${alt}" decoding="async">`;
 }
 
 $('#ola-trena').innerHTML=trenaSVG('oi');$('#voz-tr-lendo').innerHTML=trenaSVG('medindo');$('#voz-tr-erro').innerHTML=trenaSVG('triste');
