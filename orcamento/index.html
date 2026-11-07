@@ -60,6 +60,23 @@ button:focus-visible,.chip:focus-visible,a:focus-visible,summary:focus-visible{o
 .link{font:inherit;font-weight:700;color:var(--accent);background:none;border:none;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:3px;min-height:32px}
 .room{border:1.5px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px;background:var(--bg)}
 .room-top{display:flex;gap:8px;align-items:center}
+.voz{border:2px solid var(--accent)}
+.voz .mic{font:inherit;font-weight:700;font-size:17px;min-height:56px;border:0;border-radius:99px;background:var(--btn);color:var(--btn-ink);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;width:100%}
+.voz .row2{display:flex;gap:10px}.voz .row2>*{flex:1}
+.voz .sec{font:inherit;font-weight:600;font-size:15px;min-height:48px;border:1.5px solid var(--line);border-radius:99px;background:var(--surface);color:var(--ink);cursor:pointer}
+.voz .gravando{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px}
+.voz .ponto{width:12px;height:12px;border-radius:50%;background:#E5484D;animation:pisca 1s infinite}
+@keyframes pisca{50%{opacity:.25}}
+.voz .roda{width:22px;height:22px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:gira .8s linear infinite}
+@keyframes gira{to{transform:rotate(360deg)}}
+.voz [data-v]{display:none}
+.voz[data-estado="pronto"] [data-v~="pronto"],.voz[data-estado="gravando"] [data-v~="gravando"],.voz[data-estado="enviando"] [data-v~="enviando"],.voz[data-estado="feito"] [data-v~="feito"],.voz[data-estado="erro"] [data-v~="erro"]{display:flex}
+#voz-res p{margin:0}#voz-res{display:flex;flex-direction:column;gap:6px;font-size:14px}
+#voz-res details{font-size:13px;color:var(--muted)}
+.voz-falta{background:var(--warn);color:var(--warn-ink);padding:8px 10px;border-radius:10px}
+.room.falta{border-color:#E5484D;border-width:2px}
+@media (prefers-reduced-motion:reduce){.voz .ponto,.voz .roda{animation:none}}
+
 .room-top input{font-weight:700}
 .x{font:inherit;background:none;border:none;color:var(--muted);font-size:14px;font-weight:600;min-height:44px;padding:0 6px;cursor:pointer;white-space:nowrap}
 .pad{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:13px;color:var(--muted)}
@@ -170,6 +187,16 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
     </nav>
 
     <section id="p1" style="display:flex;flex-direction:column;gap:14px">
+      <div class="card voz" id="voz" data-estado="pronto">
+        <h2>Fale o serviço</h2>
+        <p class="hint" data-v="pronto erro">Grave como no WhatsApp: cliente, cômodos e medidas, como está a parede. O Na Bucha preenche e você confere.</p>
+        <button class="mic" id="voz-gravar" data-v="pronto erro"><span aria-hidden="true">🎤</span> Gravar áudio</button>
+        <div class="gravando" data-v="gravando" role="status"><span class="ponto" aria-hidden="true"></span><span id="voz-tempo">0:00</span><span>Gravando… fale à vontade</span></div>
+        <div class="row2" data-v="gravando"><button class="sec" id="voz-cancelar">Cancelar</button><button class="mic" id="voz-enviar">Enviar ➤</button></div>
+        <div class="gravando" data-v="enviando" role="status"><span class="roda" aria-hidden="true"></span><span>Entendendo seu áudio… leva uns 15 segundos</span></div>
+        <div id="voz-res" data-v="feito erro" aria-live="polite"></div>
+        <div class="row2" data-v="feito"><button class="sec" id="voz-desfazer">Desfazer</button><button class="mic" id="voz-mais"><span aria-hidden="true">🎤</span> Gravar mais</button></div>
+      </div>
       <div class="card">
         <h2>Como vai cobrar este serviço?</h2>
         <div class="cmp jeito" id="jeito">
@@ -532,7 +559,7 @@ function roomPad(r){
 }
 function renderRooms(){
   $('#rooms').innerHTML=O.rooms.map(r=>`
-  <div class="room" data-room="${r.id}">
+  <div class="room${r.voz&&r.modo==='med'&&!(num(r.l)&&num(r.c))?' falta':''}" data-room="${r.id}">
     <div class="room-top"><input aria-label="Nome do cômodo" data-f="nome" value="${esc(r.nome)}"><button class="x" data-del="${r.id}">Remover</button></div>
     ${r.modo==='med'?`<div class="row">
       <label>Largura<input inputmode="decimal" data-f="l" value="${esc(r.l)}"></label>
@@ -710,7 +737,7 @@ bind('#c-nome',()=>O.cliente.nome,v=>O.cliente.nome=v);
 bind('#c-whats',()=>O.cliente.whats,v=>O.cliente.whats=v);
 bind('#c-local',()=>O.cliente.local,v=>O.cliente.local=v);
 $('#rooms').addEventListener('input',e=>{const box=e.target.closest('[data-room]');const f=e.target.dataset.f;if(!box||!f)return;const r=O.rooms.find(x=>x.id===box.dataset.room);
-  r[f]=e.target.type==='checkbox'?e.target.checked:e.target.value;const p=box.querySelector('[data-pad]');if(p)p.innerHTML=roomPad(r);save();refresh()});
+  r[f]=e.target.type==='checkbox'?e.target.checked:e.target.value;box.classList.toggle('falta',!!(r.voz&&r.modo==='med'&&!(num(r.l)&&num(r.c))));const p=box.querySelector('[data-pad]');if(p)p.innerHTML=roomPad(r);save();refresh()});
 $('#rooms').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const box=b.closest('[data-room]');const r=box&&O.rooms.find(x=>x.id===box.dataset.room);
   if(b.dataset.del)O.rooms=O.rooms.filter(x=>x.id!==b.dataset.del);
   else if(b.dataset.open)r.aberto=!r.aberto;
@@ -886,6 +913,104 @@ $('#copy').addEventListener('click',()=>{const t=texto(calc());
   const fall=()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Texto copiado')}catch(e){toast('Não deu para copiar')}ta.remove()};
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(()=>toast('Texto copiado'),fall)}else fall()});
 let tt;function toast(m){const el=$('#toast');el.textContent=m;el.hidden=false;clearTimeout(tt);tt=setTimeout(()=>el.hidden=true,2600)}
+
+
+// ---------- ÁUDIO: grava como no WhatsApp, a IA preenche, o pintor confere ----------
+const VOZ_URL='https://hello-world-black-sun-acbf.contato-nabucha.workers.dev';
+const VOZ_MAX=180; // segundos
+const voz={rec:null,stream:null,parts:[],t0:0,timer:null,cancel:false,undo:null};
+const vozSet=(estado,html)=>{const box=$('#voz');box.dataset.estado=estado;if(html!=null)$('#voz-res').innerHTML=html};
+const mmss=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
+const nfmt=n=>n==null||!isFinite(n)||n<=0?'':String(Math.round(n*100)/100).replace('.',',');
+
+async function vozGravar(){
+  if(!navigator.mediaDevices||!window.MediaRecorder){toast('Este navegador não grava áudio. Use o Chrome.');return}
+  try{voz.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}})}
+  catch(e){vozSet('erro','<b>Sem acesso ao microfone.</b> Toque no cadeado ao lado do endereço e libere o microfone.');return}
+  voz.parts=[];voz.cancel=false;
+  voz.rec=new MediaRecorder(voz.stream);
+  voz.rec.ondataavailable=e=>{if(e.data&&e.data.size)voz.parts.push(e.data)};
+  voz.rec.onstop=()=>{voz.stream.getTracks().forEach(t=>t.stop());clearInterval(voz.timer);
+    if(voz.cancel){vozSet('pronto','');return}
+    vozEnviar(new Blob(voz.parts,{type:voz.rec.mimeType||'audio/webm'}))};
+  voz.rec.start(1000);voz.t0=Date.now();vozSet('gravando');$('#voz-tempo').textContent='0:00';
+  voz.timer=setInterval(()=>{const s=(Date.now()-voz.t0)/1000;$('#voz-tempo').textContent=mmss(s);if(s>=VOZ_MAX){toast('Limite de 3 minutos: enviando');vozParar(false)}},250);
+}
+function vozParar(cancelar){voz.cancel=!!cancelar;if(voz.rec&&voz.rec.state!=='inactive')voz.rec.stop()}
+
+async function wav16k(blob){
+  const AC=window.AudioContext||window.webkitAudioContext;const ac=new AC();
+  const ab=await blob.arrayBuffer();
+  const src=await new Promise((ok,ko)=>{const p=ac.decodeAudioData(ab,ok,ko);if(p&&p.then)p.then(ok,ko)});
+  try{ac.close()}catch(e){}
+  const rate=16000,len=Math.max(1,Math.ceil(src.duration*rate));
+  const off=new (window.OfflineAudioContext||window.webkitOfflineAudioContext)(1,len,rate);
+  const s=off.createBufferSource();s.buffer=src;s.connect(off.destination);s.start(0);
+  const out=await off.startRendering();const d=out.getChannelData(0);
+  const v=new DataView(new ArrayBuffer(44+d.length*2));const w=(o,t)=>{for(let i=0;i<t.length;i++)v.setUint8(o+i,t.charCodeAt(i))};
+  w(0,'RIFF');v.setUint32(4,36+d.length*2,true);w(8,'WAVE');w(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);
+  v.setUint32(24,rate,true);v.setUint32(28,rate*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,d.length*2,true);
+  for(let i=0;i<d.length;i++){const x=Math.max(-1,Math.min(1,d[i]));v.setInt16(44+i*2,x<0?x*0x8000:x*0x7fff,true)}
+  return{wav:new Blob([v],{type:'audio/wav'}),dur:src.duration};
+}
+
+async function vozEnviar(blob){
+  vozSet('enviando');
+  let r;
+  try{
+    const {wav,dur}=await wav16k(blob);
+    if(dur<1.2){vozSet('erro','<b>Áudio curto demais.</b> Toque em Gravar, fale e depois em Enviar.');return}
+    const res=await fetch(VOZ_URL,{method:'POST',headers:{'Content-Type':'audio/wav'},body:wav});
+    r=await res.json().catch(()=>({erro:'Resposta estranha do servidor'}));
+    if(!res.ok||!r.dados){vozSet('erro',`<b>${esc(r.erro||'Não deu certo agora.')}</b> Tente de novo em instantes.`+(r.texto?`<details><summary>O que eu ouvi</summary><p>${esc(r.texto)}</p></details>`:''));return}
+  }catch(e){vozSet('erro','<b>Sem conexão ou o áudio não abriu.</b> Confira a internet e grave de novo.');return}
+  vozAplicar(r.dados,r.texto);
+}
+
+function vozAplicar(d,texto){
+  voz.undo=clone(O);
+  if(/\(exemplo\)/i.test(O.cliente.nome||'')){O=novoOrc(C,false);aplicarSituacao()} // primeiro uso: o exemplo sai, entra o serviço de verdade
+  const feito=[],falta=[];
+  const s=v=>String(v==null?'':v).trim();
+  if(s(d.cliente_nome)){O.cliente.nome=s(d.cliente_nome);feito.push('cliente')}
+  if(s(d.cliente_local)){O.cliente.local=s(d.cliente_local)}
+  if(MODOS[d.modo]){O.modo=d.modo;feito.push(MODOS[d.modo].toLowerCase())}
+  const novos=(d.comodos||[]).map(c=>{
+    const nome=s(c.nome)||'Cômodo';const r=sala(nome.charAt(0).toUpperCase()+nome.slice(1),nfmt(c.largura),nfmt(c.comprimento));r.voz=true;
+    if(!(c.largura>0&&c.comprimento>0)&&(c.area_paredes>0||c.area_teto>0)){r.modo='area';r.ap=nfmt(c.area_paredes);r.at=nfmt(c.area_teto);r.teto=c.area_teto>0}
+    if(c.pe_direito>0)r.h=nfmt(c.pe_direito);
+    if(c.pintar_teto===false||c.pintar_teto===true)r.teto=c.pintar_teto;
+    if(Number.isInteger(c.portas)&&c.portas>=0)r.portas=c.portas;
+    if(Number.isInteger(c.janelas)&&c.janelas>=0)r.janelas=c.janelas;
+    if(/externa|muro|fachada|varanda|quintal/i.test(nome)&&r.modo==='med'&&c.pintar_teto==null){r.teto=false}
+    return r});
+  if(novos.length){O.rooms=O.rooms.concat(novos);O.medir=true;feito.push(novos.length+(novos.length>1?' cômodos':' cômodo'))}
+  novos.forEach(r=>{if(r.modo==='med'&&!(num(r.l)&&num(r.c)))falta.push('medidas de '+r.nome)});
+  const sit=(d.situacoes||[]).filter(k=>SITU[k]);
+  if(sit.length){let a=sit.slice();if(a.includes('repintura')&&(a.includes('cor')||a.includes('forte')))a=a.filter(x=>x!=='repintura');O.situs=a;feito.push(a.map(k=>SITU[k].t.toLowerCase()).join(', '))}
+  const reps=(d.reparos||[]).filter(k=>(C.reparos||[]).some(r=>r.k===k));
+  reps.forEach(k=>O.rep[k]=true);if(reps.length)feito.push(reps.map(k=>C.reparos.find(r=>r.k===k).nome.toLowerCase()).join(', '));
+  if(ACAB[d.acabamento]){O.acab=d.acabamento;feito.push(ACAB[d.acabamento].toLowerCase())}
+  if(d.massa_corrida){O.liso=true;feito.push('massa corrida')}
+  aplicarSituacao();
+  if(d.textura&&svByK('textura')){st('textura').on=true;feito.push('textura')}
+  if(d.dias>0){O.diasM=nfmt(d.dias);feito.push(nfmt(d.dias)+(d.dias>1?' dias':' dia'))}
+  if(Number.isInteger(d.ajudantes)&&d.ajudantes>=0){O.ajud=Math.min(10,d.ajudantes);if(d.ajudantes)feito.push(d.ajudantes+(d.ajudantes>1?' ajudantes':' ajudante'))}
+  if(s(d.prazo)){O.prazo=s(d.prazo);O.prazoAuto=false}
+  if(s(d.obs)){O.obs=O.obs?O.obs+'\n'+s(d.obs):s(d.obs)}
+  if(!O.cliente.nome)falta.push('nome do cliente');
+  if((O.modo==='diaria'||O.modo==='custo')&&!calc().diasU)falta.push('quantos dias o serviço leva');
+  save();renderOrc();refresh();
+  const ok=feito.length?`<p><b>Preenchi:</b> ${esc(feito.join(' · '))}.</p>`:'<p><b>Não achei dados do orçamento nesse áudio.</b></p>';
+  const fl=falta.length?`<p class="voz-falta"><b>Falta:</b> ${esc(falta.join(' · '))}. Complete abaixo.</p>`:'<p class="hint">Confira os campos antes de enviar ao cliente.</p>';
+  vozSet('feito',ok+fl+`<details><summary>O que eu ouvi</summary><p>${esc(texto||'')}</p></details>`);
+  const alvo=document.querySelector('.room.falta');if(alvo)alvo.scrollIntoView({behavior:'smooth',block:'center'});
+}
+$('#voz-gravar').addEventListener('click',vozGravar);
+$('#voz-mais').addEventListener('click',vozGravar);
+$('#voz-enviar').addEventListener('click',()=>vozParar(false));
+$('#voz-cancelar').addEventListener('click',()=>vozParar(true));
+$('#voz-desfazer').addEventListener('click',()=>{if(!voz.undo)return;O=voz.undo;voz.undo=null;save();renderOrc();refresh();vozSet('pronto','');toast('Desfeito: voltou como estava antes do áudio')});
 
 show('orc');
 })();
