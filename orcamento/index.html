@@ -107,6 +107,21 @@ button:focus-visible,.chip:focus-visible,a:focus-visible,summary:focus-visible{o
 .room-mini b{font-weight:700}.room-mini span{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}.room-mini em{font-style:normal;font-weight:700;color:var(--accent);font-size:14px;white-space:nowrap}
 .festa{background:#1F3BFF;color:#F4F1EA;border-radius:16px;padding:16px;display:flex;gap:12px;align-items:center}
 .festa .tr-mini{width:64px}.festa h3{font-family:var(--display);font-size:18px;margin:0}.festa p{margin:4px 0 0;font-size:14px;opacity:.9}
+.hist-row{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px 12px;font-size:14px}
+.hist-row b{font-weight:700}
+.hist-wrap{position:fixed;inset:0;background:rgba(11,16,48,.72);z-index:21;overflow-y:auto;padding:calc(16px + env(safe-area-inset-top,0px)) 12px calc(24px + env(safe-area-inset-bottom,0px))}
+.hist{max-width:560px;margin:0 auto;background:var(--bg);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.hist-cab{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.hist-cab h2{font-family:var(--display);font-size:20px;margin:0}
+.hi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.hi-top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.hi-top b{font-size:16px}.hi-top strong{font-family:var(--display);font-variant-numeric:tabular-nums;white-space:nowrap}
+.hi-sub{font-size:13px;color:var(--muted)}
+.hi-tag{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:2px 8px;margin-left:6px;background:#E8ECFF;color:#1F3BFF}
+.hi-tag.env{background:#C8FF2E;color:#0B1030}
+.hi-acts{display:flex;flex-wrap:wrap;gap:4px 14px}
+.hi-acts .del{color:var(--bad)}
+.hist-vazio{text-align:center;color:var(--muted);padding:20px 8px}
 .acts-min{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 14px}
 .acts-min .link{color:#F4F1EA}
 .cfg-sec>summary{font-family:var(--display);font-weight:600;font-size:15px}
@@ -222,6 +237,7 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
 
   <!-- ORÇAMENTO -->
   <div id="v-orc" style="display:flex;flex-direction:column;gap:14px">
+    <div class="hist-row" id="hist-row" hidden><span id="hist-row-t">Meus orçamentos</span><button class="link" id="hist-abrir">Ver todos</button></div>
     <div class="banner" id="first" hidden><span>Primeira vez? Confira seus preços. Já vêm prontos, é só ajustar.</span><button class="link" id="go-cfg">Meus preços</button></div>
     <nav class="steps" aria-label="Passos">
       <button data-go="1">1 · Cômodos</button><button data-go="2">2 · Parede</button><button data-go="3">3 · Revisão</button>
@@ -485,9 +501,17 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
         <button class="link" id="copy">Copiar texto</button>
         <button class="link" id="close">Voltar e editar</button>
         <button class="link" id="novo">Começar novo orçamento</button>
+        <button class="link" id="hist-folha">Meus orçamentos</button>
       </div>
       <p class="note">Protótipo: a próxima versão também anexa a folha em PDF.</p>
     </div>
+  </div>
+</div>
+<div class="hist-wrap" id="hist-wrap" hidden role="dialog" aria-modal="true" aria-labelledby="hist-t">
+  <div class="hist">
+    <div class="hist-cab"><h2 id="hist-t">Meus orçamentos</h2><button class="link" id="hist-fechar">Fechar</button></div>
+    <p class="hint" style="margin:0">Ficam guardados só neste celular. Os últimos 30.</p>
+    <div id="hist-lista" style="display:flex;flex-direction:column;gap:10px"></div>
   </div>
 </div>
 <div class="toast" id="toast" hidden></div>
@@ -982,7 +1006,7 @@ function abrirFolha(){
   if(O.modo==='fechado'&&!k.maoFe){toast('Digite o valor da mão de obra');return}
   if((O.modo==='diaria'||O.modo==='custo')&&!k.diasU){toast('Diga quantos dias o serviço leva');goStep(1);return}
   if(O.modo!=='m2'&&O.modo!=='fechado'&&!k.mao){toast('Preencha sua diária em Meus preços');return}
-  $('#sheet').innerHTML=sheet(k);
+  guardar(false);$('#sheet').innerHTML=sheet(k);
   const t=encodeURIComponent(texto(k));const ph=String(O.cliente.whats||'').replace(/\D/g,'').replace(/^55/,'');
   $('#wa').href=ph.length>=10?`https://wa.me/55${ph}?text=${t}`:`https://wa.me/?text=${t}`;
   $('#festa').hidden=true;lastFocus=document.activeElement;$('#sheet-wrap').hidden=false;$('.bar').hidden=true;document.body.style.overflow='hidden';$('#sheet-wrap').scrollTop=0;$('#close').focus({preventScroll:true});
@@ -990,11 +1014,50 @@ function abrirFolha(){
 function closeSheet(){$('#sheet-wrap').hidden=true;renderBar();document.body.style.overflow='';if(lastFocus)lastFocus.focus()}
 $('#close').addEventListener('click',closeSheet);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#sheet-wrap').hidden)closeSheet()});
-$('#wa').addEventListener('click',()=>{C.num++;save();$('#festa-trena').innerHTML=trenaSVG('feliz');$('#festa').hidden=false});
-$('#novo').addEventListener('click',()=>{O=novoOrc(C,false);aplicarSituacao();save();closeSheet();show('orc');toast('Orçamento novo. Seus preços continuam salvos.')});
+$('#wa').addEventListener('click',()=>{guardar(true,C.num);C.num++;save();$('#festa-trena').innerHTML=trenaSVG('feliz');$('#festa').hidden=false});
+$('#novo').addEventListener('click',()=>{if(H.some(h=>h.id===O.id))guardar(false);O=novoOrc(C,false);aplicarSituacao();save();closeSheet();show('orc');toast('Orçamento novo. Seus preços continuam salvos.')});
 $('#copy').addEventListener('click',()=>{const t=texto(calc());
   const fall=()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Texto copiado')}catch(e){toast('Não deu para copiar')}ta.remove()};
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(()=>toast('Texto copiado'),fall)}else fall()});
+
+// Meus orçamentos: histórico local (só neste aparelho), últimos 30
+const HKEY='nabucha-hist-v1';const HMAX=30;
+let H=[];try{H=JSON.parse(localStorage.getItem(HKEY)||'[]')||[]}catch(e){H=[]}
+const hsave=()=>{try{localStorage.setItem(HKEY,JSON.stringify(H))}catch(e){while(H.length>5){H.pop();try{localStorage.setItem(HKEY,JSON.stringify(H));break}catch(e2){}}}};
+const hid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+function guardar(enviado,numEnv){
+  if(/\(exemplo\)$/.test(O.cliente.nome||''))return; // o orçamento de exemplo não entra na lista
+  if(!O.id)O.id=hid();const k=calc();
+  const i=H.findIndex(h=>h.id===O.id);const ant=i>=0?H[i]:null;
+  const e={id:O.id,quando:Date.now(),cliente:O.cliente.nome||'',local:O.cliente.local||'',total:k.total,
+    enviado:!!(enviado||(ant&&ant.enviado)),num:numEnv||(ant&&ant.num)||null,o:clone(O)};
+  if(i>=0)H.splice(i,1);H.unshift(e);if(H.length>HMAX)H.length=HMAX;hsave();save();renderHistRow();
+}
+function renderHistRow(){const n=H.length;$('#hist-row').hidden=!n;$('#hist-row-t').innerHTML=`<b>Meus orçamentos</b> · ${n} guardado${n>1?'s':''}`}
+const dataBR=t=>{const d=new Date(t);return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})};
+const escH=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let delPend=null;
+function renderHist(){
+  const L=$('#hist-lista');
+  if(!H.length){L.innerHTML='<div class="hist-vazio">Nenhum orçamento guardado ainda.<br>Eles entram aqui quando você chega na folha do orçamento.</div>';return}
+  L.innerHTML=H.map(h=>`<div class="hi"><div class="hi-top"><b>${escH(h.cliente||'Sem nome')}${h.enviado?'<span class="hi-tag env">Enviado</span>':'<span class="hi-tag">Rascunho</span>'}</b><strong>${brl(h.total||0)}</strong></div>
+    <div class="hi-sub">${h.local?escH(h.local)+' · ':''}${dataBR(h.quando)}${h.num?' · Nº '+String(h.num).padStart(4,'0'):''}${h.id===O.id?' · aberto agora':''}</div>
+    <div class="hi-acts"><button class="link" data-h-abrir="${h.id}">Abrir e editar</button><button class="link" data-h-dup="${h.id}">Duplicar</button><button class="link del" data-h-del="${h.id}">${delPend===h.id?'Toque de novo para apagar':'Apagar'}</button></div></div>`).join('');
+}
+function abrirHist(){delPend=null;renderHist();lastFocus=document.activeElement;$('#hist-wrap').hidden=false;document.body.style.overflow='hidden';$('#hist-fechar').focus({preventScroll:true})}
+function fecharHist(){$('#hist-wrap').hidden=true;if($('#sheet-wrap').hidden)document.body.style.overflow=''}
+function carregar(o,msg){if(H.some(h=>h.id===O.id))guardar(false);O=o;save();fecharHist();if(!$('#sheet-wrap').hidden)closeSheet();show('orc');toast(msg)}
+$('#hist-abrir').addEventListener('click',abrirHist);
+$('#hist-folha').addEventListener('click',abrirHist);
+$('#hist-fechar').addEventListener('click',fecharHist);
+$('#hist-wrap').addEventListener('click',e=>{if(e.target.id==='hist-wrap'){fecharHist();return}
+  const a=e.target.closest('[data-h-abrir]'),d=e.target.closest('[data-h-dup]'),x=e.target.closest('[data-h-del]');
+  if(a){const h=H.find(h=>h.id===a.dataset.hAbrir);if(h){const o=clone(h.o);o.step=3;carregar(o,'Aberto: '+(h.cliente||'orçamento')+'. Edite e mande de novo.')}}
+  else if(d){const h=H.find(h=>h.id===d.dataset.hDup);if(h){const o=clone(h.o);o.id=hid();o.step=1;o.cliente=Object.assign({},o.cliente,{nome:(o.cliente.nome||'')+(o.cliente.nome?' (cópia)':''),whats:''});carregar(o,'Cópia criada. Troque o cliente e ajuste.')}}
+  else if(x){const id=x.dataset.hDel;if(delPend!==id){delPend=id;renderHist();return}
+    H=H.filter(h=>h.id!==id);delPend=null;hsave();renderHistRow();renderHist();toast('Orçamento apagado')}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#hist-wrap').hidden)fecharHist()});
+renderHistRow();
 let tt;function toast(m){const el=$('#toast');el.textContent=m;el.hidden=false;clearTimeout(tt);tt=setTimeout(()=>el.hidden=true,2600)}
 
 
