@@ -63,9 +63,9 @@ button:focus-visible,.chip:focus-visible,a:focus-visible,summary:focus-visible{o
 .room{border:1.5px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px;background:var(--bg)}
 .room-top{display:flex;gap:8px;align-items:center}
 .voz{border:2px solid var(--accent)}
-.voz .mic,.entrada .mic{font:inherit;font-weight:700;font-size:17px;min-height:56px;border:0;border-radius:99px;background:var(--btn);color:var(--btn-ink);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;width:100%}
+.voz .mic,.entrada .mic,.hist .mic{font:inherit;font-weight:700;font-size:17px;min-height:56px;border:0;border-radius:99px;background:var(--btn);color:var(--btn-ink);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;width:100%}
 .voz .row2{display:flex;gap:10px}.voz .row2>*{flex:1}
-.voz .sec,.entrada .sec{font:inherit;font-weight:600;font-size:15px;min-height:48px;border:1.5px solid var(--line);border-radius:99px;background:var(--surface);color:var(--ink);cursor:pointer}
+.voz .sec,.entrada .sec,.hist .sec{font:inherit;font-weight:600;font-size:15px;min-height:48px;border:1.5px solid var(--line);border-radius:99px;background:var(--surface);color:var(--ink);cursor:pointer}
 .voz .gravando{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px}
 .voz .ponto{width:12px;height:12px;border-radius:50%;background:#E5484D;animation:pisca 1s infinite}
 @keyframes pisca{50%{opacity:.25}}
@@ -122,6 +122,13 @@ button:focus-visible,.chip:focus-visible,a:focus-visible,summary:focus-visible{o
 .hi-acts{display:flex;flex-wrap:wrap;gap:4px 14px}
 .hi-acts .del{color:var(--bad)}
 .hist-vazio{text-align:center;color:var(--muted);padding:20px 8px}
+.hi-tag.fec{background:#0B1030;color:#C8FF2E}.hi-tag.per{background:#EEE;color:#666}
+.resumo{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.resumo div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.resumo small{display:block;font-size:12px;color:var(--muted)}.resumo b{font-family:var(--display);font-size:15px;font-variant-numeric:tabular-nums}
+.cli-form{display:flex;flex-direction:column;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.cli-form .row2{display:flex;gap:10px;flex-wrap:wrap}.cli-form .row2 button{flex:1}
+.backup{display:flex;flex-wrap:wrap;gap:4px 14px;justify-content:center;border-top:1px solid var(--line);padding-top:8px}
 .acts-min{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 14px}
 .acts-min .link{color:#F4F1EA}
 .cfg-sec>summary{font-family:var(--display);font-weight:600;font-size:15px}
@@ -237,7 +244,7 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
 
   <!-- ORÇAMENTO -->
   <div id="v-orc" style="display:flex;flex-direction:column;gap:14px">
-    <div class="hist-row" id="hist-row" hidden><span id="hist-row-t">Meus orçamentos</span><button class="link" id="hist-abrir">Ver todos</button></div>
+    <div class="hist-row" id="hist-row" hidden><span id="hist-row-t">Meus orçamentos</span><span><button class="link" id="hist-abrir">Orçamentos</button><button class="link" id="cli-abrir">Clientes</button></span></div>
     <div class="banner" id="first" hidden><span>Primeira vez? Confira seus preços. Já vêm prontos, é só ajustar.</span><button class="link" id="go-cfg">Meus preços</button></div>
     <nav class="steps" aria-label="Passos">
       <button data-go="1">1 · Cômodos</button><button data-go="2">2 · Parede</button><button data-go="3">3 · Revisão</button>
@@ -280,6 +287,7 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
       <div class="card">
         <h2>Cliente</h2>
         <label>Nome do cliente<input id="c-nome" autocomplete="off"></label>
+        <button class="link" id="cli-escolher" hidden style="align-self:flex-start">Escolher dos meus clientes</button>
         <details><summary>WhatsApp e endereço <span>Opcional</span></summary>
           <div class="in row">
             <label>WhatsApp<input id="c-whats" inputmode="tel" autocomplete="off"></label>
@@ -510,8 +518,21 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
 <div class="hist-wrap" id="hist-wrap" hidden role="dialog" aria-modal="true" aria-labelledby="hist-t">
   <div class="hist">
     <div class="hist-cab"><h2 id="hist-t">Meus orçamentos</h2><button class="link" id="hist-fechar">Fechar</button></div>
-    <p class="hint" style="margin:0">Ficam guardados só neste celular. Os últimos 30.</p>
+    <p class="hint" style="margin:0" id="hist-filtro-t">Ficam guardados só neste celular. Os últimos 30.</p>
+    <div class="resumo" id="resumo"></div>
     <div id="hist-lista" style="display:flex;flex-direction:column;gap:10px"></div>
+    <div class="backup"><button class="link" id="bk-salvar">Salvar cópia de segurança</button><label class="link" style="cursor:pointer">Restaurar cópia<input type="file" id="bk-abrir" accept="application/json,.json" hidden></label></div>
+    <p class="hint" style="margin:0;text-align:center">A cópia guarda preços, orçamentos e clientes num arquivo. Use se for trocar de celular.</p>
+  </div>
+</div>
+<div class="hist-wrap" id="cli-wrap" hidden role="dialog" aria-modal="true" aria-labelledby="cli-t">
+  <div class="hist">
+    <div class="hist-cab"><h2 id="cli-t">Meus clientes</h2><button class="link" id="cli-fechar">Fechar</button></div>
+    <p class="hint" style="margin:0" id="cli-sub">Entram sozinhos quando você faz um orçamento. Ficam só neste celular.</p>
+    <input id="cli-busca" placeholder="Buscar cliente" autocomplete="off" hidden>
+    <button class="sec" id="cli-novo" style="min-height:48px">+ Cadastrar cliente</button>
+    <div id="cli-edit"></div>
+    <div id="cli-lista" style="display:flex;flex-direction:column;gap:10px"></div>
   </div>
 </div>
 <div class="toast" id="toast" hidden></div>
@@ -839,7 +860,7 @@ function goStep(n){
 }
 
 // ---------- eventos: orçamento ----------
-bind('#c-nome',()=>O.cliente.nome,v=>O.cliente.nome=v);
+bind('#c-nome',()=>O.cliente.nome,v=>{O.cliente.nome=v;O.cliId=null});
 bind('#c-whats',()=>O.cliente.whats,v=>O.cliente.whats=v);
 bind('#c-local',()=>O.cliente.local,v=>O.cliente.local=v);
 $('#rooms').addEventListener('input',e=>{const box=e.target.closest('[data-room]');const f=e.target.dataset.f;if(!box||!f)return;const r=O.rooms.find(x=>x.id===box.dataset.room);
@@ -1020,43 +1041,117 @@ $('#copy').addEventListener('click',()=>{const t=texto(calc());
   const fall=()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Texto copiado')}catch(e){toast('Não deu para copiar')}ta.remove()};
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(()=>toast('Texto copiado'),fall)}else fall()});
 
-// Meus orçamentos: histórico local (só neste aparelho), últimos 30
-const HKEY='nabucha-hist-v1';const HMAX=30;
-let H=[];try{H=JSON.parse(localStorage.getItem(HKEY)||'[]')||[]}catch(e){H=[]}
+// Meus orçamentos + Meus clientes: tudo local (só neste aparelho)
+const HKEY='nabucha-hist-v1',KKEY='nabucha-cli-v1',HMAX=30;
+let H=[],K=[];try{H=JSON.parse(localStorage.getItem(HKEY)||'[]')||[]}catch(e){H=[]}try{K=JSON.parse(localStorage.getItem(KKEY)||'[]')||[]}catch(e){K=[]}
 const hsave=()=>{try{localStorage.setItem(HKEY,JSON.stringify(H))}catch(e){while(H.length>5){H.pop();try{localStorage.setItem(HKEY,JSON.stringify(H));break}catch(e2){}}}};
+const ksave=()=>{try{localStorage.setItem(KKEY,JSON.stringify(K))}catch(e){}};
 const hid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const dig=t=>String(t||'').replace(/\D/g,'').replace(/^55(?=\d{10,11}$)/,'');
+const escH=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const dataBR=t=>{const d=new Date(t);return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})};
+const waLink=(w,txt)=>{const d=dig(w);return(d.length>=10?`https://wa.me/55${d}`:'https://wa.me/')+(txt?'?text='+encodeURIComponent(txt):'')};
+function acharCli(c){const w=dig(c.whats),n=(c.nome||'').trim().toLowerCase();
+  return K.find(k=>k.id===O.cliId)||(w.length>=10&&K.find(k=>dig(k.whats)===w))||(n&&K.find(k=>k.nome.trim().toLowerCase()===n))||null}
+function upsertCli(){const c=O.cliente;if(!(c.nome||'').trim())return;let k=acharCli(c);
+  if(!k){k={id:hid(),nome:c.nome.trim(),whats:c.whats||'',local:c.local||'',obs:'',criado:Date.now()};K.unshift(k)}
+  else{k.nome=c.nome.trim()||k.nome;if(c.whats)k.whats=c.whats;if(c.local)k.local=c.local}
+  O.cliId=k.id;ksave()}
 function guardar(enviado,numEnv){
   if(/\(exemplo\)$/.test(O.cliente.nome||''))return; // o orçamento de exemplo não entra na lista
-  if(!O.id)O.id=hid();const k=calc();
+  if(!O.id)O.id=hid();upsertCli();const k=calc();
   const i=H.findIndex(h=>h.id===O.id);const ant=i>=0?H[i]:null;
-  const e={id:O.id,quando:Date.now(),cliente:O.cliente.nome||'',local:O.cliente.local||'',total:k.total,
-    enviado:!!(enviado||(ant&&ant.enviado)),num:numEnv||(ant&&ant.num)||null,o:clone(O)};
+  const st=enviado?((ant&&(ant.st==='fechado'||ant.st==='perdido'))?ant.st:'enviado'):(ant&&ant.st)||'rascunho';
+  const e={id:O.id,cliId:O.cliId||null,quando:Date.now(),enviadoEm:enviado?Date.now():(ant&&ant.enviadoEm)||null,cliente:O.cliente.nome||'',local:O.cliente.local||'',whats:O.cliente.whats||'',total:k.total,
+    st,enviado:st!=='rascunho',num:numEnv||(ant&&ant.num)||null,o:clone(O)};
   if(i>=0)H.splice(i,1);H.unshift(e);if(H.length>HMAX)H.length=HMAX;hsave();save();renderHistRow();
 }
-function renderHistRow(){const n=H.length;$('#hist-row').hidden=!n;$('#hist-row-t').innerHTML=`<b>Meus orçamentos</b> · ${n} guardado${n>1?'s':''}`}
-const dataBR=t=>{const d=new Date(t);return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})};
-const escH=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-let delPend=null;
+function renderHistRow(){$('#hist-row').hidden=!H.length&&!K.length;$('#hist-row-t').innerHTML=`<b>Meus</b> · ${H.length} orç. · ${K.length} cliente${K.length===1?'':'s'}`;$('#cli-escolher').hidden=!K.length}
+const TAG={rascunho:['Rascunho',''],enviado:['Enviado','env'],fechado:['Fechou','fec'],perdido:['Não fechou','per']};
+let delPend=null,filtroCli=null;
+function stOf(h){return h.st||(h.enviado?'enviado':'rascunho')}
+function renderResumo(){const ini=new Date();ini.setDate(1);ini.setHours(0,0,0,0);const m=H.filter(h=>h.quando>=ini.getTime());
+  const env=m.filter(h=>stOf(h)!=='rascunho'),fec=m.filter(h=>stOf(h)==='fechado');
+  $('#resumo').innerHTML=`<div><small>Enviados no mês</small><b>${env.length}</b></div><div><small>Fechados</small><b>${fec.length}</b></div><div><small>Valor fechado</small><b>${brl0(fec.reduce((x,h)=>x+(h.total||0),0))}</b></div>`}
 function renderHist(){
-  const L=$('#hist-lista');
-  if(!H.length){L.innerHTML='<div class="hist-vazio">Nenhum orçamento guardado ainda.<br>Eles entram aqui quando você chega na folha do orçamento.</div>';return}
-  L.innerHTML=H.map(h=>`<div class="hi"><div class="hi-top"><b>${escH(h.cliente||'Sem nome')}${h.enviado?'<span class="hi-tag env">Enviado</span>':'<span class="hi-tag">Rascunho</span>'}</b><strong>${brl(h.total||0)}</strong></div>
-    <div class="hi-sub">${h.local?escH(h.local)+' · ':''}${dataBR(h.quando)}${h.num?' · Nº '+String(h.num).padStart(4,'0'):''}${h.id===O.id?' · aberto agora':''}</div>
-    <div class="hi-acts"><button class="link" data-h-abrir="${h.id}">Abrir e editar</button><button class="link" data-h-dup="${h.id}">Duplicar</button><button class="link del" data-h-del="${h.id}">${delPend===h.id?'Toque de novo para apagar':'Apagar'}</button></div></div>`).join('');
+  const L=$('#hist-lista');renderResumo();const lst=filtroCli?H.filter(h=>h.cliId===filtroCli):H;
+  const ck=filtroCli&&K.find(k=>k.id===filtroCli);
+  $('#hist-filtro-t').innerHTML=ck?`Só de <b>${escH(ck.nome)}</b> · <button class="link" id="hist-tudo">ver todos</button>`:'Ficam guardados só neste celular. Os últimos 30.';
+  if(!lst.length){L.innerHTML='<div class="hist-vazio">Nenhum orçamento guardado ainda.<br>Eles entram aqui quando você chega na folha do orçamento.</div>';return}
+  L.innerHTML=lst.map(h=>{const st=stOf(h),[tt,tc]=TAG[st];const dias=h.enviadoEm?(Date.now()-h.enviadoEm)/864e5:0;
+    const cobrar=st==='enviado'&&dias>=2?`<a class="link" target="_blank" rel="noopener" href="${waLink(h.whats,`Oi${h.cliente?' '+h.cliente.split(' ')[0]:''}, tudo bem? Conseguiu ver o orçamento que te mandei? Se quiser, ajusto alguma coisa.`)}">Cobrar resposta</a>`:'';
+    return `<div class="hi"><div class="hi-top"><b>${escH(h.cliente||'Sem nome')}<span class="hi-tag ${tc}">${tt}</span></b><strong>${brl(h.total||0)}</strong></div>
+    <div class="hi-sub">${h.local?escH(h.local)+' · ':''}${dataBR(h.quando)}${h.num?' · Nº '+String(h.num).padStart(4,'0'):''}${h.id===O.id?' · aberto agora':''}${st==='enviado'&&dias>=2?' · sem resposta há '+Math.floor(dias)+' dias':''}</div>
+    <div class="hi-acts"><button class="link" data-h-abrir="${h.id}">Abrir e editar</button><button class="link" data-h-dup="${h.id}">Duplicar</button>${cobrar}
+    ${st==='enviado'?`<button class="link" data-h-st="fechado" data-id="${h.id}">Fechou</button><button class="link" data-h-st="perdido" data-id="${h.id}">Não fechou</button>`:''}
+    ${st==='fechado'||st==='perdido'?`<button class="link" data-h-st="enviado" data-id="${h.id}">Desfazer status</button>`:''}
+    <button class="link del" data-h-del="${h.id}">${delPend===h.id?'Toque de novo para apagar':'Apagar'}</button></div></div>`}).join('');
 }
-function abrirHist(){delPend=null;renderHist();lastFocus=document.activeElement;$('#hist-wrap').hidden=false;document.body.style.overflow='hidden';$('#hist-fechar').focus({preventScroll:true})}
-function fecharHist(){$('#hist-wrap').hidden=true;if($('#sheet-wrap').hidden)document.body.style.overflow=''}
-function carregar(o,msg){if(H.some(h=>h.id===O.id))guardar(false);O=o;save();fecharHist();if(!$('#sheet-wrap').hidden)closeSheet();show('orc');toast(msg)}
-$('#hist-abrir').addEventListener('click',abrirHist);
-$('#hist-folha').addEventListener('click',abrirHist);
+function abrirOv(id,foco){lastFocus=document.activeElement;$(id).hidden=false;document.body.style.overflow='hidden';$(foco).focus({preventScroll:true})}
+function fecharOv(id){$(id).hidden=true;if($('#sheet-wrap').hidden&&$('#hist-wrap').hidden&&$('#cli-wrap').hidden)document.body.style.overflow=''}
+function abrirHist(cli){delPend=null;filtroCli=cli||null;renderHist();abrirOv('#hist-wrap','#hist-fechar')}
+const fecharHist=()=>fecharOv('#hist-wrap');
+function carregar(o,msg){if(H.some(h=>h.id===O.id))guardar(false);O=o;save();fecharOv('#hist-wrap');fecharOv('#cli-wrap');if(!$('#sheet-wrap').hidden)closeSheet();show('orc');toast(msg)}
+$('#hist-abrir').addEventListener('click',()=>abrirHist());
+$('#hist-folha').addEventListener('click',()=>abrirHist());
 $('#hist-fechar').addEventListener('click',fecharHist);
 $('#hist-wrap').addEventListener('click',e=>{if(e.target.id==='hist-wrap'){fecharHist();return}
-  const a=e.target.closest('[data-h-abrir]'),d=e.target.closest('[data-h-dup]'),x=e.target.closest('[data-h-del]');
+  if(e.target.id==='hist-tudo'){filtroCli=null;renderHist();return}
+  const a=e.target.closest('[data-h-abrir]'),d=e.target.closest('[data-h-dup]'),x=e.target.closest('[data-h-del]'),s=e.target.closest('[data-h-st]');
   if(a){const h=H.find(h=>h.id===a.dataset.hAbrir);if(h){const o=clone(h.o);o.step=3;carregar(o,'Aberto: '+(h.cliente||'orçamento')+'. Edite e mande de novo.')}}
-  else if(d){const h=H.find(h=>h.id===d.dataset.hDup);if(h){const o=clone(h.o);o.id=hid();o.step=1;o.cliente=Object.assign({},o.cliente,{nome:(o.cliente.nome||'')+(o.cliente.nome?' (cópia)':''),whats:''});carregar(o,'Cópia criada. Troque o cliente e ajuste.')}}
+  else if(d){const h=H.find(h=>h.id===d.dataset.hDup);if(h){const o=clone(h.o);o.id=hid();o.cliId=null;o.step=1;o.cliente=Object.assign({},o.cliente,{nome:(o.cliente.nome||'')+(o.cliente.nome?' (cópia)':''),whats:''});carregar(o,'Cópia criada. Troque o cliente e ajuste.')}}
+  else if(s){const h=H.find(h=>h.id===s.dataset.id);if(h){h.st=s.dataset.hSt;h.enviado=true;hsave();renderHist();toast(h.st==='fechado'?'Boa! Serviço fechado.':h.st==='perdido'?'Anotado. Fica de aprendizado.':'Status desfeito')}}
   else if(x){const id=x.dataset.hDel;if(delPend!==id){delPend=id;renderHist();return}
     H=H.filter(h=>h.id!==id);delPend=null;hsave();renderHistRow();renderHist();toast('Orçamento apagado')}});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#hist-wrap').hidden)fecharHist()});
+// Meus clientes
+let cliModo='ver',cliDel=null,cliEd=null;
+function cliStats(k){const hs=H.filter(h=>h.cliId===k.id);const fec=hs.filter(h=>stOf(h)==='fechado');return{n:hs.length,fec:fec.reduce((x,h)=>x+(h.total||0),0)}}
+function renderCli(){
+  const q=($('#cli-busca').value||'').trim().toLowerCase();$('#cli-busca').hidden=K.length<6;
+  $('#cli-sub').textContent=cliModo==='escolher'?'Toque no cliente para usar neste orçamento.':'Entram sozinhos quando você faz um orçamento. Ficam só neste celular.';
+  $('#cli-novo').hidden=cliModo==='escolher';
+  const lst=K.filter(k=>!q||(k.nome+' '+k.local+' '+k.whats).toLowerCase().includes(q));
+  $('#cli-edit').innerHTML=cliEd?formCli(cliEd==='novo'?{nome:'',whats:'',local:'',obs:''}:K.find(k=>k.id===cliEd)):'';
+  if(!lst.length){$('#cli-lista').innerHTML=`<div class="hist-vazio">${K.length?'Nenhum cliente com esse nome.':'Nenhum cliente ainda.<br>Eles entram aqui quando você faz um orçamento com o nome do cliente.'}</div>`;return}
+  $('#cli-lista').innerHTML=lst.map(k=>{const st=cliStats(k);
+    if(cliModo==='escolher')return `<button class="hi" data-k-usar="${k.id}" style="text-align:left;font:inherit;cursor:pointer"><div class="hi-top"><b>${escH(k.nome)}</b></div><div class="hi-sub">${[k.whats,k.local].filter(Boolean).map(escH).join(' · ')||'Sem WhatsApp e endereço'}</div></button>`;
+    return `<div class="hi"><div class="hi-top"><b>${escH(k.nome)}</b>${st.fec?`<strong>${brl0(st.fec)}</strong>`:''}</div>
+    <div class="hi-sub">${[k.whats,k.local].filter(Boolean).map(escH).join(' · ')||'Sem WhatsApp e endereço'} · ${st.n} orçamento${st.n===1?'':'s'}${st.fec?' · fechou '+brl0(st.fec):''}</div>
+    ${k.obs?`<div class="hi-sub">📝 ${escH(k.obs)}</div>`:''}
+    <div class="hi-acts"><button class="link" data-k-orc="${k.id}">Novo orçamento</button>${dig(k.whats).length>=10?`<a class="link" target="_blank" rel="noopener" href="${waLink(k.whats)}">WhatsApp</a>`:''}
+    ${st.n?`<button class="link" data-k-hist="${k.id}">Orçamentos dele</button>`:''}<button class="link" data-k-ed="${k.id}">Editar</button>
+    <button class="link del" data-k-del="${k.id}">${cliDel===k.id?'Toque de novo para apagar':'Apagar'}</button></div></div>`}).join('');
+}
+function formCli(k){return `<div class="cli-form"><b>${cliEd==='novo'?'Novo cliente':'Editar cliente'}</b>
+  <label>Nome<input id="kf-nome" value="${escH(k.nome)}" autocomplete="off"></label>
+  <label>WhatsApp<input id="kf-whats" value="${escH(k.whats)}" inputmode="tel" autocomplete="off"></label>
+  <label>Bairro ou endereço<input id="kf-local" value="${escH(k.local)}" autocomplete="off"></label>
+  <label>Anotação <span class="hint">(ex.: prefere à tarde, tem cachorro)</span><input id="kf-obs" value="${escH(k.obs||'')}" autocomplete="off"></label>
+  <div class="row2"><button class="sec" id="kf-cancel">Cancelar</button><button class="mic" id="kf-ok">Salvar</button></div></div>`}
+function abrirCli(modo){cliModo=modo||'ver';cliDel=null;cliEd=null;$('#cli-busca').value='';renderCli();abrirOv('#cli-wrap','#cli-fechar')}
+$('#cli-abrir').addEventListener('click',()=>abrirCli('ver'));
+$('#cli-escolher').addEventListener('click',()=>abrirCli('escolher'));
+$('#cli-fechar').addEventListener('click',()=>fecharOv('#cli-wrap'));
+$('#cli-busca').addEventListener('input',renderCli);
+$('#cli-novo').addEventListener('click',()=>{cliEd='novo';renderCli();$('#kf-nome').focus()});
+$('#cli-wrap').addEventListener('click',e=>{if(e.target.id==='cli-wrap'){fecharOv('#cli-wrap');return}
+  if(e.target.id==='kf-cancel'){cliEd=null;renderCli();return}
+  if(e.target.id==='kf-ok'){const v={nome:$('#kf-nome').value.trim(),whats:$('#kf-whats').value.trim(),local:$('#kf-local').value.trim(),obs:$('#kf-obs').value.trim()};
+    if(!v.nome){toast('Escreva o nome do cliente');return}
+    if(cliEd==='novo')K.unshift(Object.assign({id:hid(),criado:Date.now()},v));else Object.assign(K.find(k=>k.id===cliEd),v);
+    ksave();cliEd=null;renderCli();renderHistRow();toast('Cliente salvo');return}
+  const u=e.target.closest('[data-k-usar]'),o=e.target.closest('[data-k-orc]'),hh=e.target.closest('[data-k-hist]'),ed=e.target.closest('[data-k-ed]'),x=e.target.closest('[data-k-del]');
+  if(u){const k=K.find(k=>k.id===u.dataset.kUsar);O.cliente={nome:k.nome,whats:k.whats,local:k.local};O.cliId=k.id;save();fecharOv('#cli-wrap');renderOrc();refresh();toast('Cliente: '+k.nome)}
+  else if(o){const k=K.find(k=>k.id===o.dataset.kOrc);if(H.some(h=>h.id===O.id))guardar(false);O=novoOrc(C,false);aplicarSituacao();O.cliente={nome:k.nome,whats:k.whats,local:k.local};O.cliId=k.id;save();fecharOv('#cli-wrap');show('orc');toast('Orçamento novo para '+k.nome)}
+  else if(hh){fecharOv('#cli-wrap');abrirHist(hh.dataset.kHist)}
+  else if(ed){cliEd=ed.dataset.kEd;renderCli();$('#kf-nome').focus()}
+  else if(x){const id=x.dataset.kDel;if(cliDel!==id){cliDel=id;renderCli();return}K=K.filter(k=>k.id!==id);cliDel=null;ksave();renderCli();renderHistRow();toast('Cliente apagado. Os orçamentos dele continuam na lista.')}});
+document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(!$('#cli-wrap').hidden)fecharOv('#cli-wrap');else if(!$('#hist-wrap').hidden)fecharHist()});
+// Cópia de segurança (arquivo .json com preços, orçamentos e clientes)
+$('#bk-salvar').addEventListener('click',()=>{const d=JSON.stringify({app:'nabucha',v:1,em:new Date().toISOString(),C,O,H,K});
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([d],{type:'application/json'}));a.download='nabucha-copia-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();toast('Cópia salva nos downloads')});
+$('#bk-abrir').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const d=JSON.parse(rd.result);
+  if(d.app!=='nabucha'||!d.C)throw 0;C=d.C;O=d.O||novoOrc(C,false);H=d.H||[];K=d.K||[];save();hsave();ksave();renderHistRow();renderHist();show('orc');toast('Cópia restaurada')}catch(err){toast('Esse arquivo não é uma cópia do Na Bucha')}};rd.readAsText(f);e.target.value=''});
 renderHistRow();
 let tt;function toast(m){const el=$('#toast');el.textContent=m;el.hidden=false;clearTimeout(tt);tt=setTimeout(()=>el.hidden=true,2600)}
 
