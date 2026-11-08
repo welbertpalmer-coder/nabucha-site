@@ -1,175 +1,21 @@
-<!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8">
-<style>
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><style>
 @font-face{font-family:Unb;src:url(https://cdn.jsdelivr.net/npm/@fontsource/unbounded/files/unbounded-latin-900-normal.woff2)}
 @font-face{font-family:Fig;src:url(https://cdn.jsdelivr.net/npm/@fontsource/figtree/files/figtree-latin-700-normal.woff2);font-weight:700}
 @font-face{font-family:Fig;src:url(https://cdn.jsdelivr.net/npm/@fontsource/figtree/files/figtree-latin-600-normal.woff2);font-weight:600}
-@page{size:A4;margin:0}
-html,body{margin:0;background:#fff}
-.pg{width:210mm;height:297mm;position:relative;overflow:hidden}
-svg{display:block;width:100%;height:100%}
+@page{size:A4;margin:0}html,body{margin:0}
+.pg{width:210mm;height:297mm;box-sizing:border-box;padding:9mm 10mm 8mm;display:flex;flex-direction:column;align-items:center}
+h1{font-family:Unb;font-size:40pt;margin:0;color:#fff;-webkit-text-stroke:2.2pt #111;paint-order:stroke fill;letter-spacing:1pt;line-height:1}
+.sub{font-family:Fig;font-weight:700;font-size:13pt;margin:2mm 0 3mm;color:#111}
+.arte{flex:1;min-height:0;width:100%;display:flex;justify-content:center}
+.arte img{height:100%;max-width:100%;object-fit:contain}
+.campos{width:100%;font-family:Fig;font-weight:700;font-size:13pt;color:#111;margin-top:3mm}
+.campos div{display:flex;gap:3mm;align-items:flex-end;margin-top:4mm}
+.campos span.l{flex:1;border-bottom:1.4pt dotted #111;height:1em}
+.rod{font-family:Fig;font-weight:600;font-size:9pt;color:#444;margin-top:4mm;text-align:center}
 </style></head><body><div class="pg">
-<svg viewBox="0 0 2100 2970" xmlns="http://www.w3.org/2000/svg">
-<defs>
-  <style>
-    .t{fill:#fff;stroke:#111;stroke-width:9;stroke-linejoin:round;stroke-linecap:round}
-    .f{fill:none;stroke:#111;stroke-width:9;stroke-linejoin:round;stroke-linecap:round}
-    .fn{fill:none;stroke:#111;stroke-width:6;stroke-linejoin:round;stroke-linecap:round}
-    .k{fill:#111}
-    .tit{font-family:Unb;font-size:150px;fill:#fff;stroke:#111;stroke-width:9;stroke-linejoin:round;paint-order:stroke}
-    .sub{font-family:Fig;font-weight:700;font-size:54px;fill:#111}
-    .rod{font-family:Fig;font-weight:600;font-size:36px;fill:#333}
-  </style>
-  <!-- mancha de tinta -->
-  <path id="splat" d="M0,-34 C10,-34 12,-18 22,-22 C34,-27 40,-12 30,-4 C42,4 36,20 22,16 C20,30 4,34 0,22 C-6,34 -24,30 -20,16 C-36,20 -40,2 -28,-4 C-38,-16 -26,-30 -14,-22 C-12,-34 -4,-34 0,-34 Z"/>
-  <path id="estrela" d="M0,-30 L8,-9 L30,-9 L12,4 L19,26 L0,13 L-19,26 L-12,4 L-30,-9 L-8,-9 Z"/>
-</defs>
-
-<!-- moldura -->
-<rect x="70" y="70" width="1960" height="2830" rx="60" class="f" stroke-width="7"/>
-
-<!-- título -->
-<text x="1050" y="290" text-anchor="middle" class="tit">PINTE A CAPI!</text>
-<text x="1050" y="390" text-anchor="middle" class="sub">A Capi é pintora, igual a muita gente que você conhece.</text>
-
-<!-- sol -->
-<g transform="translate(1700,560) scale(0.8)">
-  <circle r="95" class="t"/>
-  <g class="f">
-    <path d="M0,-130 L0,-175"/><path d="M0,130 L0,175"/><path d="M-130,0 L-175,0"/><path d="M130,0 L175,0"/>
-    <path d="M92,-92 L124,-124"/><path d="M-92,92 L-124,124"/><path d="M-92,-92 L-124,-124"/><path d="M92,92 L124,124"/>
-  </g>
-  <circle cx="-30" cy="-15" r="9" class="k"/><circle cx="30" cy="-15" r="9" class="k"/>
-  <path d="M-38,25 Q0,58 38,25" class="f"/>
-</g>
-<!-- nuvem -->
-<path d="M260,640 C230,640 215,610 235,585 C225,545 275,525 300,545 C315,505 380,500 400,540 C430,525 470,545 465,580 C495,590 490,640 455,640 Z" class="t"/>
-
-<!-- parede sendo pintada, atrás da Capi -->
-<g>
-  <rect x="190" y="820" width="1720" height="1500" class="t"/>
-  <!-- tijolinhos na parte ainda sem pintar (direita) -->
-  <g class="fn">
-    <path d="M1320,820 L1320,2320"/>
-    <path d="M1320,960 L1910,960"/><path d="M1320,1100 L1910,1100"/><path d="M1320,1240 L1910,1240"/><path d="M1320,1380 L1910,1380"/><path d="M1320,1520 L1910,1520"/><path d="M1320,1660 L1910,1660"/><path d="M1320,1800 L1910,1800"/><path d="M1320,1940 L1910,1940"/><path d="M1320,2080 L1910,2080"/><path d="M1320,2220 L1910,2220"/>
-    <path d="M1610,820 L1610,960"/><path d="M1465,960 L1465,1100"/><path d="M1755,960 L1755,1100"/><path d="M1610,1100 L1610,1240"/><path d="M1465,1240 L1465,1380"/><path d="M1755,1240 L1755,1380"/><path d="M1610,1380 L1610,1520"/><path d="M1465,1520 L1465,1660"/><path d="M1755,1520 L1755,1660"/><path d="M1610,1660 L1610,1800"/><path d="M1465,1800 L1465,1940"/><path d="M1755,1800 L1755,1940"/><path d="M1610,1940 L1610,2080"/><path d="M1465,2080 L1465,2220"/><path d="M1755,2080 L1755,2220"/><path d="M1610,2220 L1610,2320"/>
-  </g>
-  <!-- borda da tinta escorrendo -->
-  <path d="M1320,820 L1320,1180 C1335,1180 1340,1230 1325,1260 C1310,1290 1340,1300 1320,1330 L1320,2320" class="f"/>
-  <!-- rodapé da parede / chão -->
-  <path d="M110,2320 L1990,2320" class="f"/>
-  <!-- janela na parte pintada -->
-  <rect x="300" y="960" width="330" height="380" rx="14" class="t"/>
-  <path d="M465,960 L465,1340 M300,1150 L630,1150" class="f"/>
-  <rect x="270" y="1340" width="390" height="40" rx="10" class="t"/>
-</g>
-
-<!-- lata de tinta no chão com pincel -->
-<g transform="translate(1590,2190)">
-  <path d="M-150,-80 L150,-80 L130,140 C120,165 -120,165 -130,140 Z" class="t"/>
-  <ellipse cx="0" cy="-80" rx="150" ry="36" class="t"/>
-  <ellipse cx="0" cy="-80" rx="118" ry="24" class="f"/>
-  <path d="M-70,-50 C-70,-10 -44,-10 -44,-48" class="t" stroke-width="7"/>
-  <path d="M-150,-60 C-200,-170 200,-170 150,-60" class="f"/>
-  <rect x="-105" y="10" width="210" height="80" rx="16" class="t"/>
-  <text x="0" y="65" text-anchor="middle" class="sub" style="font-size:40px">TINTA</text>
-  <!-- pincel apoiado -->
-  <g transform="translate(70,-110) rotate(25)">
-    <rect x="-16" y="-170" width="32" height="130" rx="14" class="t"/>
-    <rect x="-28" y="-45" width="56" height="34" rx="4" class="t"/>
-    <path d="M-28,-11 L28,-11 L32,50 C20,62 -20,62 -32,50 Z" class="t"/>
-    <path d="M-12,-5 L-14,48 M0,-5 L0,52 M12,-5 L14,48" class="fn"/>
-  </g>
-</g>
-
-<!-- ============ CAPI ============ -->
-<g transform="translate(470,960) scale(2.75)">
-  <!-- rolo (atrás do braço) -->
-  <path d="M312,300 L312,232 L352,232 L352,214" class="f" stroke-width="7"/>
-  <rect x="326" y="82" width="52" height="134" rx="24" class="t"/>
-  <path d="M340,104 L340,196 M364,104 L364,196" class="fn" stroke-width="3" stroke-dasharray="3 12"/>
-  <rect x="302" y="296" width="20" height="56" rx="9" class="t"/>
-
-
-  <!-- corpo -->
-  <path d="M130,248 C96,296 92,398 114,458 L286,458 C308,398 304,296 270,248 Z" class="t"/>
-
-  <!-- braço esquerdo (lata pequena) -->
-  <path d="M130,262 C104,282 94,330 98,368 C100,388 124,390 128,370 C131,338 140,302 148,286" class="t"/>
-  <!-- braço direito (segurando o rolo) -->
-  <path d="M266,264 C296,270 318,290 322,310 C324,326 302,330 298,314 C292,298 280,292 270,296" class="t"/>
-
-  <!-- macacão: calça -->
-  <path d="M110,372 L290,372 C300,420 296,452 288,474 L216,474 L210,446 L190,446 L184,474 L112,474 C104,452 100,420 110,372 Z" class="t"/>
-  <!-- peitilho -->
-  <path d="M150,300 L250,300 L254,376 L146,376 Z" class="t"/>
-  <!-- alças -->
-  <path d="M152,302 L136,256 L150,252 L166,300" class="t" stroke-width="6"/>
-  <path d="M248,302 L264,256 L250,252 L234,300" class="t" stroke-width="6"/>
-  <circle cx="159" cy="310" r="7" class="t" stroke-width="5"/>
-  <circle cx="241" cy="310" r="7" class="t" stroke-width="5"/>
-  <!-- trena e lápis no bolso -->
-  <circle cx="186" cy="332" r="14" class="t" stroke-width="5"/>
-  <circle cx="186" cy="332" r="5" class="fn" stroke-width="4"/>
-  <rect x="198" y="327" width="14" height="8" class="t" stroke-width="4"/>
-  <path d="M216,318 L222,342" class="t" stroke-width="5"/>
-  <path d="M212,312 L220,318 L224,346 L216,346 L210,316 Z" class="t" stroke-width="4"/>
-  <!-- bolso -->
-  <path d="M168,336 L232,336 L229,364 Q200,372 171,364 Z" class="t"/>
-  <!-- costura e manchas -->
-  <path d="M200,446 L200,400" class="fn" stroke-width="4" stroke-dasharray="6 7"/>
-  <use href="#splat" transform="translate(255,420) scale(0.7)" class="t" style="stroke-width:7"/>
-  <use href="#splat" transform="translate(132,405) scale(0.45) rotate(40)" class="t" style="stroke-width:9"/>
-  <use href="#splat" transform="translate(236,355) scale(0.3) rotate(10)" class="t" style="stroke-width:12"/>
-
-  <!-- mãos -->
-  <circle cx="110" cy="378" r="17" class="t"/>
-  <path d="M100,372 L104,380 M110,368 L112,378" class="fn" stroke-width="4"/>
-  <circle cx="310" cy="314" r="17" class="t"/>
-  <path d="M300,322 L306,316 M304,330 L310,322" class="fn" stroke-width="4"/>
-
-  <!-- latinha na mão esquerda -->
-  <path d="M74,402 L130,402 L126,446 C120,454 84,454 78,446 Z" class="t"/>
-  <ellipse cx="102" cy="402" rx="28" ry="8" class="t"/>
-  <path d="M76,404 C70,370 104,360 110,378" class="f" stroke-width="5"/>
-  <path d="M92,410 C92,424 100,424 100,412" class="fn" stroke-width="4"/>
-
-  <!-- pés -->
-  <ellipse cx="150" cy="482" rx="42" ry="16" class="t"/>
-  <ellipse cx="250" cy="482" rx="42" ry="16" class="t"/>
-  <path d="M132,488 L132,478 M150,490 L150,478 M168,488 L168,478 M232,488 L232,478 M250,490 L250,478 M268,488 L268,478" class="fn" stroke-width="4"/>
-
-  <!-- cabeça (3/4, focinho para a esquerda) -->
-  <ellipse cx="300" cy="132" rx="17" ry="20" class="t"/><path d="M296,140 C292,128 300,120 306,128" class="fn" stroke-width="4"/>
-  <path d="M286,132 C296,196 282,250 236,266 C202,278 160,274 138,260 C108,242 100,198 108,166 C114,138 136,122 166,118 C200,106 268,98 286,132 Z" class="t"/>
-  <!-- focinho -->
-  <path d="M196,146 C212,180 210,228 186,262" class="f" stroke-width="6"/>
-  <path d="M112,168 C116,160 126,160 128,168" class="f" stroke-width="6"/>
-  <path d="M118,232 Q132,242 148,234" class="f" stroke-width="6"/>
-  <!-- olho sonolento -->
-  <ellipse cx="246" cy="160" rx="17" ry="12" class="t" stroke-width="5"/>
-  <circle cx="242" cy="165" r="6.5" class="k"/>
-  <path d="M227,159 C234,148 258,148 265,159 Z" class="k"/>
-  <!-- boné (aba para a frente/esquerda) -->
-  <path d="M150,124 C146,70 276,56 292,116 C250,104 196,108 150,124 Z" class="t"/>
-  <path d="M158,122 C130,112 96,120 98,134 C100,146 136,142 196,124" class="t"/>
-  <circle cx="222" cy="70" r="7" class="t" stroke-width="5"/>
-  <path d="M222,78 C214,92 210,104 208,112" class="fn" stroke-width="4"/>
-</g>
-
-<!-- manchinhas e estrelas soltas -->
-<use href="#estrela" transform="translate(300,2480) scale(1.6)" class="t"/>
-<use href="#estrela" transform="translate(1840,2440) scale(1.3) rotate(15)" class="t"/>
-<use href="#splat" transform="translate(760,2470) scale(1.5)" class="t"/>
-<use href="#splat" transform="translate(1200,2500) scale(1.1) rotate(60)" class="t"/>
-<use href="#estrela" transform="translate(620,560) scale(1.2) rotate(-10)" class="t"/>
-
-<!-- campos para escrever -->
-<text x="200" y="2650" class="sub" style="font-size:46px">Meu nome:</text>
-<path d="M455,2655 L1900,2655" class="fn" stroke-dasharray="2 14"/>
-<text x="200" y="2760" class="sub" style="font-size:46px">Quem eu conheço que é pintor(a):</text>
-<path d="M1000,2765 L1900,2765" class="fn" stroke-dasharray="2 14"/>
-
-<text x="1050" y="2860" text-anchor="middle" class="rod">A Capi é a mascote do Na Bucha, o app de orçamento para quem trabalha por conta · nabucha.com.br</text>
-</svg>
+<h1>PINTE A CAPI!</h1>
+<div class="sub">A Capi é pintora, igual a muita gente que você conhece.</div>
+<div class="arte"><img src="capi-pintora-arte.png" alt=""></div>
+<div class="campos"><div>Meu nome:<span class="l"></span></div><div>Quem eu conheço que é pintor(a):<span class="l"></span></div></div>
+<div class="rod">A Capi é a mascote do Na Bucha, o app de orçamento para quem trabalha por conta · nabucha.com.br</div>
 </div></body></html>
