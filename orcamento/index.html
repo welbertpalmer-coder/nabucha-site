@@ -125,7 +125,7 @@ button:focus-visible,.chip:focus-visible,a:focus-visible,summary:focus-visible{o
 .hist-vazio{text-align:center;color:var(--muted);padding:20px 8px}
 .hi-tag.fec{background:#0B1030;color:#C8FF2E}.hi-tag.per{background:#EEE;color:#666}
 .resumo{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.resumo div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.resumo.r4{grid-template-columns:1fr 1fr}.resumo div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
 .resumo small{display:block;font-size:12px;color:var(--muted)}.resumo b{font-family:var(--display);font-size:15px;font-variant-numeric:tabular-nums}
 .cli-form{display:flex;flex-direction:column;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
 .cli-form .row2{display:flex;gap:10px;flex-wrap:wrap}.cli-form .row2 button{flex:1}
@@ -1133,7 +1133,7 @@ let delPend=null,filtroCli=null;
 function stOf(h){return h.st||(h.enviado?'enviado':'rascunho')}
 function renderResumo(){const ini=new Date();ini.setDate(1);ini.setHours(0,0,0,0);const m=H.filter(h=>h.quando>=ini.getTime());
   const env=m.filter(h=>stOf(h)!=='rascunho'),fec=m.filter(h=>stOf(h)==='fechado');
-  $('#resumo').innerHTML=`<div><small>Enviados no mês</small><b>${env.length}</b></div><div><small>Fechados</small><b>${fec.length}</b></div><div><small>Valor fechado</small><b>${brl0(fec.reduce((x,h)=>x+(h.total||0),0))}</b></div>`+(H.some(h=>stOf(h)==='fechado')?`<button class="link" id="hist-rec" style="grid-column:1/-1;justify-content:center">Ver recebimentos e gráficos</button>`:'')}
+  $('#resumo').innerHTML=`<div><small>Enviados no mês</small><b>${env.length}</b></div><div><small>Fechados</small><b>${fec.length}</b></div><div><small>Valor fechado</small><b>${brl0(fec.reduce((x,h)=>x+((h.pag&&h.pag.acomp&&h.pag.valor)||h.total||0),0))}</b></div>`+(H.some(h=>stOf(h)==='fechado')?`<button class="link" id="hist-rec" style="grid-column:1/-1;justify-content:center">Ver recebimentos e gráficos</button>`:'')}
 function renderHist(){
   const L=$('#hist-lista');renderResumo();const lst=filtroCli?H.filter(h=>h.cliId===filtroCli):H;
   const ck=filtroCli&&K.find(k=>k.id===filtroCli);
@@ -1146,7 +1146,7 @@ function renderHist(){
     <div class="hi-acts"><button class="link" data-h-abrir="${h.id}">Abrir e editar</button><button class="link" data-h-dup="${h.id}">Duplicar</button>${cobrar}
     ${st==='enviado'?`<button class="link" data-h-st="fechado" data-id="${h.id}">Fechou</button><button class="link" data-h-st="perdido" data-id="${h.id}">Não fechou</button>`:''}
     ${st==='fechado'?`<button class="link" data-h-pag="${h.id}">${h.pag&&h.pag.acomp?'Pagamento':'Acompanhar pagamento'}</button>`:''}${st==='fechado'||st==='perdido'?`<button class="link" data-h-st="enviado" data-id="${h.id}">Desfazer status</button>`:''}
-    <button class="link del" data-h-del="${h.id}">${delPend===h.id?'Toque de novo para apagar':'Apagar'}</button></div></div>`}).join('');
+    <button class="link del" data-h-del="${h.id}">${delPend===h.id?((h.pag&&(h.pag.recs||[]).length)?'Tem '+brl0(h.pag.recs.reduce((x,r)=>x+r.v,0))+' recebido anotado. Toque de novo para apagar tudo':'Toque de novo para apagar'):'Apagar'}</button></div></div>`}).join('');
 }
 function abrirOv(id,foco){lastFocus=document.activeElement;$(id).hidden=false;document.body.style.overflow='hidden';$(foco).focus({preventScroll:true})}
 function fecharOv(id){$(id).hidden=true;if($('#sheet-wrap').hidden&&$('#hist-wrap').hidden&&$('#cli-wrap').hidden&&$('#pag-wrap').hidden&&$('#rec-wrap').hidden)document.body.style.overflow=''}
@@ -1228,27 +1228,30 @@ const dBR=s=>{if(!s)return'';const p=String(s).split('-');return p[2]+'/'+p[1]};
 const r2=n=>Math.round((n||0)*100)/100;
 const vtxt=n=>n?String(r2(n)).replace('.',','):'';
 const mil=n=>n>=1000?'R$ '+(n/1000).toLocaleString('pt-BR',{maximumFractionDigits:1})+' mil':brl0(n);
+const val=v=>{let t=String(v==null?'':v).toLowerCase().replace(/r\$/g,'').replace(/\s/g,'');if(!t)return 0;const m=t.match(/^([\d.,]+)mil$/);if(m){const b=m[1].includes(',')?num(m[1]):parseFloat(m[1])||0;return b*1000}return num(t)};
 const okD=s=>/^\d{4}-\d{2}-\d{2}$/.test(String(s||''));
-function dividir(t,n){const p=Math.floor(t/n*100)/100,a=Array(n).fill(p);a[n-1]=r2(t-p*(n-1));return a}
-function gerarParcelas(c){const V=r2(num(c.valor));if(!V||c.tipo==='livre')return[];
-  const ent=Math.min(r2(num(c.ent)),V),entD=okD(c.entD)?c.entD:hoje(),ini=okD(c.ini)?c.ini:hoje(),n=Math.max(1,Math.min(52,parseInt(c.n,10)||1));
+function dividir(t,n){const p=t/n>=10?Math.floor(t/n):Math.floor(t/n*100)/100,a=Array(n).fill(p);a[n-1]=r2(t-p*(n-1));return a}
+function gerarParcelas(c){const V=r2(val(c.valor));if(!V||c.tipo==='livre')return[];
+  const ent=Math.min(r2(val(c.ent)),V),entD=okD(c.entD)?c.entD:hoje(),ini=okD(c.ini)?c.ini:hoje(),n=Math.max(1,Math.min(52,parseInt(c.n,10)||1));
   if(c.tipo==='unica')return[{d:ini,v:V}];
-  if(c.tipo==='entrada'){const P=[];if(ent>0)P.push({d:entD,v:ent});if(V-ent>0)P.push({d:okD(c.fim)?c.fim:somaDias(entD,14),v:r2(V-ent)});return P}
-  const P=[];if(ent>0)P.push({d:entD,v:ent});const resto=r2(V-ent);
+  if(c.tipo==='entrada'){const P=[];if(ent>0)P.push({d:entD,v:ent,e:1});if(V-ent>0)P.push({d:okD(c.fim)?c.fim:somaDias(entD,14),v:r2(V-ent)});return P}
+  const P=[];if(ent>0)P.push({d:entD,v:ent,e:1});const resto=r2(V-ent);
   if(resto>0)dividir(resto,n).forEach((v,k)=>P.push({d:c.tipo==='semana'?somaDias(ini,7*k):somaMes(ini,k),v}));
   return P.sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:0)}
 function pagInfo(h){const p=h&&h.pag;if(!p||!p.acomp)return null;const t=hoje();
   const V=r2(p.valor),rec=r2((p.recs||[]).reduce((x,r)=>x+(r.v||0),0));let resto=rec;
   const parc=(p.parc||[]).map(q=>{const cob=r2(Math.min(q.v,Math.max(0,resto)));resto=r2(resto-cob);const falta=r2(q.v-cob);
-    return{d:q.d,v:q.v,cob,falta,st:falta<=0.009?'pago':q.d<t?'atrasada':cob>0?'parcial':'avencer'}});
-  const falta=Math.max(0,r2(V-rec)),atraso=r2(parc.filter(q=>q.st==='atrasada').reduce((x,q)=>x+q.falta,0));
-  return{V,rec,falta,atraso,parc,prox:parc.find(q=>q.st!=='pago')||null,quit:V>0&&falta<=0.009,mais:rec>V?r2(rec-V):0}}
+    return{d:q.d,v:q.v,e:q.e,cob,falta,st:falta<1?'pago':q.d<t?'atrasada':cob>0?'parcial':'avencer'}});
+  const falta=Math.max(0,r2(V-rec)),atraso=r2(parc.filter(q=>q.st==='atrasada'&&q.falta>=1).reduce((x,q)=>x+q.falta,0));
+  return{V,rec,falta,atraso,parc,prox:parc.find(q=>q.st!=='pago')||null,quit:V>0&&falta<1,mais:rec>V?r2(rec-V):0}}
 const rastreados=()=>H.filter(h=>stOf(h)==='fechado'&&h.pag&&h.pag.acomp).map(h=>({h,i:pagInfo(h)}));
 const semAcomp=()=>H.filter(h=>stOf(h)==='fechado'&&!(h.pag&&h.pag.acomp));
-const prim=n=>String(n||'').replace(/\s*\(.*\)$/,'').trim().split(/\s+/)[0]||'';
+const prim=n=>{const w=String(n||'').replace(/\s*\(.*\)$/,'').trim().split(/\s+/);while(w.length>1&&/^(dona|dna\.?|seu|sr\.?|sra\.?|srta\.?|dr\.?|dra\.?|doutor|doutora|d\.)$/i.test(w[0]))w.shift();return /^(condom|edif|igreja|escola|loja|empresa|cond\.)/i.test(w[0]||'')?'':(w[0]||'')};
+const rot=(P,k)=>{const q=P[k];if(q.e)return'Entrada';const nE=P.filter(x=>x.e).length,m=P.length-nE;return m>1?(k+1-nE)+'ª':''};
+const assina=()=>{const n=((C.pintor&&C.pintor.nome)||'').trim();return n?' — '+n:''};
 function msgCobrar(h,q,i){const n=prim(h.cliente);
-  return q?`Oi${n?' '+n:''}, tudo bem? Passando para lembrar da parcela de ${brl(q.falta)} do serviço de pintura, que venceu dia ${dBR(q.d)}. Pode mandar no Pix quando der. Obrigado!`
-    :`Oi${n?' '+n:''}, tudo bem? Passando para lembrar do restante de ${brl(i.falta)} do serviço de pintura. Quando der, me avisa. Obrigado!`}
+  return q?`Oi${n?' '+n:''}, tudo bem? Passando para lembrar ${q.varias?'das parcelas do serviço de pintura que já venceram, somando':'da parcela do serviço de pintura que venceu dia '+dBR(q.d)+', no valor de'} ${brl(q.falta)}. Quando puder, me avisa como fica. Obrigado!${assina()}`
+    :`Oi${n?' '+n:''}, tudo bem? Passando para lembrar do restante do serviço de pintura, ${brl(i.falta)}. Quando puder, me avisa como fica. Obrigado!${assina()}`}
 function barra(i){const V=Math.max(i.V,i.rec)||1;return `<div class="barra" role="img" aria-label="Recebido ${brl(i.rec)} de ${brl(i.V)}"><i style="width:${Math.min(100,i.rec/V*100)}%"></i><i class="atr" style="width:${Math.min(100,i.atraso/V*100)}%"></i></div>`}
 function pagLinhaHist(h){if(stOf(h)!=='fechado')return'';const i=pagInfo(h);
   if(!i)return `<div class="hi-sub">Pagamento não acompanhado</div>`;
@@ -1262,10 +1265,10 @@ function rascunhoDe(h){const p=h.pag||{},pay=(h.o&&h.o.pay)||[],T=r2(h.total||0)
 function abrirPag(id,modo){const h=H.find(x=>x.id===id);if(!h)return;pagId=id;recDel=null;recForm=false;pararPend=false;
   pagModo=modo||(h.pag&&h.pag.acomp?'ver':'pergunta');if(pagModo==='combinar')pagRas=rascunhoDe(h);
   R.ev('pagamento-abriu','',true);renderPag();abrirOv('#pag-wrap','#pag-fechar')}
-function prevParc(){const P=gerarParcelas(pagRas),V=r2(num(pagRas.valor));
+function prevParc(){const P=gerarParcelas(pagRas),V=r2(val(pagRas.valor));
   if(!V)return '<p class="hint">Escreva o valor combinado.</p>';
   if(pagRas.tipo==='livre')return `<p class="hint">Sem parcelas: você só anota o que for recebendo e o Na Bucha mostra quanto falta dos ${brl(V)}.</p>`;
-  return `<div class="parc">${P.map((q,k)=>`<div><span>${P.length>1?(k+1)+'ª · ':''}${dBR(q.d)}</span><span class="v">${brl(q.v)}</span></div>`).join('')}</div>`}
+  return `<div class="parc">${P.map((q,k)=>`<div><span>${rot(P,k)?rot(P,k)+' · ':''}${dBR(q.d)}</span><span class="v">${brl(q.v)}</span></div>`).join('')}</div>`}
 function formComb(h){const c=pagRas,t=c.tipo,temEnt=t==='entrada'||t==='semana'||t==='mes';
   return `<div class="cli-form"><b>Como ficou combinado?</b>
   <label>Valor combinado <span class="hint">(se deu desconto, mude aqui)</span><input id="pc-valor" inputmode="decimal" value="${escH(c.valor)}" autocomplete="off"></label>
@@ -1274,10 +1277,10 @@ function formComb(h){const c=pagRas,t=c.tipo,temEnt=t==='entrada'||t==='semana'|
   ${temEnt?`<div class="row"><label>Entrada <span class="hint">(R$)</span><input id="pc-ent" inputmode="decimal" value="${escH(c.ent)}" placeholder="0" autocomplete="off"></label><label>Data da entrada<input type="date" id="pc-entD" value="${c.entD}"></label></div>`:''}
   ${t==='entrada'?`<label>Resto vence em<input type="date" id="pc-fim" value="${c.fim}"></label>`:''}
   ${t==='semana'||t==='mes'?`<div class="row"><label>Quantas ${t==='semana'?'semanas':'parcelas'}<input id="pc-n" inputmode="numeric" value="${c.n}" autocomplete="off"></label><label>${t==='semana'?'1ª semana paga em':'1ª parcela em'}<input type="date" id="pc-ini" value="${c.ini}"></label></div>`:''}
-  <div id="pc-prev">${prevParc()}</div>
+  <div id="pc-prev">${prevParc()}</div>${h.pag&&(h.pag.recs||[]).length?'<p class="hint">As parcelas que já foram pagas ficam como estão; a mudança vale para o que falta.</p>':''}
   <div class="row2"><button class="sec" data-pg="cancelar">Cancelar</button><button class="mic" data-pg="salvar">Salvar combinado</button></div></div>`}
 function renderPag(){const h=H.find(x=>x.id===pagId);if(!h){fecharOv('#pag-wrap');return}
-  $('#pag-sub').innerHTML=`<b>${escH(h.cliente||'Sem nome')}</b>${h.local?' · '+escH(h.local):''} · orçamento de ${brl(h.total||0)}`;
+  const pv=h.pag&&h.pag.acomp&&h.pag.valor;$('#pag-sub').innerHTML=`<b>${escH(h.cliente||'Sem nome')}</b>${h.local?' · '+escH(h.local):''} · ${pv&&Math.abs(pv-(h.total||0))>=1?`combinado ${brl(pv)} <span class="hint">(orçamento ${brl(h.total||0)})</span>`:'orçamento de '+brl(h.total||0)}`;
   const B=$('#pag-corpo');
   if(pagModo==='pergunta'){B.innerHTML=`<div class="cli-form"><b>Quer acompanhar o pagamento deste serviço?</b>
     <p class="hint">Você anota o combinado (entrada, por semana, por mês...) e o que o cliente for pagando. O Na Bucha mostra quanto falta receber e avisa quando atrasar.</p>
@@ -1287,7 +1290,8 @@ function renderPag(){const h=H.find(x=>x.id===pagId);if(!h){fecharOv('#pag-wrap'
   const atr=i.parc.filter(q=>q.st==='atrasada');
   let aviso='';
   if(i.quit)aviso=`<div class="ok-box">Tudo recebido! Serviço quitado.${i.mais?' Recebeu '+brl(i.mais)+' a mais que o combinado.':''}</div>`;
-  else if(atr.length){const q=atr[0];aviso=`<div class="alerta"><span><b>${brl(i.atraso)} atrasado</b>${atr.length>1?' ('+atr.length+' parcelas)':' desde '+dBR(q.d)}</span><a class="link" target="_blank" rel="noopener" data-cobrar href="${waLink(h.whats,msgCobrar(h,{falta:i.atraso,d:q.d},i))}">Cobrar no WhatsApp</a></div>`}
+  else if(atr.length){const q=atr[0];aviso=`<div class="alerta"><span><b>${brl(i.atraso)} atrasado</b>${atr.length>1?' ('+atr.length+' parcelas)':' desde '+dBR(q.d)}</span><a class="link" target="_blank" rel="noopener" data-cobrar href="${waLink(h.whats,msgCobrar(h,{falta:i.atraso,d:q.d,varias:atr.length>1},i))}">Cobrar no WhatsApp</a></div>`}
+  else if(!i.parc.length&&i.falta)aviso=`<div class="tip" style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><span>Sem data certa. Falta <b>${brl(i.falta)}</b>.</span><a class="link" target="_blank" rel="noopener" data-cobrar href="${waLink(h.whats,msgCobrar(h,null,i))}">Lembrar no WhatsApp</a></div>`;
   else if(i.prox)aviso=`<div class="tip">Próximo: <b>${brl(i.prox.falta)}</b> ${i.prox.d===t?'<b>hoje</b>':'em '+dBR(i.prox.d)}</div>`;
   const sug=i.prox?i.prox.falta:i.falta;
   const recs=(p.recs||[]).slice().sort((a,b)=>a.d<b.d?1:a.d>b.d?-1:0);
@@ -1299,7 +1303,7 @@ function renderPag(){const h=H.find(x=>x.id===pagId);if(!h){fecharOv('#pag-wrap'
     <div class="chips">${FORMAS.map(f=>`<button class="chip${recForma===f?' on':''}" data-pr-forma="${f}">${f}</button>`).join('')}</div>
     <div class="row2"><button class="sec" data-pg="rec-cancelar">Cancelar</button><button class="mic" data-pg="rec-salvar">Salvar</button></div></div>`
   :(i.quit?'':`<button class="mic" data-pg="receber">+ Registrar pagamento</button>`)}
-  ${i.parc.length?`<p class="sec-t">Combinado</p><div class="parc">${i.parc.map((q,k)=>`<div><span>${i.parc.length>1?(k+1)+'ª · ':''}${dBR(q.d)}</span><span style="display:flex;gap:8px;align-items:center"><span class="v">${brl(q.v)}</span><span class="st ${q.st}">${q.st==='pago'?'Pago':q.st==='atrasada'?'Atrasada':q.st==='parcial'?'Falta '+brl0(q.falta):q.d===t?'Hoje':'A vencer'}</span></span></div>`).join('')}</div>`:''}
+  ${i.parc.length?`<p class="sec-t">Combinado</p><div class="parc">${i.parc.map((q,k)=>`<div><span>${rot(i.parc,k)?rot(i.parc,k)+' · ':''}${dBR(q.d)}</span><span style="display:flex;gap:8px;align-items:center"><span class="v">${brl(q.v)}</span><span class="st ${q.st}">${q.st==='pago'?'Pago':q.st==='atrasada'?'Atrasada':q.st==='parcial'?'Falta '+brl0(q.falta):q.d===t?'Hoje':'A vencer'}</span></span></div>`).join('')}</div>`:''}
   <p class="sec-t">Recebido</p>
   ${recs.length?`<div class="parc">${recs.map(r=>`<div><span>${dBR(r.d)} · ${escH(r.f||'')}</span><span style="display:flex;gap:4px;align-items:center"><span class="v">${brl(r.v)}</span><button class="link del" data-pr-del="${r.id}" aria-label="Apagar pagamento">${recDel===r.id?'Toque de novo':'Apagar'}</button></span></div>`).join('')}</div>`:'<p class="hint">Nada recebido ainda.</p>'}
   <div class="hi-acts" style="justify-content:center"><button class="link" data-pg="mudar">Mudar combinado</button>${dig(h.whats).length>=10?`<a class="link" target="_blank" rel="noopener" href="${waLink(h.whats)}">WhatsApp do cliente</a>`:''}<button class="link del" data-pg="parar">${pararPend?'Toque de novo para parar':'Parar de acompanhar'}</button></div>`}
@@ -1320,60 +1324,71 @@ $('#pag-wrap').addEventListener('click',e=>{if(e.target.id==='pag-wrap'){fecharO
   else if(a==='sim'){R.ev('acompanhar-pagamento','sim');if(h.pag&&h.pag.parc&&h.pag.valor){h.pag.acomp=true;depoisMudar();pagModo='ver'}else{pagModo='combinar';pagRas=rascunhoDe(h)}renderPag()}
   else if(a==='mudar'){pagModo='combinar';pagRas=rascunhoDe(h);renderPag()}
   else if(a==='cancelar'){pagModo=h.pag&&h.pag.acomp?'ver':'pergunta';renderPag()}
-  else if(a==='salvar'){lerComb();const V=r2(num(pagRas.valor));if(!V){toast('Escreva o valor combinado');$('#pc-valor').focus();return}
-    if(num(pagRas.ent)>V){toast('A entrada não pode passar do valor combinado');return}
+  else if(a==='salvar'){lerComb();const V=r2(val(pagRas.valor));if(!V){toast('Escreva o valor combinado (ex.: 8000 ou 8 mil)');$('#pc-valor').focus();return}
+    if(val(pagRas.ent)>V){toast('A entrada não pode passar do valor combinado');return}
     const n=Math.max(1,Math.min(52,parseInt(pagRas.n,10)||1));
-    h.pag=Object.assign(h.pag||{},{acomp:true,valor:V,tipo:pagRas.tipo,ent:r2(num(pagRas.ent)),entD:pagRas.entD,ini:pagRas.ini,n,fim:pagRas.fim,parc:gerarParcelas(Object.assign({},pagRas,{n}))});
+    let parc=gerarParcelas(Object.assign({},pagRas,{n}));const ant=pagInfo(h);
+    if(ant&&ant.parc.length){const lock=[];for(const q of ant.parc){if(q.st!=='pago')break;lock.push({d:q.d,v:q.v,e:q.e})}
+      if(lock.length){const somaL=r2(lock.reduce((x,q)=>x+q.v,0)),resto=r2(V-somaL);let novas=parc.slice(lock.length).map(q=>({d:q.d,v:q.v}));
+        if(resto>0){if(!novas.length)novas=[{d:okD(pagRas.fim)?pagRas.fim:somaDias(hoje(),7),v:resto}];const vs=dividir(resto,novas.length);novas.forEach((q,k)=>q.v=vs[k])}else novas=[];
+        parc=lock.concat(novas)}}
+    h.pag=Object.assign(h.pag||{},{acomp:true,valor:V,tipo:pagRas.tipo,ent:r2(val(pagRas.ent)),entD:pagRas.entD,ini:pagRas.ini,n,fim:pagRas.fim,parc});
     if(!h.pag.recs)h.pag.recs=[];R.ev('pagamento-combinado',pagRas.tipo);depoisMudar();pagModo='ver';renderPag();toast('Combinado salvo')}
   else if(a==='receber'){recForm=true;renderPag();const el=$('#pr-valor');if(el){el.focus();el.select()}}
   else if(a==='rec-cancelar'){recForm=false;renderPag()}
-  else if(a==='rec-salvar'){const v=r2(num($('#pr-valor').value)),d=okD($('#pr-d').value)?$('#pr-d').value:hoje();
-    if(!v){toast('Escreva o valor recebido');$('#pr-valor').focus();return}
+  else if(a==='rec-salvar'){const v=r2(val($('#pr-valor').value)),d=okD($('#pr-d').value)?$('#pr-d').value:hoje();
+    if(!v){toast('Escreva o valor recebido (ex.: 1500 ou 1,5 mil)');$('#pr-valor').focus();return}
+    if(d>somaDias(hoje(),60)){toast('Confira o dia: está mais de 2 meses no futuro');return}
     h.pag.recs=h.pag.recs||[];h.pag.recs.push({id:hid(),d,v,f:recForma});R.ev('pagamento-registrou',recForma);recForm=false;depoisMudar();renderPag();
     const i=pagInfo(h);toast(i.quit?'Boa! Serviço quitado.':'Anotado. Falta '+brl(i.falta)+'.')}
   else if(a==='parar'){if(!pararPend){pararPend=true;renderPag();return}pararPend=false;h.pag.acomp=false;depoisMudar();fecharOv('#pag-wrap');toast('Parou de acompanhar. O que foi anotado continua guardado.')}
 });
 
 // ---- tela Recebimentos (gráficos) ----
+let cheiaId=null,mesSel=3;
 function chartMeses(L){const now=new Date(),cur=now.getFullYear()*12+now.getMonth();const ks=[];for(let k=-3;k<=2;k++)ks.push(cur+k);
   const idx=s=>{const[y,m]=String(s).split('-').map(Number);return y*12+m-1};
   const S=ks.map(()=>({rec:0,atr:0,prev:0}));
-  H.forEach(h=>{if(!h.pag)return;(h.pag.recs||[]).forEach(r=>{const j=ks.indexOf(idx(r.d));if(j>=0)S[j].rec+=r.v})});
+  H.forEach(h=>{if(!h.pag||stOf(h)!=='fechado')return;(h.pag.recs||[]).forEach(r=>{const j=ks.indexOf(idx(r.d));if(j>=0)S[j].rec+=r.v})});
   L.forEach(({i})=>i.parc.forEach(q=>{if(q.st==='pago')return;if(q.st==='atrasada'){S[3].atr+=q.falta;return}const j=ks.indexOf(idx(q.d));if(j>=0)S[j].prev+=q.falta}));
   L.forEach(({i})=>{if(!i.parc.length&&i.falta)S[3].prev+=i.falta});
-  const W=340,Hh=190,top=22,bot=28,bw=34,gap=(W-ks.length*bw)/(ks.length);const max=Math.max(1,...S.map(s=>s.rec+s.atr+s.prev));const sc=v=>v/max*(Hh-top-bot);
+  const W=340,Hh=cheiaId==='ch-mes'&&innerHeight>innerWidth?440:190,top=22,bot=28,bw=34,gap=(W-ks.length*bw)/(ks.length);const max=Math.max(1,...S.map(s=>s.rec+s.atr+s.prev));const sc=v=>v/max*(Hh-top-bot);
   let g='';ks.forEach((k,j)=>{const x=gap/2+j*(bw+gap),s=S[j];let y=Hh-bot;const tot=s.rec+s.atr+s.prev;
-    [['rec','var(--good)'],['atr','#D2361B'],['prev','var(--accent)']].forEach(([c,cor])=>{const hh=sc(s[c]);if(hh>0){y-=hh;g+=`<rect x="${x}" y="${y}" width="${bw}" height="${hh}" fill="${cor}" ${c==='prev'?'fill-opacity=".35"':''} rx="3"><title>${c==='rec'?'Recebido':c==='atr'?'Atrasado':'A receber'}: ${brl(s[c])}</title></rect>`}});
+    [['rec','var(--good)'],['atr','#D2361B'],['prev','var(--accent)']].forEach(([c,cor])=>{const hh=sc(s[c]);if(hh>0){y-=hh;g+=`<rect x="${x}" y="${y}" width="${bw}" height="${hh}" fill="${cor}" ${c==='prev'?'fill-opacity=".45"':''} rx="3"><title>${c==='rec'?'Recebido':c==='atr'?'Atrasado':'A receber'}: ${brl(s[c])}</title></rect>`}});
     if(tot)g+=`<text class="val" x="${x+bw/2}" y="${y-6}" text-anchor="middle">${mil(tot).replace('R$ ','')}</text>`;
-    g+=`<text x="${x+bw/2}" y="${Hh-10}" text-anchor="middle" ${j===3?'class="val"':''}>${MESES[k%12]}${j===3?' (agora)':''}</text>`});
+    g+=`<text x="${x+bw/2}" y="${Hh-10}" text-anchor="middle" ${j===mesSel?'class="val"':''}>${MESES[k%12]}${j===3?' (agora)':''}</text><rect data-mes="${j}" x="${x-gap/2}" y="0" width="${bw+gap}" height="${Hh}" fill="${j===mesSel?'var(--accent)':'transparent'}" fill-opacity="${j===mesSel?'.07':'0'}" style="cursor:pointer"/>`});
+  const s=S[mesSel],kk=ks[mesSel];const det=`<p class="tip" id="ch-mes-det" style="margin:0"><b>${MESES[kk%12]}${mesSel===3?' (agora)':''}:</b> recebido ${brl0(s.rec)}${s.atr?' · atrasado '+brl0(s.atr):''} · a receber ${brl0(s.prev)}</p>`;
   return `<svg viewBox="0 0 ${W} ${Hh}" role="img" aria-label="Recebido e a receber por mês"><line x1="0" x2="${W}" y1="${Hh-bot}" y2="${Hh-bot}" stroke="var(--line)"/>${g}</svg>
-  <div class="leg"><span><i style="background:var(--good)"></i>Recebido</span><span><i style="background:#D2361B"></i>Atrasado</span><span><i style="background:var(--accent);opacity:.35"></i>A receber</span></div>`}
+  <div class="leg"><span><i style="background:var(--good)"></i>Recebido</span><span><i style="background:#D2361B"></i>Atrasado</span><span><i style="background:var(--accent);opacity:.45"></i>A receber</span></div>${det}`}
 function renderRec(){const L=rastreados(),t=hoje(),mes=t.slice(0,7),B=$('#rec-corpo');
   const aRec=r2(L.reduce((x,o)=>x+o.i.falta,0)),atr=r2(L.reduce((x,o)=>x+o.i.atraso,0));
-  const recMes=r2(H.reduce((x,h)=>x+((h.pag&&h.pag.recs)||[]).filter(r=>String(r.d).slice(0,7)===mes).reduce((y,r)=>y+r.v,0),0));
+  const recMes=r2(H.filter(h=>stOf(h)==='fechado').reduce((x,h)=>x+((h.pag&&h.pag.recs)||[]).filter(r=>String(r.d).slice(0,7)===mes).reduce((y,r)=>y+r.v,0),0));
+  const entraMes=r2(L.reduce((x,o)=>x+o.i.parc.filter(q=>q.st!=='pago'&&q.st!=='atrasada'&&q.d.slice(0,7)===mes).reduce((y,q)=>y+q.falta,0),0));
   const sem=semAcomp();
   const semHtml=sem.length?`<div class="cli-form"><b>Fechados sem acompanhamento</b>${sem.slice(0,6).map(h=>`<div class="hi-top" style="align-items:center"><span>${escH(h.cliente||'Sem nome')} · ${brl0(h.total||0)}</span><button class="link" data-r-acomp="${h.id}">Acompanhar</button></div>`).join('')}</div>`:'';
   if(!L.length){B.innerHTML=`<div class="hist-vazio">Nenhum serviço com pagamento acompanhado ainda.<br>Quando um orçamento fechar, toque em <b>Fechou</b> em Meus orçamentos e anote o combinado.</div>${semHtml}`;return}
   const ab=L.filter(o=>!o.i.quit).sort((a,b)=>(b.i.atraso-a.i.atraso)||(b.i.falta-a.i.falta)),qt=L.filter(o=>o.i.quit);
   const prox=[];L.forEach(({h,i})=>i.parc.forEach(q=>{if(q.st!=='pago')prox.push({h,q})}));prox.sort((a,b)=>a.q.d<b.q.d?-1:1);
-  B.innerHTML=`<div class="resumo"><div><small>Falta receber</small><b>${brl0(aRec)}</b></div><div><small>Atrasado</small><b ${atr?'class="bad"':''}>${brl0(atr)}</b></div><div><small>Recebido no mês</small><b>${brl0(recMes)}</b></div></div>
+  B.innerHTML=`<div class="resumo r4"><div><small>Recebido no mês</small><b>${brl0(recMes)}</b></div><div><small>Ainda entra no mês</small><b>${brl0(entraMes)}</b></div><div><small>Atrasado</small><b ${atr?'class="bad"':''}>${brl0(atr)}</b></div><div><small>Falta receber (total)</small><b>${brl0(aRec)}</b></div></div>
   <div class="rec-grid">
-  <div class="chart" id="ch-mes"><div class="chart-cab"><h3>Dinheiro por mês</h3><button class="link" data-cheia="ch-mes">Tela cheia</button></div>${chartMeses(L)}<p class="hint">Barras clarinhas: o que ainda vai entrar, pelas datas combinadas.</p></div>
+  <div class="chart" id="ch-mes"><div class="chart-cab"><h3>Dinheiro por mês</h3><button class="link" data-cheia="ch-mes">Tela cheia</button></div>${chartMeses(L)}<p class="hint">Toque num mês para ver os valores. "A receber" segue as datas combinadas.</p></div>
   <div class="chart" id="ch-sv"><div class="chart-cab"><h3>Cada serviço</h3><button class="link" data-cheia="ch-sv">Tela cheia</button></div>
     ${ab.map(({h,i})=>`<button class="sv" data-r-abrir="${h.id}"><span class="lin"><b>${escH(h.cliente||'Sem nome')}</b><span>falta <b>${brl0(i.falta)}</b></span></span>${barra(i)}<small>Recebido ${brl0(i.rec)} de ${brl0(i.V)}${i.atraso?` · <b class="bad">${brl0(i.atraso)} atrasado</b>`:i.prox?` · próximo ${dBR(i.prox.d)}`:''}</small></button>`).join('')||'<p class="hint">Nada em aberto.</p>'}
     ${qt.length?`<p class="hint">Quitados: ${qt.map(o=>escH(o.h.cliente||'Sem nome')).join(', ')}</p>`:''}</div>
   </div>
   ${prox.length?`<p class="sec-t">Próximos recebimentos</p><div class="parc">${prox.slice(0,8).map(({h,q})=>`<div><span>${dBR(q.d)} · ${escH(prim(h.cliente)||'Sem nome')}</span><span style="display:flex;gap:8px;align-items:center"><span class="v">${brl(q.falta)}</span><span class="st ${q.st}">${q.st==='atrasada'?'Atrasada':q.d===t?'Hoje':q.st==='parcial'?'Parcial':'A vencer'}</span></span></div>`).join('')}</div>`:''}
   ${semHtml}`}
-function abrirRec(){R.ev('recebimentos','',true);renderRec();abrirOv('#rec-wrap','#rec-fechar')}
-function sairCheia(){document.querySelectorAll('.chart.cheia').forEach(c=>{c.classList.remove('cheia');const b=c.querySelector('[data-cheia]');if(b)b.textContent='Tela cheia'})}
+function abrirRec(){mesSel=3;cheiaId=null;R.ev('recebimentos','',true);renderRec();abrirOv('#rec-wrap','#rec-fechar')}
+function ligaCheia(){const el=$('#'+cheiaId);if(!el)return;el.classList.add('cheia');const b=el.querySelector('[data-cheia]');if(b)b.textContent='Fechar tela cheia'}
+function sairCheia(){cheiaId=null;document.querySelectorAll('.chart.cheia').forEach(c=>{c.classList.remove('cheia');const b=c.querySelector('[data-cheia]');if(b)b.textContent='Tela cheia'})}
 $('#rec-fechar').addEventListener('click',()=>{sairCheia();fecharOv('#rec-wrap')});
 $('#rec-wrap').addEventListener('click',e=>{if(e.target.id==='rec-wrap'){fecharOv('#rec-wrap');return}
   const c=e.target.closest('[data-cheia]'),a=e.target.closest('[data-r-abrir]'),q=e.target.closest('[data-r-acomp]');
-  if(c){const el=$('#'+c.dataset.cheia),on=!el.classList.contains('cheia');sairCheia();if(on){el.classList.add('cheia');c.textContent='Fechar tela cheia';R.ev('grafico-tela-cheia',c.dataset.cheia)}return}
+  const mb=e.target.closest('[data-mes]');if(mb){mesSel=+mb.dataset.mes;renderRec();if(cheiaId)ligaCheia();return}
+  if(c){const on=cheiaId!==c.dataset.cheia;sairCheia();if(on){cheiaId=c.dataset.cheia;renderRec();ligaCheia();R.ev('grafico-tela-cheia',cheiaId)}else renderRec();return}
   if(a){sairCheia();abrirPag(a.dataset.rAbrir)}else if(q)abrirPag(q.dataset.rAcomp,'combinar')});
 $('#rec-abrir').addEventListener('click',abrirRec);
-document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(document.querySelector('.chart.cheia')){sairCheia();e.stopImmediatePropagation();return}
+document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(document.querySelector('.chart.cheia')){sairCheia();renderRec();e.stopImmediatePropagation();return}
   if(!$('#pag-wrap').hidden){fecharOv('#pag-wrap');e.stopImmediatePropagation()}else if(!$('#rec-wrap').hidden){fecharOv('#rec-wrap');e.stopImmediatePropagation()}},true);
 renderHistRow();
 let tt;function toast(m){if(/não deu|não abre|grande demais|não é uma cópia|não grava/i.test(m))R.erro('aviso',m);const el=$('#toast');el.textContent=m;el.hidden=false;clearTimeout(tt);tt=setTimeout(()=>el.hidden=true,2600)}
