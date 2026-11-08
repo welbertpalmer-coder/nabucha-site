@@ -155,6 +155,7 @@ h1 span:nth-child(3){animation-delay:.3s;color:var(--limao)}
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 </style>
+<script src="/registro.js"></script>
 </head>
 <body>
 
@@ -195,7 +196,7 @@ h1 span:nth-child(3){animation-delay:.3s;color:var(--limao)}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
     </button>
     <div class="mini"><span>Grátis pra entrar</span><span>Leva 30 segundos</span></div>
-    <p class="rodape">Ainda sem data de lançamento. Preços e condições podem mudar antes de abrir. <a href="privacidade.html">Privacidade</a></p>
+    <p class="rodape">Ainda sem data de lançamento. Preços e condições podem mudar antes de abrir. <a href="privacidade.html">Privacidade</a> · <a href="#" data-coment="inicio">Sugestão</a></p>
   </div>
 </section>
 
@@ -336,7 +337,7 @@ h1 span:nth-child(3){animation-delay:.3s;color:var(--limao)}
   /* ---------- fluxo de perguntas ---------- */
   const passos = $$(".passo"), resp = {}, N = passos.length;
   let atual = 0;
-  function irPara(i){
+  function irPara(i){ if(window.nbReg) nbReg.ev("lista-passo",String(i),true);
     passos.forEach((p,k)=>{ p.classList.toggle("ativo",k===i); p.classList.toggle("saiu",k<i); });
     atual=i; $("#prog").style.width=((i+1)/N*100)+"%"; $("#passoN").textContent=(i+1)+"/"+N;
   }
@@ -398,6 +399,7 @@ h1 span:nth-child(3){animation-delay:.3s;color:var(--limao)}
     $("#fimTit").textContent="Fechou, "+primeiro+"! Você tá na lista.";
     const txt="Ó isso aqui: vai sair um app que monta o orçamento pelo WhatsApp. Tô na lista de espera do Na Bucha, entra também: https://nabucha.com.br";
     $("#indicar").href="https://wa.me/?text="+encodeURIComponent(txt);
+    if(window.nbReg) nbReg.ev("lista-entrou");
     mostra("fim");
   }
 })();

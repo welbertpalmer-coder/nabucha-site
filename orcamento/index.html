@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%231F3BFF'/%3E%3Cg transform='translate(14 30) scale(.36)' fill='%23C8FF2E'%3E%3Crect x='0' y='18' width='14' height='64' rx='6'/%3E%3Crect x='8' y='38' width='170' height='24' rx='10'/%3E%3Crect x='22' y='27' width='26' height='46' rx='11'/%3E%3Crect x='56' y='8' width='26' height='84' rx='11'/%3E%3Crect x='90' y='19' width='26' height='62' rx='11'/%3E%3Crect x='124' y='8' width='26' height='84' rx='11'/%3E%3Crect x='158' y='27' width='26' height='46' rx='11'/%3E%3Cpath d='M176 38 Q200 44 200 50 Q200 56 176 62 Z'/%3E%3C/g%3E%3C/svg%3E">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#1F3BFF">
@@ -229,7 +230,9 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:99px;font-weight:600;font-size:14px;z-index:30;max-width:90vw;text-align:center}
 @media (max-width:380px){.row3{grid-template-columns:1fr 1fr}.tot strong{font-size:18px}.opt strong{font-size:16px}}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .25s ease-out}@keyframes up{from{transform:translateY(16px);opacity:.6}}}
+.nb-sug{text-align:center;font-size:14px;color:var(--muted);margin:8px 0 0;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:0 4px}
 </style>
+<script src="/registro.js"></script>
 </head>
 <body>
 
@@ -489,6 +492,7 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
       </details>
     </div>
   </div>
+  <p class="nb-sug"><span>Achou algo estranho ou tem uma ideia?</span> <button class="link" data-coment="rodape">Sugestão ou problema</button></p>
 </div>
 
 <div class="bar">
@@ -503,13 +507,14 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
   <div class="sheet-col">
     <div class="sheet" id="sheet"></div>
     <div class="actions">
-      <div class="festa" id="festa" hidden><span class="tr-mini" id="festa-trena"></span><div><h3>Mandou! Agora é fechar.</h3><p>Se o cliente pedir desconto, lembra do seu piso.</p></div></div>
+      <div class="festa" id="festa" hidden><span class="tr-mini" id="festa-trena"></span><div><h3>Mandou! Agora é fechar.</h3><p>Se o cliente pedir desconto, lembra do seu piso.</p><button class="link" style="color:#C8FF2E" data-coment="pos-envio" data-coment-nota>Dar nota para o Na Bucha</button></div></div>
       <a class="wa" id="wa" href="#" target="_blank" rel="noopener">Enviar no WhatsApp</a>
       <div class="acts-min">
         <button class="link" id="copy">Copiar texto</button>
         <button class="link" id="close">Voltar e editar</button>
         <button class="link" id="novo">Começar novo orçamento</button>
         <button class="link" id="hist-folha">Meus orçamentos</button>
+        <button class="link" data-coment="folha">Sugestão ou problema</button>
       </div>
       <p class="note">Protótipo: a próxima versão também anexa a folha em PDF.</p>
     </div>
@@ -538,6 +543,7 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
 <div class="toast" id="toast" hidden></div>
 
 <script>
+const R=window.nbReg||{ev(){},erro(){},abrir(){}};
 (function(){
 const KEY='nabucha-proto-v5'; // v6 usa o mesmo lugar: só acrescenta campos
 const PAYS=['Pix','Dinheiro','Cartão','50% de entrada','Ao terminar'];
@@ -849,8 +855,8 @@ function renderBar(){
   $('#tab-orc').classList.toggle('on',!cfg);$('#tab-cfg').classList.toggle('on',cfg);
   $('#v-orc').hidden=cfg;$('#v-cfg').hidden=!cfg;$('.tot').style.visibility=cfg?'hidden':'';
 }
-function show(v){view=v;if(v==='cfg'){C.visto=true;renderCfg()}else renderOrc();renderBar();refresh();save();window.scrollTo(0,0)}
-function goStep(n){
+function show(v){view=v;if(v==='cfg')R.ev('meus-precos','',true);if(v==='cfg'){C.visto=true;renderCfg()}else renderOrc();renderBar();refresh();save();window.scrollTo(0,0)}
+function goStep(n){R.ev('passo',String(n),true);
   const k=calc();
   if(n>1&&porM2()&&k.P+k.T===0){toast('Preencha as medidas de um cômodo');O.step=1}
   else if(n>1&&(O.modo==='diaria'||O.modo==='custo')&&!k.diasU){toast('Diga quantos dias o serviço leva (ou meça os cômodos)');O.step=1}
@@ -1021,7 +1027,7 @@ function sheet(k){
   <div class="sh-foot"><span>Feito no <b>Na Bucha</b></span><span>nabucha.com.br</span></div>`;
 }
 let lastFocus;
-function abrirFolha(){
+function abrirFolha(){R.ev('folha-abriu');
   const k=calc();
   if(!k.lines.length){toast('Marque pelo menos um serviço');return}
   if(O.modo==='fechado'&&!k.maoFe){toast('Digite o valor da mão de obra');return}
@@ -1035,9 +1041,9 @@ function abrirFolha(){
 function closeSheet(){$('#sheet-wrap').hidden=true;renderBar();document.body.style.overflow='';if(lastFocus)lastFocus.focus()}
 $('#close').addEventListener('click',closeSheet);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#sheet-wrap').hidden)closeSheet()});
-$('#wa').addEventListener('click',()=>{guardar(true,C.num);C.num++;save();$('#festa-trena').innerHTML=trenaSVG('feliz');$('#festa').hidden=false});
+$('#wa').addEventListener('click',()=>{R.ev('whatsapp-enviou');guardar(true,C.num);C.num++;save();$('#festa-trena').innerHTML=trenaSVG('feliz');$('#festa').hidden=false});
 $('#novo').addEventListener('click',()=>{if(H.some(h=>h.id===O.id))guardar(false);O=novoOrc(C,false);aplicarSituacao();save();closeSheet();show('orc');toast('Orçamento novo. Seus preços continuam salvos.')});
-$('#copy').addEventListener('click',()=>{const t=texto(calc());
+$('#copy').addEventListener('click',()=>{R.ev('copiou-texto');const t=texto(calc());
   const fall=()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Texto copiado')}catch(e){toast('Não deu para copiar')}ta.remove()};
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(()=>toast('Texto copiado'),fall)}else fall()});
 
@@ -1092,7 +1098,7 @@ function fecharOv(id){$(id).hidden=true;if($('#sheet-wrap').hidden&&$('#hist-wra
 function abrirHist(cli){delPend=null;filtroCli=cli||null;renderHist();abrirOv('#hist-wrap','#hist-fechar')}
 const fecharHist=()=>fecharOv('#hist-wrap');
 function carregar(o,msg){if(H.some(h=>h.id===O.id))guardar(false);O=o;save();fecharOv('#hist-wrap');fecharOv('#cli-wrap');if(!$('#sheet-wrap').hidden)closeSheet();show('orc');toast(msg)}
-$('#hist-abrir').addEventListener('click',()=>abrirHist());
+$('#hist-abrir').addEventListener('click',()=>{R.ev('meus-orcamentos','',true);abrirHist()});
 $('#hist-folha').addEventListener('click',()=>abrirHist());
 $('#hist-fechar').addEventListener('click',fecharHist);
 $('#hist-wrap').addEventListener('click',e=>{if(e.target.id==='hist-wrap'){fecharHist();return}
@@ -1129,7 +1135,7 @@ function formCli(k){return `<div class="cli-form"><b>${cliEd==='novo'?'Novo clie
   <label>Anotação <span class="hint">(ex.: prefere à tarde, tem cachorro)</span><input id="kf-obs" value="${escH(k.obs||'')}" autocomplete="off"></label>
   <div class="row2"><button class="sec" id="kf-cancel">Cancelar</button><button class="mic" id="kf-ok">Salvar</button></div></div>`}
 function abrirCli(modo){cliModo=modo||'ver';cliDel=null;cliEd=null;$('#cli-busca').value='';renderCli();abrirOv('#cli-wrap','#cli-fechar')}
-$('#cli-abrir').addEventListener('click',()=>abrirCli('ver'));
+$('#cli-abrir').addEventListener('click',()=>{R.ev('clientes','',true);abrirCli('ver')});
 $('#cli-escolher').addEventListener('click',()=>abrirCli('escolher'));
 $('#cli-fechar').addEventListener('click',()=>fecharOv('#cli-wrap'));
 $('#cli-busca').addEventListener('input',renderCli);
@@ -1148,12 +1154,12 @@ $('#cli-wrap').addEventListener('click',e=>{if(e.target.id==='cli-wrap'){fecharO
   else if(x){const id=x.dataset.kDel;if(cliDel!==id){cliDel=id;renderCli();return}K=K.filter(k=>k.id!==id);cliDel=null;ksave();renderCli();renderHistRow();toast('Cliente apagado. Os orçamentos dele continuam na lista.')}});
 document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(!$('#cli-wrap').hidden)fecharOv('#cli-wrap');else if(!$('#hist-wrap').hidden)fecharHist()});
 // Cópia de segurança (arquivo .json com preços, orçamentos e clientes)
-$('#bk-salvar').addEventListener('click',()=>{const d=JSON.stringify({app:'nabucha',v:1,em:new Date().toISOString(),C,O,H,K});
+$('#bk-salvar').addEventListener('click',()=>{R.ev('backup-salvou');const d=JSON.stringify({app:'nabucha',v:1,em:new Date().toISOString(),C,O,H,K});
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([d],{type:'application/json'}));a.download='nabucha-copia-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();toast('Cópia salva nos downloads')});
 $('#bk-abrir').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const d=JSON.parse(rd.result);
   if(d.app!=='nabucha'||!d.C)throw 0;C=d.C;O=d.O||novoOrc(C,false);H=d.H||[];K=d.K||[];save();hsave();ksave();renderHistRow();renderHist();show('orc');toast('Cópia restaurada')}catch(err){toast('Esse arquivo não é uma cópia do Na Bucha')}};rd.readAsText(f);e.target.value=''});
 renderHistRow();
-let tt;function toast(m){const el=$('#toast');el.textContent=m;el.hidden=false;clearTimeout(tt);tt=setTimeout(()=>el.hidden=true,2600)}
+let tt;function toast(m){if(/não deu|não abre|grande demais|não é uma cópia|não grava/i.test(m))R.erro('aviso',m);const el=$('#toast');el.textContent=m;el.hidden=false;clearTimeout(tt);tt=setTimeout(()=>el.hidden=true,2600)}
 
 
 // ---------- ÁUDIO: grava como no WhatsApp, a IA preenche, o pintor confere ----------
@@ -1161,7 +1167,7 @@ const VOZ_URL='https://hello-world-black-sun-acbf.contato-nabucha.workers.dev';
 const VOZ_MAX=180; // segundos
 const voz={rec:null,stream:null,parts:[],t0:0,timer:null,cancel:false,undo:null};
 const vozSet=(estado,html)=>{const box=$('#voz');box.dataset.estado=estado;if(html!=null)$('#voz-res').innerHTML=html};
-const vozErro=html=>{$('#voz-erro-txt').innerHTML=html;vozSet('erro','')};
+const vozErro=html=>{R.erro('voz',String(html).replace(/<details[\s\S]*<\/details>/,'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim());$('#voz-erro-txt').innerHTML=html;vozSet('erro','')};
 const mmss=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
 const nfmt=n=>n==null||!isFinite(n)||n<=0?'':String(Math.round(n*100)/100).replace('.',',');
 
@@ -1175,7 +1181,7 @@ async function vozGravar(){
   voz.rec.onstop=()=>{voz.stream.getTracks().forEach(t=>t.stop());clearInterval(voz.timer);
     if(voz.cancel){vozSet('pronto','');return}
     vozEnviar(new Blob(voz.parts,{type:voz.rec.mimeType||'audio/webm'}))};
-  voz.rec.start(1000);voz.t0=Date.now();vozSet('gravando');$('#voz-tempo').textContent='0:00';
+  voz.rec.start(1000);voz.t0=Date.now();R.ev('voz-gravando');vozSet('gravando');$('#voz-tempo').textContent='0:00';
   voz.timer=setInterval(()=>{const s=(Date.now()-voz.t0)/1000;$('#voz-tempo').textContent=mmss(s);if(s>=VOZ_MAX){toast('Limite de 3 minutos: enviando');vozParar(false)}},250);
 }
 function vozParar(cancelar){voz.cancel=!!cancelar;if(voz.rec&&voz.rec.state!=='inactive')voz.rec.stop()}
@@ -1206,7 +1212,7 @@ async function vozEnviar(blob){
     r=await res.json().catch(()=>({erro:'Resposta estranha do servidor'}));
     if(!res.ok||!r.dados){vozErro(`<b>${esc(r.erro||'Não deu certo agora.')}</b> Tente de novo em instantes.`+(r.texto?`<details><summary>O que eu ouvi ▾</summary><p>${esc(r.texto)}</p></details>`:''));return}
   }catch(e){vozErro('<b>Sem conexão ou o áudio não abriu.</b> Confira a internet e grave de novo.');return}
-  vozAplicar(r.dados,r.texto);
+  R.ev('voz-preencheu');vozAplicar(r.dados,r.texto);
 }
 
 function vozAplicar(d,texto){
@@ -1271,7 +1277,7 @@ function renderEntrada(){
   if(e==='voz'&&!ocupado){if(campos)vozSet('feito',O.vozRes||'');else if(box.dataset.estado==='feito')vozSet('pronto','')}
   renderBar();
 }
-document.addEventListener('click',e=>{const b=e.target.closest('[data-entrada]');if(!b)return;O.entrada=b.dataset.entrada;save();renderOrc();refresh();
+document.addEventListener('click',e=>{const b=e.target.closest('[data-entrada]');if(!b)return;O.entrada=b.dataset.entrada;R.ev('entrada',O.entrada);save();renderOrc();refresh();
   if(O.entrada==='voz')vozGravar();else window.scrollTo(0,0)});
 // Mascote: a capivara do Na Bucha (imagens em /img/capi). Expressões: oi, medindo (pensando), feliz, triste (ops)
 function trenaSVG(expr,cls){
