@@ -1,6 +1,8 @@
 // Na Bucha — servidor do áudio (Cloudflare Worker, plano grátis)
 // Recebe o áudio do orçamento (WAV 16 kHz), transcreve com Whisper e extrai os campos com Llama.
 // Nada é guardado: o áudio e o texto só passam por aqui e voltam para o celular.
+// Rota /registro: guarda uso anônimo, erros e comentários do site no banco D1 (binding DB).
+// Rota /registro/relatorio?k=CHAVE: resumo para o Claude ler (CHAVE_RELATORIO é um segredo do Worker).
 
 const ORIGENS = ['https://nabucha.com.br', 'https://www.nabucha.com.br', 'http://localhost:8080'];
 const MAX_BYTES = 6 * 1024 * 1024; // ~3 min de WAV 16 kHz mono
@@ -60,7 +62,7 @@ Extraia os dados e responda SÓ com JSON no formato pedido. Regras:
 function cors(origin) {
   return {
     'Access-Control-Allow-Origin': ORIGENS.includes(origin) ? origin : ORIGENS[0],
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Max-Age': '86400',
     'Vary': 'Origin'
@@ -82,10 +84,65 @@ function pegarJson(txt) {
   return m ? JSON.parse(m[0]) : null;
 }
 
+// ---------- REGISTRO DE USO, ERROS E COMENTÁRIOS ----------
+const TIPOS = ['ev', 'erro', 'coment'];
+const corta = (v, n) => (v == null ? '' : String(v)).slice(0, n);
+async function tabela(db) {
+  await db.prepare(`CREATE TABLE IF NOT EXISTS registros (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, quando TEXT NOT NULL, tipo TEXT NOT NULL, nome TEXT, pagina TEXT,
+    detalhe TEXT, nota INTEGER, contato TEXT, vid TEXT, sid TEXT, versao TEXT, aparelho TEXT)`).run();
+}
+async function registrar(req, env, origin) {
+  if (!env.DB) return json({ erro: 'Banco não ligado' }, 503, origin);
+  const txt = await req.text();
+  if (txt.length > 4000) return json({ erro: 'Grande demais' }, 413, origin);
+  let lista;
+  try { lista = JSON.parse(txt); } catch (e) { return json({ erro: 'Formato inválido' }, 400, origin); }
+  if (!Array.isArray(lista)) lista = [lista];
+  lista = lista.filter(r => r && TIPOS.includes(r.t)).slice(0, 20);
+  if (!lista.length) return json({ ok: true, n: 0 }, 200, origin);
+  await tabela(env.DB);
+  const vid = corta(lista[0].vid, 12);
+  // anti-abuso: no máximo 120 registros por visitante a cada 10 minutos
+  const q = await env.DB.prepare(`SELECT COUNT(*) AS n FROM registros WHERE vid = ? AND quando > datetime('now','-10 minutes')`).bind(vid).first();
+  if (q && q.n > 120) return json({ ok: true, n: 0, limite: true }, 200, origin);
+  const agora = new Date().toISOString().replace('T', ' ').slice(0, 19);
+  const ins = env.DB.prepare(`INSERT INTO registros (quando,tipo,nome,pagina,detalhe,nota,contato,vid,sid,versao,aparelho) VALUES (?,?,?,?,?,?,?,?,?,?,?)`);
+  await env.DB.batch(lista.map(r => {
+    const nota = Number.isInteger(r.nota) && r.nota >= 1 && r.nota <= 5 ? r.nota : null;
+    return ins.bind(agora, r.t, corta(r.n, 40), corta(r.p, 40), corta(r.d, r.t === 'coment' ? 1000 : 300), nota,
+      r.t === 'coment' ? corta(r.contato, 40) : '', vid, corta(r.sid, 10), corta(r.v, 20), corta(r.a, 60));
+  }));
+  // limpeza: apaga o que tiver mais de 180 dias (de vez em quando)
+  if (Math.random() < 0.02) await env.DB.prepare(`DELETE FROM registros WHERE quando < datetime('now','-180 days')`).run();
+  return json({ ok: true, n: lista.length }, 200, origin);
+}
+async function relatorio(url, env, origin) {
+  if (!env.DB || !env.CHAVE_RELATORIO || url.searchParams.get('k') !== env.CHAVE_RELATORIO) return json({ erro: 'Sem acesso' }, 403, origin);
+  await tabela(env.DB);
+  const dias = Math.min(180, Math.max(1, parseInt(url.searchParams.get('dias') || '7', 10) || 7));
+  const desde = `datetime('now','-${dias} days')`;
+  const tudo = async sql => (await env.DB.prepare(sql).all()).results;
+  const funil = await tudo(`SELECT nome, detalhe, pagina, COUNT(DISTINCT vid) AS pessoas, COUNT(*) AS vezes FROM registros WHERE tipo='ev' AND quando > ${desde} GROUP BY nome, detalhe, pagina ORDER BY pagina, pessoas DESC`);
+  const porDia = await tudo(`SELECT substr(quando,1,10) AS dia, COUNT(DISTINCT vid) AS pessoas FROM registros WHERE quando > ${desde} GROUP BY dia ORDER BY dia`);
+  const erros = await tudo(`SELECT nome, pagina, detalhe, COUNT(*) AS vezes, COUNT(DISTINCT vid) AS pessoas, MAX(quando) AS ultimo, MAX(aparelho) AS aparelho FROM registros WHERE tipo='erro' AND quando > ${desde} GROUP BY nome, pagina, detalhe ORDER BY vezes DESC LIMIT 50`);
+  const comentarios = await tudo(`SELECT quando, pagina, nome, detalhe, nota, contato, aparelho FROM registros WHERE tipo='coment' AND quando > ${desde} ORDER BY quando DESC LIMIT 100`);
+  const aparelhos = await tudo(`SELECT aparelho, COUNT(DISTINCT vid) AS pessoas FROM registros WHERE quando > ${desde} GROUP BY aparelho ORDER BY pessoas DESC LIMIT 15`);
+  return json({ dias, gerado: new Date().toISOString(), por_dia: porDia, funil, erros, comentarios, aparelhos }, 200, origin);
+}
+
 export default {
   async fetch(req, env) {
     const origin = req.headers.get('Origin') || '';
+    const url = new URL(req.url);
     if (req.method === 'OPTIONS') return new Response(null, { headers: cors(origin) });
+    if (url.pathname === '/registro/relatorio' && req.method === 'GET') return relatorio(url, env, origin);
+    if (url.pathname === '/registro') {
+      if (req.method !== 'POST') return json({ erro: 'Método não aceito' }, 405, origin);
+      if (!ORIGENS.includes(origin)) return json({ erro: 'Origem não autorizada' }, 403, origin);
+      try { return await registrar(req, env, origin); }
+      catch (e) { return json({ erro: 'Falha ao guardar', detalhe: String(e).slice(0, 200) }, 500, origin); }
+    }
     if (req.method === 'GET') return json({ ok: true, servico: 'nabucha-audio' }, 200, origin);
     if (req.method !== 'POST') return json({ erro: 'Método não aceito' }, 405, origin);
     if (!ORIGENS.includes(origin)) return json({ erro: 'Origem não autorizada' }, 403, origin);
