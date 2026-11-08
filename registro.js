@@ -4,7 +4,7 @@
    Para desligar tudo: apague a linha <script src="/registro.js"> das páginas. */
 (function () {
   const URL_REG = 'https://hello-world-black-sun-acbf.contato-nabucha.workers.dev/registro';
-  const VERSAO = '2026-11-08';
+  const VERSAO = '2026-11-08b';
   const PEND = 'nb-coment-pend';
   const pagina = location.pathname.indexOf('orcamento') >= 0 ? 'orcamento' : (location.pathname.indexOf('privacidade') >= 0 ? 'privacidade' : 'inicio');
   const local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
@@ -12,6 +12,28 @@
   let vid = '?';
   try { vid = localStorage.getItem('nb-vid'); if (!vid) { vid = Math.random().toString(36).slice(2, 10); localStorage.setItem('nb-vid', vid); } } catch (e) {}
   const sid = Math.random().toString(36).slice(2, 8);
+
+  // De onde a pessoa veio nesta visita: ?utm_source=..., ou o site anterior, ou "direto".
+  function origemAgora() {
+    try { const o = sessionStorage.getItem('nb-orig'); if (o) return o; } catch (e) {}
+    let o = '';
+    try { o = (new URLSearchParams(location.search).get('utm_source') || '').toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 30); } catch (e) {}
+    if (!o) {
+      let h = '';
+      try { h = document.referrer ? new URL(document.referrer).hostname : ''; } catch (e) {}
+      if (!h || h.endsWith('nabucha.com.br')) o = 'direto';
+      else if (/instagram/.test(h)) o = 'instagram';
+      else if (/facebook|fb\./.test(h)) o = 'facebook';
+      else if (/whatsapp|wa\.me/.test(h)) o = 'whatsapp';
+      else if (/google\./.test(h)) o = 'google';
+      else o = h.replace(/^www\./, '').slice(0, 30);
+    }
+    if (o === 'direto' && /Instagram/i.test(navigator.userAgent)) o = 'instagram';
+    else if (o === 'direto' && /FBAN|FBAV/i.test(navigator.userAgent)) o = 'facebook';
+    try { sessionStorage.setItem('nb-orig', o); } catch (e) {}
+    return o;
+  }
+  const ORIG = origemAgora();
 
   function aparelho() {
     const u = navigator.userAgent;
@@ -24,7 +46,7 @@
 
   let fila = [];
   const jaFoi = new Set();
-  const base = () => ({ vid: vid, sid: sid, v: VERSAO, a: AP, p: pagina });
+  const base = () => ({ vid: vid, sid: sid, v: VERSAO, a: AP, p: pagina, o: ORIG });
 
   function despachar(usarBeacon) {
     if (!fila.length) return;

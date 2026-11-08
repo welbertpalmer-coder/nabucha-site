@@ -1041,7 +1041,7 @@ function abrirFolha(){R.ev('folha-abriu');
 function closeSheet(){$('#sheet-wrap').hidden=true;renderBar();document.body.style.overflow='';if(lastFocus)lastFocus.focus()}
 $('#close').addEventListener('click',closeSheet);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#sheet-wrap').hidden)closeSheet()});
-$('#wa').addEventListener('click',()=>{R.ev('whatsapp-enviou');guardar(true,C.num);C.num++;save();$('#festa-trena').innerHTML=trenaSVG('feliz');$('#festa').hidden=false});
+$('#wa').addEventListener('click',()=>{R.ev('whatsapp-enviou');R.ev('jeito-de-cobrar',O.modo||'?');R.ev('comodos',String(Math.min((O.rooms||[]).length,6))+((O.rooms||[]).length>=6?'+':''));if(window.__nbT0){const m=(Date.now()-window.__nbT0)/60000;R.ev('tempo-ate-enviar',m<2?'menos de 2 min':m<5?'2 a 5 min':m<10?'5 a 10 min':'mais de 10 min')}guardar(true,C.num);C.num++;save();$('#festa-trena').innerHTML=trenaSVG('feliz');$('#festa').hidden=false});
 $('#novo').addEventListener('click',()=>{if(H.some(h=>h.id===O.id))guardar(false);O=novoOrc(C,false);aplicarSituacao();save();closeSheet();show('orc');toast('Orçamento novo. Seus preços continuam salvos.')});
 $('#copy').addEventListener('click',()=>{R.ev('copiou-texto');const t=texto(calc());
   const fall=()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Texto copiado')}catch(e){toast('Não deu para copiar')}ta.remove()};
@@ -1277,7 +1277,7 @@ function renderEntrada(){
   if(e==='voz'&&!ocupado){if(campos)vozSet('feito',O.vozRes||'');else if(box.dataset.estado==='feito')vozSet('pronto','')}
   renderBar();
 }
-document.addEventListener('click',e=>{const b=e.target.closest('[data-entrada]');if(!b)return;O.entrada=b.dataset.entrada;R.ev('entrada',O.entrada);save();renderOrc();refresh();
+document.addEventListener('click',e=>{const b=e.target.closest('[data-entrada]');if(!b)return;O.entrada=b.dataset.entrada;R.ev('entrada',O.entrada);if(!window.__nbT0)window.__nbT0=Date.now();save();renderOrc();refresh();
   if(O.entrada==='voz')vozGravar();else window.scrollTo(0,0)});
 // Mascote: a capivara do Na Bucha (imagens em /img/capi). Expressões: oi, medindo (pensando), feliz, triste (ops)
 function trenaSVG(expr,cls){

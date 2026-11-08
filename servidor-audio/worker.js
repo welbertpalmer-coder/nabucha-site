@@ -3,6 +3,7 @@
 // Nada é guardado: o áudio e o texto só passam por aqui e voltam para o celular.
 // Rota /registro: guarda uso anônimo, erros e comentários do site no banco D1 (binding DB).
 // Rota /registro/relatorio?k=CHAVE: resumo para o Claude ler (CHAVE_RELATORIO é um segredo do Worker).
+// Cidade e estado vêm da Cloudflare (aproximados, pela rede da pessoa). O IP nunca é guardado.
 
 const ORIGENS = ['https://nabucha.com.br', 'https://www.nabucha.com.br', 'http://localhost:8080'];
 const MAX_BYTES = 6 * 1024 * 1024; // ~3 min de WAV 16 kHz mono
@@ -87,10 +88,15 @@ function pegarJson(txt) {
 // ---------- REGISTRO DE USO, ERROS E COMENTÁRIOS ----------
 const TIPOS = ['ev', 'erro', 'coment'];
 const corta = (v, n) => (v == null ? '' : String(v)).slice(0, n);
+let tabelaPronta = false;
 async function tabela(db) {
+  if (tabelaPronta) return;
   await db.prepare(`CREATE TABLE IF NOT EXISTS registros (
     id INTEGER PRIMARY KEY AUTOINCREMENT, quando TEXT NOT NULL, tipo TEXT NOT NULL, nome TEXT, pagina TEXT,
     detalhe TEXT, nota INTEGER, contato TEXT, vid TEXT, sid TEXT, versao TEXT, aparelho TEXT)`).run();
+  const cols = (await db.prepare(`PRAGMA table_info(registros)`).all()).results.map(c => c.name);
+  for (const c of ['cidade', 'uf', 'pais', 'origem']) if (!cols.includes(c)) await db.prepare(`ALTER TABLE registros ADD COLUMN ${c} TEXT`).run();
+  tabelaPronta = true;
 }
 async function registrar(req, env, origin) {
   if (!env.DB) return json({ erro: 'Banco não ligado' }, 503, origin);
@@ -107,11 +113,14 @@ async function registrar(req, env, origin) {
   const q = await env.DB.prepare(`SELECT COUNT(*) AS n FROM registros WHERE vid = ? AND quando > datetime('now','-10 minutes')`).bind(vid).first();
   if (q && q.n > 120) return json({ ok: true, n: 0, limite: true }, 200, origin);
   const agora = new Date().toISOString().replace('T', ' ').slice(0, 19);
-  const ins = env.DB.prepare(`INSERT INTO registros (quando,tipo,nome,pagina,detalhe,nota,contato,vid,sid,versao,aparelho) VALUES (?,?,?,?,?,?,?,?,?,?,?)`);
+  const cf = req.cf || {};
+  const cidade = corta(cf.city, 60), uf = corta(cf.regionCode || cf.region, 10), pais = corta(cf.country, 4);
+  const ins = env.DB.prepare(`INSERT INTO registros (quando,tipo,nome,pagina,detalhe,nota,contato,vid,sid,versao,aparelho,cidade,uf,pais,origem) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
   await env.DB.batch(lista.map(r => {
     const nota = Number.isInteger(r.nota) && r.nota >= 1 && r.nota <= 5 ? r.nota : null;
     return ins.bind(agora, r.t, corta(r.n, 40), corta(r.p, 40), corta(r.d, r.t === 'coment' ? 1000 : 300), nota,
-      r.t === 'coment' ? corta(r.contato, 40) : '', vid, corta(r.sid, 10), corta(r.v, 20), corta(r.a, 60));
+      r.t === 'coment' ? corta(r.contato, 40) : '', vid, corta(r.sid, 10), corta(r.v, 20), corta(r.a, 60),
+      cidade, uf, pais, corta(r.o, 30));
   }));
   // limpeza: apaga o que tiver mais de 180 dias (de vez em quando)
   if (Math.random() < 0.02) await env.DB.prepare(`DELETE FROM registros WHERE quando < datetime('now','-180 days')`).run();
@@ -128,7 +137,18 @@ async function relatorio(url, env, origin) {
   const erros = await tudo(`SELECT nome, pagina, detalhe, COUNT(*) AS vezes, COUNT(DISTINCT vid) AS pessoas, MAX(quando) AS ultimo, MAX(aparelho) AS aparelho FROM registros WHERE tipo='erro' AND quando > ${desde} GROUP BY nome, pagina, detalhe ORDER BY vezes DESC LIMIT 50`);
   const comentarios = await tudo(`SELECT quando, pagina, nome, detalhe, nota, contato, aparelho FROM registros WHERE tipo='coment' AND quando > ${desde} ORDER BY quando DESC LIMIT 100`);
   const aparelhos = await tudo(`SELECT aparelho, COUNT(DISTINCT vid) AS pessoas FROM registros WHERE quando > ${desde} GROUP BY aparelho ORDER BY pessoas DESC LIMIT 15`);
-  return json({ dias, gerado: new Date().toISOString(), por_dia: porDia, funil, erros, comentarios, aparelhos }, 200, origin);
+  // onde estão: cidade/UF (pessoas distintas)
+  const cidades = await tudo(`SELECT cidade, uf, pais, COUNT(DISTINCT vid) AS pessoas FROM registros WHERE quando > ${desde} AND cidade IS NOT NULL GROUP BY cidade, uf, pais ORDER BY pessoas DESC LIMIT 30`);
+  // de onde vieram e quantos chegaram a mandar orçamento no WhatsApp
+  const origens = await tudo(`SELECT COALESCE(NULLIF(origem,''),'?') AS origem, COUNT(DISTINCT vid) AS pessoas,
+    COUNT(DISTINCT CASE WHEN nome='whatsapp-enviou' THEN vid END) AS enviaram,
+    COUNT(DISTINCT CASE WHEN nome='lista-entrou' THEN vid END) AS entraram_lista
+    FROM registros WHERE quando > ${desde} GROUP BY 1 ORDER BY pessoas DESC`);
+  // quando usam (horário de Brasília): dia da semana 0=domingo e hora
+  const horarios = await tudo(`SELECT strftime('%w', datetime(quando,'-3 hours')) AS dia_semana, strftime('%H', datetime(quando,'-3 hours')) AS hora, COUNT(DISTINCT vid) AS pessoas FROM registros WHERE tipo='ev' AND nome='abriu' AND quando > ${desde} GROUP BY 1,2 ORDER BY pessoas DESC LIMIT 30`);
+  // voltam a usar? pessoas por número de dias diferentes em que abriram o orçamento
+  const retorno = await tudo(`SELECT dias_uso, COUNT(*) AS pessoas FROM (SELECT vid, COUNT(DISTINCT substr(quando,1,10)) AS dias_uso FROM registros WHERE pagina='orcamento' AND quando > ${desde} GROUP BY vid) GROUP BY dias_uso ORDER BY dias_uso`);
+  return json({ dias, gerado: new Date().toISOString(), por_dia: porDia, funil, erros, comentarios, aparelhos, cidades, origens, horarios, retorno }, 200, origin);
 }
 
 export default {
@@ -136,7 +156,10 @@ export default {
     const origin = req.headers.get('Origin') || '';
     const url = new URL(req.url);
     if (req.method === 'OPTIONS') return new Response(null, { headers: cors(origin) });
-    if (url.pathname === '/registro/relatorio' && req.method === 'GET') return relatorio(url, env, origin);
+    if (url.pathname === '/registro/relatorio' && req.method === 'GET') {
+      try { return await relatorio(url, env, origin); }
+      catch (e) { return json({ erro: 'Falha no relatório', detalhe: String(e).slice(0, 200) }, 500, origin); }
+    }
     if (url.pathname === '/registro') {
       if (req.method !== 'POST') return json({ erro: 'Método não aceito' }, 405, origin);
       if (!ORIGENS.includes(origin)) return json({ erro: 'Origem não autorizada' }, 403, origin);
