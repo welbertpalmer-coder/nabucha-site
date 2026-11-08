@@ -231,6 +231,45 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
 @media (max-width:380px){.row3{grid-template-columns:1fr 1fr}.tot strong{font-size:18px}.opt strong{font-size:16px}}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .25s ease-out}@keyframes up{from{transform:translateY(16px);opacity:.6}}}
 .nb-sug{text-align:center;font-size:14px;color:var(--muted);margin:8px 0 0;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:0 4px}
+/* ---- Recebimentos ---- */
+.hist-row{flex-wrap:wrap}.hist-row>span:last-child{display:flex;flex-wrap:wrap;justify-content:flex-end}
+.hist-row .atr{color:#D2361B;font-weight:700}
+#rec-wrap{z-index:22}#pag-wrap{z-index:23}
+.barra{height:10px;border-radius:99px;background:var(--line);overflow:hidden;display:flex}
+.barra i{display:block;height:100%;background:var(--good)}
+.barra i.atr{background:#D2361B}
+.pg-topo{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.pg-topo .big{font-family:var(--display);font-size:22px;font-variant-numeric:tabular-nums}
+.pg-topo .lin{display:flex;justify-content:space-between;gap:8px;font-size:14px;color:var(--muted);flex-wrap:wrap}
+.pg-topo .lin b{color:var(--ink)}
+.alerta{background:#FFE3DA;color:#7A1B05;border-radius:12px;padding:10px 12px;font-size:14px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.alerta a{color:#7A1B05}
+.ok-box{background:#DDF5E6;color:#0B4D27;border-radius:12px;padding:10px 12px;font-size:14px;font-weight:700}
+.parc{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.parc>div{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 12px;border-top:1px solid var(--line);font-size:14px;min-height:44px}
+.parc>div:first-child{border-top:0}
+.parc .v{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+.st{font-size:12px;font-weight:700;border-radius:99px;padding:2px 8px;white-space:nowrap}
+.st.pago{background:#DDF5E6;color:#0B4D27}.st.atrasada{background:#FFE3DA;color:#7A1B05}.st.avencer{background:var(--soft);color:var(--accent)}.st.parcial{background:var(--warn);color:var(--warn-ink)}
+.sec-t{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:6px 0 -4px}
+.chart{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.chart-cab{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.chart-cab h3{font-family:var(--display);font-size:14px;margin:0}
+.chart svg{width:100%;height:auto;display:block}
+.chart svg text{fill:var(--muted);font-family:var(--body);font-size:11px}
+.chart svg text.val{fill:var(--ink);font-weight:700}
+.leg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--muted)}
+.leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.sv{display:flex;flex-direction:column;gap:5px;padding:8px 0;border-top:1px solid var(--line);cursor:pointer;background:none;border-left:0;border-right:0;border-bottom:0;font:inherit;color:inherit;text-align:left;width:100%}
+.sv:first-of-type{border-top:0}.sv>*{width:100%;display:flex}.sv small{display:block}.sv .barra{display:flex}
+.sv .lin{display:flex;justify-content:space-between;gap:8px;font-size:14px}
+.sv .lin b{font-weight:700}.sv small{font-size:12px;color:var(--muted)}
+.chart.cheia{position:fixed;inset:0;z-index:40;border-radius:0;border:0;overflow:auto;padding:calc(14px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.chart.cheia svg{max-height:calc(100vh - 140px);width:100%}
+.chart.cheia h3{font-size:18px}
+@media (orientation:landscape) and (min-width:640px){#rec-wrap .hist{max-width:980px}.rec-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .alerta{background:#4A1A0E;color:#FFC9B8}:root:not([data-theme="light"]) .alerta a{color:#FFC9B8}:root:not([data-theme="light"]) .ok-box,:root:not([data-theme="light"]) .st.pago{background:#123D26;color:#9BF0BF}:root:not([data-theme="light"]) .st.atrasada{background:#4A1A0E;color:#FFC9B8}:root:not([data-theme="light"]) .hist-row .atr{color:#FF8A5C}}
+:root[data-theme="dark"] .alerta{background:#4A1A0E;color:#FFC9B8}:root[data-theme="dark"] .alerta a{color:#FFC9B8}:root[data-theme="dark"] .ok-box,:root[data-theme="dark"] .st.pago{background:#123D26;color:#9BF0BF}:root[data-theme="dark"] .st.atrasada{background:#4A1A0E;color:#FFC9B8}:root[data-theme="dark"] .hist-row .atr{color:#FF8A5C}
 </style>
 <script src="/registro.js"></script>
 </head>
@@ -247,7 +286,7 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
 
   <!-- ORÇAMENTO -->
   <div id="v-orc" style="display:flex;flex-direction:column;gap:14px">
-    <div class="hist-row" id="hist-row" hidden><span id="hist-row-t">Meus orçamentos</span><span><button class="link" id="hist-abrir">Orçamentos</button><button class="link" id="cli-abrir">Clientes</button></span></div>
+    <div class="hist-row" id="hist-row" hidden><span id="hist-row-t">Meus orçamentos</span><span><button class="link" id="hist-abrir">Orçamentos</button><button class="link" id="cli-abrir">Clientes</button><button class="link" id="rec-abrir" hidden>Recebimentos</button></span></div>
     <div class="banner" id="first" hidden><span>Primeira vez? Confira seus preços. Já vêm prontos, é só ajustar.</span><button class="link" id="go-cfg">Meus preços</button></div>
     <nav class="steps" aria-label="Passos">
       <button data-go="1">1 · Cômodos</button><button data-go="2">2 · Parede</button><button data-go="3">3 · Revisão</button>
@@ -523,7 +562,7 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
 <div class="hist-wrap" id="hist-wrap" hidden role="dialog" aria-modal="true" aria-labelledby="hist-t">
   <div class="hist">
     <div class="hist-cab"><h2 id="hist-t">Meus orçamentos</h2><button class="link" id="hist-fechar">Fechar</button></div>
-    <p class="hint" style="margin:0" id="hist-filtro-t">Ficam guardados só neste celular. Os últimos 30.</p>
+    <p class="hint" style="margin:0" id="hist-filtro-t">Ficam guardados só neste celular. Os últimos 30 (serviço com pagamento em aberto não sai).</p>
     <div class="resumo" id="resumo"></div>
     <div id="hist-lista" style="display:flex;flex-direction:column;gap:10px"></div>
     <div class="backup"><button class="link" id="bk-salvar">Salvar cópia de segurança</button><label class="link" style="cursor:pointer">Restaurar cópia<input type="file" id="bk-abrir" accept="application/json,.json" hidden></label></div>
@@ -538,6 +577,20 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
     <button class="sec" id="cli-novo" style="min-height:48px">+ Cadastrar cliente</button>
     <div id="cli-edit"></div>
     <div id="cli-lista" style="display:flex;flex-direction:column;gap:10px"></div>
+  </div>
+</div>
+<div class="hist-wrap" id="pag-wrap" hidden role="dialog" aria-modal="true" aria-labelledby="pag-t">
+  <div class="hist">
+    <div class="hist-cab"><h2 id="pag-t">Pagamento</h2><button class="link" id="pag-fechar">Fechar</button></div>
+    <p class="hint" style="margin:0" id="pag-sub"></p>
+    <div id="pag-corpo" style="display:flex;flex-direction:column;gap:10px"></div>
+  </div>
+</div>
+<div class="hist-wrap" id="rec-wrap" hidden role="dialog" aria-modal="true" aria-labelledby="rec-t">
+  <div class="hist">
+    <div class="hist-cab"><h2 id="rec-t">Recebimentos</h2><button class="link" id="rec-fechar">Fechar</button></div>
+    <p class="hint" style="margin:0">O que já entrou e o que ainda falta receber dos serviços fechados. Fica só neste celular.</p>
+    <div id="rec-corpo" style="display:flex;flex-direction:column;gap:10px"></div>
   </div>
 </div>
 <div class="toast" id="toast" hidden></div>
@@ -1069,32 +1122,34 @@ function guardar(enviado,numEnv){
   const i=H.findIndex(h=>h.id===O.id);const ant=i>=0?H[i]:null;
   const st=enviado?((ant&&(ant.st==='fechado'||ant.st==='perdido'))?ant.st:'enviado'):(ant&&ant.st)||'rascunho';
   const e={id:O.id,cliId:O.cliId||null,quando:Date.now(),enviadoEm:enviado?Date.now():(ant&&ant.enviadoEm)||null,cliente:O.cliente.nome||'',local:O.cliente.local||'',whats:O.cliente.whats||'',total:k.total,
-    st,enviado:st!=='rascunho',num:numEnv||(ant&&ant.num)||null,o:clone(O)};
-  if(i>=0)H.splice(i,1);H.unshift(e);if(H.length>HMAX)H.length=HMAX;hsave();save();renderHistRow();
+    st,enviado:st!=='rascunho',num:numEnv||(ant&&ant.num)||null,o:clone(O)};if(ant&&ant.pag)e.pag=ant.pag;
+  if(i>=0)H.splice(i,1);H.unshift(e);aparar();hsave();save();renderHistRow();
 }
-function renderHistRow(){$('#hist-row').hidden=!H.length&&!K.length;$('#hist-row-t').innerHTML=`<b>Meus</b> · ${H.length} orç. · ${K.length} cliente${K.length===1?'':'s'}`;$('#cli-escolher').hidden=!K.length}
+// serviço com pagamento em aberto não sai da lista quando passa de 30
+function aparar(){for(let j=H.length-1;H.length>HMAX&&j>=0;j--){const pi=pagInfo(H[j]);if(!(pi&&!pi.quit))H.splice(j,1)}}
+function renderHistRow(){$('#hist-row').hidden=!H.length&&!K.length;const atr=r2(rastreados().reduce((x,o)=>x+o.i.atraso,0));$('#hist-row-t').innerHTML=`<b>Meus</b> · ${H.length} orç. · ${K.length} cliente${K.length===1?'':'s'}${atr?` · <span class="atr">${brl0(atr)} atrasado</span>`:''}`;$('#rec-abrir').hidden=!H.some(h=>stOf(h)==='fechado');$('#cli-escolher').hidden=!K.length}
 const TAG={rascunho:['Rascunho',''],enviado:['Enviado','env'],fechado:['Fechou','fec'],perdido:['Não fechou','per']};
 let delPend=null,filtroCli=null;
 function stOf(h){return h.st||(h.enviado?'enviado':'rascunho')}
 function renderResumo(){const ini=new Date();ini.setDate(1);ini.setHours(0,0,0,0);const m=H.filter(h=>h.quando>=ini.getTime());
   const env=m.filter(h=>stOf(h)!=='rascunho'),fec=m.filter(h=>stOf(h)==='fechado');
-  $('#resumo').innerHTML=`<div><small>Enviados no mês</small><b>${env.length}</b></div><div><small>Fechados</small><b>${fec.length}</b></div><div><small>Valor fechado</small><b>${brl0(fec.reduce((x,h)=>x+(h.total||0),0))}</b></div>`}
+  $('#resumo').innerHTML=`<div><small>Enviados no mês</small><b>${env.length}</b></div><div><small>Fechados</small><b>${fec.length}</b></div><div><small>Valor fechado</small><b>${brl0(fec.reduce((x,h)=>x+(h.total||0),0))}</b></div>`+(H.some(h=>stOf(h)==='fechado')?`<button class="link" id="hist-rec" style="grid-column:1/-1;justify-content:center">Ver recebimentos e gráficos</button>`:'')}
 function renderHist(){
   const L=$('#hist-lista');renderResumo();const lst=filtroCli?H.filter(h=>h.cliId===filtroCli):H;
   const ck=filtroCli&&K.find(k=>k.id===filtroCli);
-  $('#hist-filtro-t').innerHTML=ck?`Só de <b>${escH(ck.nome)}</b> · <button class="link" id="hist-tudo">ver todos</button>`:'Ficam guardados só neste celular. Os últimos 30.';
+  $('#hist-filtro-t').innerHTML=ck?`Só de <b>${escH(ck.nome)}</b> · <button class="link" id="hist-tudo">ver todos</button>`:'Ficam guardados só neste celular. Os últimos 30 (serviço com pagamento em aberto não sai).';
   if(!lst.length){L.innerHTML='<div class="hist-vazio">Nenhum orçamento guardado ainda.<br>Eles entram aqui quando você chega na folha do orçamento.</div>';return}
   L.innerHTML=lst.map(h=>{const st=stOf(h),[tt,tc]=TAG[st];const dias=h.enviadoEm?(Date.now()-h.enviadoEm)/864e5:0;
     const cobrar=st==='enviado'&&dias>=2?`<a class="link" target="_blank" rel="noopener" href="${waLink(h.whats,`Oi${h.cliente?' '+h.cliente.split(' ')[0]:''}, tudo bem? Conseguiu ver o orçamento que te mandei? Se quiser, ajusto alguma coisa.`)}">Cobrar resposta</a>`:'';
     return `<div class="hi"><div class="hi-top"><b>${escH(h.cliente||'Sem nome')}<span class="hi-tag ${tc}">${tt}</span></b><strong>${brl(h.total||0)}</strong></div>
-    <div class="hi-sub">${h.local?escH(h.local)+' · ':''}${dataBR(h.quando)}${h.num?' · Nº '+String(h.num).padStart(4,'0'):''}${h.id===O.id?' · aberto agora':''}${st==='enviado'&&dias>=2?' · sem resposta há '+Math.floor(dias)+' dias':''}</div>
+    <div class="hi-sub">${h.local?escH(h.local)+' · ':''}${dataBR(h.quando)}${h.num?' · Nº '+String(h.num).padStart(4,'0'):''}${h.id===O.id?' · aberto agora':''}${st==='enviado'&&dias>=2?' · sem resposta há '+Math.floor(dias)+' dias':''}</div>${pagLinhaHist(h)}
     <div class="hi-acts"><button class="link" data-h-abrir="${h.id}">Abrir e editar</button><button class="link" data-h-dup="${h.id}">Duplicar</button>${cobrar}
     ${st==='enviado'?`<button class="link" data-h-st="fechado" data-id="${h.id}">Fechou</button><button class="link" data-h-st="perdido" data-id="${h.id}">Não fechou</button>`:''}
-    ${st==='fechado'||st==='perdido'?`<button class="link" data-h-st="enviado" data-id="${h.id}">Desfazer status</button>`:''}
+    ${st==='fechado'?`<button class="link" data-h-pag="${h.id}">${h.pag&&h.pag.acomp?'Pagamento':'Acompanhar pagamento'}</button>`:''}${st==='fechado'||st==='perdido'?`<button class="link" data-h-st="enviado" data-id="${h.id}">Desfazer status</button>`:''}
     <button class="link del" data-h-del="${h.id}">${delPend===h.id?'Toque de novo para apagar':'Apagar'}</button></div></div>`}).join('');
 }
 function abrirOv(id,foco){lastFocus=document.activeElement;$(id).hidden=false;document.body.style.overflow='hidden';$(foco).focus({preventScroll:true})}
-function fecharOv(id){$(id).hidden=true;if($('#sheet-wrap').hidden&&$('#hist-wrap').hidden&&$('#cli-wrap').hidden)document.body.style.overflow=''}
+function fecharOv(id){$(id).hidden=true;if($('#sheet-wrap').hidden&&$('#hist-wrap').hidden&&$('#cli-wrap').hidden&&$('#pag-wrap').hidden&&$('#rec-wrap').hidden)document.body.style.overflow=''}
 function abrirHist(cli){delPend=null;filtroCli=cli||null;renderHist();abrirOv('#hist-wrap','#hist-fechar')}
 const fecharHist=()=>fecharOv('#hist-wrap');
 function carregar(o,msg){if(H.some(h=>h.id===O.id))guardar(false);O=o;save();fecharOv('#hist-wrap');fecharOv('#cli-wrap');if(!$('#sheet-wrap').hidden)closeSheet();show('orc');toast(msg)}
@@ -1103,10 +1158,12 @@ $('#hist-folha').addEventListener('click',()=>abrirHist());
 $('#hist-fechar').addEventListener('click',fecharHist);
 $('#hist-wrap').addEventListener('click',e=>{if(e.target.id==='hist-wrap'){fecharHist();return}
   if(e.target.id==='hist-tudo'){filtroCli=null;renderHist();return}
+  if(e.target.id==='hist-rec'){abrirRec();return}
+  const pg=e.target.closest('[data-h-pag]');if(pg){abrirPag(pg.dataset.hPag,(H.find(x=>x.id===pg.dataset.hPag)||{}).pag?undefined:'combinar');return}
   const a=e.target.closest('[data-h-abrir]'),d=e.target.closest('[data-h-dup]'),x=e.target.closest('[data-h-del]'),s=e.target.closest('[data-h-st]');
   if(a){const h=H.find(h=>h.id===a.dataset.hAbrir);if(h){const o=clone(h.o);o.step=3;carregar(o,'Aberto: '+(h.cliente||'orçamento')+'. Edite e mande de novo.')}}
   else if(d){const h=H.find(h=>h.id===d.dataset.hDup);if(h){const o=clone(h.o);o.id=hid();o.cliId=null;o.step=1;o.cliente=Object.assign({},o.cliente,{nome:(o.cliente.nome||'')+(o.cliente.nome?' (cópia)':''),whats:''});carregar(o,'Cópia criada. Troque o cliente e ajuste.')}}
-  else if(s){const h=H.find(h=>h.id===s.dataset.id);if(h){h.st=s.dataset.hSt;h.enviado=true;hsave();renderHist();toast(h.st==='fechado'?'Boa! Serviço fechado.':h.st==='perdido'?'Anotado. Fica de aprendizado.':'Status desfeito')}}
+  else if(s){const h=H.find(h=>h.id===s.dataset.id);if(h){h.st=s.dataset.hSt;h.enviado=true;hsave();renderHist();renderHistRow();toast(h.st==='fechado'?'Boa! Serviço fechado.':h.st==='perdido'?'Anotado. Fica de aprendizado.':'Status desfeito');if(h.st==='fechado'&&!h.pag)abrirPag(h.id,'pergunta')}}
   else if(x){const id=x.dataset.hDel;if(delPend!==id){delPend=id;renderHist();return}
     H=H.filter(h=>h.id!==id);delPend=null;hsave();renderHistRow();renderHist();toast('Orçamento apagado')}});
 // Meus clientes
@@ -1158,6 +1215,166 @@ $('#bk-salvar').addEventListener('click',()=>{R.ev('backup-salvou');const d=JSON
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([d],{type:'application/json'}));a.download='nabucha-copia-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();toast('Cópia salva nos downloads')});
 $('#bk-abrir').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const d=JSON.parse(rd.result);
   if(d.app!=='nabucha'||!d.C)throw 0;C=d.C;O=d.O||novoOrc(C,false);H=d.H||[];K=d.K||[];save();hsave();ksave();renderHistRow();renderHist();show('orc');toast('Cópia restaurada')}catch(err){toast('Esse arquivo não é uma cópia do Na Bucha')}};rd.readAsText(f);e.target.value=''});
+// ---------- RECEBIMENTOS: acompanhar o pagamento dos serviços fechados (só neste aparelho) ----------
+const FORMAS=['Pix','Dinheiro','Cartão','Transferência'];
+const TIPOS={unica:'Tudo de uma vez',entrada:'Entrada + resto no fim',semana:'Por semana',mes:'Por mês',livre:'Sem data certa'};
+const MESES=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const iso=x=>x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');
+const hoje=()=>iso(new Date());
+const pd=s=>{const[y,m,d]=String(s).split('-').map(Number);return new Date(y,m-1,d)};
+const somaDias=(s,n)=>{const x=pd(s);x.setDate(x.getDate()+n);return iso(x)};
+const somaMes=(s,n)=>{const x=pd(s),d=x.getDate();const y=new Date(x.getFullYear(),x.getMonth()+n,1);y.setDate(Math.min(d,new Date(y.getFullYear(),y.getMonth()+1,0).getDate()));return iso(y)};
+const dBR=s=>{if(!s)return'';const p=String(s).split('-');return p[2]+'/'+p[1]};
+const r2=n=>Math.round((n||0)*100)/100;
+const vtxt=n=>n?String(r2(n)).replace('.',','):'';
+const mil=n=>n>=1000?'R$ '+(n/1000).toLocaleString('pt-BR',{maximumFractionDigits:1})+' mil':brl0(n);
+const okD=s=>/^\d{4}-\d{2}-\d{2}$/.test(String(s||''));
+function dividir(t,n){const p=Math.floor(t/n*100)/100,a=Array(n).fill(p);a[n-1]=r2(t-p*(n-1));return a}
+function gerarParcelas(c){const V=r2(num(c.valor));if(!V||c.tipo==='livre')return[];
+  const ent=Math.min(r2(num(c.ent)),V),entD=okD(c.entD)?c.entD:hoje(),ini=okD(c.ini)?c.ini:hoje(),n=Math.max(1,Math.min(52,parseInt(c.n,10)||1));
+  if(c.tipo==='unica')return[{d:ini,v:V}];
+  if(c.tipo==='entrada'){const P=[];if(ent>0)P.push({d:entD,v:ent});if(V-ent>0)P.push({d:okD(c.fim)?c.fim:somaDias(entD,14),v:r2(V-ent)});return P}
+  const P=[];if(ent>0)P.push({d:entD,v:ent});const resto=r2(V-ent);
+  if(resto>0)dividir(resto,n).forEach((v,k)=>P.push({d:c.tipo==='semana'?somaDias(ini,7*k):somaMes(ini,k),v}));
+  return P.sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:0)}
+function pagInfo(h){const p=h&&h.pag;if(!p||!p.acomp)return null;const t=hoje();
+  const V=r2(p.valor),rec=r2((p.recs||[]).reduce((x,r)=>x+(r.v||0),0));let resto=rec;
+  const parc=(p.parc||[]).map(q=>{const cob=r2(Math.min(q.v,Math.max(0,resto)));resto=r2(resto-cob);const falta=r2(q.v-cob);
+    return{d:q.d,v:q.v,cob,falta,st:falta<=0.009?'pago':q.d<t?'atrasada':cob>0?'parcial':'avencer'}});
+  const falta=Math.max(0,r2(V-rec)),atraso=r2(parc.filter(q=>q.st==='atrasada').reduce((x,q)=>x+q.falta,0));
+  return{V,rec,falta,atraso,parc,prox:parc.find(q=>q.st!=='pago')||null,quit:V>0&&falta<=0.009,mais:rec>V?r2(rec-V):0}}
+const rastreados=()=>H.filter(h=>stOf(h)==='fechado'&&h.pag&&h.pag.acomp).map(h=>({h,i:pagInfo(h)}));
+const semAcomp=()=>H.filter(h=>stOf(h)==='fechado'&&!(h.pag&&h.pag.acomp));
+const prim=n=>String(n||'').replace(/\s*\(.*\)$/,'').trim().split(/\s+/)[0]||'';
+function msgCobrar(h,q,i){const n=prim(h.cliente);
+  return q?`Oi${n?' '+n:''}, tudo bem? Passando para lembrar da parcela de ${brl(q.falta)} do serviço de pintura, que venceu dia ${dBR(q.d)}. Pode mandar no Pix quando der. Obrigado!`
+    :`Oi${n?' '+n:''}, tudo bem? Passando para lembrar do restante de ${brl(i.falta)} do serviço de pintura. Quando der, me avisa. Obrigado!`}
+function barra(i){const V=Math.max(i.V,i.rec)||1;return `<div class="barra" role="img" aria-label="Recebido ${brl(i.rec)} de ${brl(i.V)}"><i style="width:${Math.min(100,i.rec/V*100)}%"></i><i class="atr" style="width:${Math.min(100,i.atraso/V*100)}%"></i></div>`}
+function pagLinhaHist(h){if(stOf(h)!=='fechado')return'';const i=pagInfo(h);
+  if(!i)return `<div class="hi-sub">Pagamento não acompanhado</div>`;
+  return `${barra(i)}<div class="hi-sub">${i.quit?'<b style="color:var(--good)">Tudo recebido</b>':`Recebido ${brl0(i.rec)} de ${brl0(i.V)} · falta <b>${brl0(i.falta)}</b>`}${i.atraso?` · <b class="bad">${brl0(i.atraso)} atrasado</b>`:''}</div>`}
+
+// ---- tela Pagamento de um serviço ----
+let pagId=null,pagModo='ver',pagRas=null,recDel=null,recForm=false,recForma='Pix',pararPend=false;
+function rascunhoDe(h){const p=h.pag||{},pay=(h.o&&h.o.pay)||[],T=r2(h.total||0);
+  return{valor:vtxt(p.valor!=null?p.valor:T),tipo:p.tipo||(pay.includes('50% de entrada')?'entrada':'unica'),ent:vtxt(p.ent!=null?p.ent:(pay.includes('50% de entrada')?T/2:0)),
+    entD:p.entD||hoje(),ini:p.ini||(p.tipo==='unica'?hoje():somaDias(hoje(),7)),n:p.n||4,fim:p.fim||somaDias(hoje(),14)}}
+function abrirPag(id,modo){const h=H.find(x=>x.id===id);if(!h)return;pagId=id;recDel=null;recForm=false;pararPend=false;
+  pagModo=modo||(h.pag&&h.pag.acomp?'ver':'pergunta');if(pagModo==='combinar')pagRas=rascunhoDe(h);
+  R.ev('pagamento-abriu','',true);renderPag();abrirOv('#pag-wrap','#pag-fechar')}
+function prevParc(){const P=gerarParcelas(pagRas),V=r2(num(pagRas.valor));
+  if(!V)return '<p class="hint">Escreva o valor combinado.</p>';
+  if(pagRas.tipo==='livre')return `<p class="hint">Sem parcelas: você só anota o que for recebendo e o Na Bucha mostra quanto falta dos ${brl(V)}.</p>`;
+  return `<div class="parc">${P.map((q,k)=>`<div><span>${P.length>1?(k+1)+'ª · ':''}${dBR(q.d)}</span><span class="v">${brl(q.v)}</span></div>`).join('')}</div>`}
+function formComb(h){const c=pagRas,t=c.tipo,temEnt=t==='entrada'||t==='semana'||t==='mes';
+  return `<div class="cli-form"><b>Como ficou combinado?</b>
+  <label>Valor combinado <span class="hint">(se deu desconto, mude aqui)</span><input id="pc-valor" inputmode="decimal" value="${escH(c.valor)}" autocomplete="off"></label>
+  <div class="chips">${Object.keys(TIPOS).map(k=>`<button class="chip${t===k?' on':''}" data-pc-tipo="${k}">${TIPOS[k]}</button>`).join('')}</div>
+  ${t==='unica'?`<label>Data do pagamento<input type="date" id="pc-ini" value="${c.ini}"></label>`:''}
+  ${temEnt?`<div class="row"><label>Entrada <span class="hint">(R$)</span><input id="pc-ent" inputmode="decimal" value="${escH(c.ent)}" placeholder="0" autocomplete="off"></label><label>Data da entrada<input type="date" id="pc-entD" value="${c.entD}"></label></div>`:''}
+  ${t==='entrada'?`<label>Resto vence em<input type="date" id="pc-fim" value="${c.fim}"></label>`:''}
+  ${t==='semana'||t==='mes'?`<div class="row"><label>Quantas ${t==='semana'?'semanas':'parcelas'}<input id="pc-n" inputmode="numeric" value="${c.n}" autocomplete="off"></label><label>${t==='semana'?'1ª semana paga em':'1ª parcela em'}<input type="date" id="pc-ini" value="${c.ini}"></label></div>`:''}
+  <div id="pc-prev">${prevParc()}</div>
+  <div class="row2"><button class="sec" data-pg="cancelar">Cancelar</button><button class="mic" data-pg="salvar">Salvar combinado</button></div></div>`}
+function renderPag(){const h=H.find(x=>x.id===pagId);if(!h){fecharOv('#pag-wrap');return}
+  $('#pag-sub').innerHTML=`<b>${escH(h.cliente||'Sem nome')}</b>${h.local?' · '+escH(h.local):''} · orçamento de ${brl(h.total||0)}`;
+  const B=$('#pag-corpo');
+  if(pagModo==='pergunta'){B.innerHTML=`<div class="cli-form"><b>Quer acompanhar o pagamento deste serviço?</b>
+    <p class="hint">Você anota o combinado (entrada, por semana, por mês...) e o que o cliente for pagando. O Na Bucha mostra quanto falta receber e avisa quando atrasar.</p>
+    <div class="row2"><button class="sec" data-pg="nao">Não precisa</button><button class="mic" data-pg="sim">Sim, acompanhar</button></div></div>`;return}
+  if(pagModo==='combinar'){B.innerHTML=formComb(h);return}
+  const i=pagInfo(h),p=h.pag,t=hoje();
+  const atr=i.parc.filter(q=>q.st==='atrasada');
+  let aviso='';
+  if(i.quit)aviso=`<div class="ok-box">Tudo recebido! Serviço quitado.${i.mais?' Recebeu '+brl(i.mais)+' a mais que o combinado.':''}</div>`;
+  else if(atr.length){const q=atr[0];aviso=`<div class="alerta"><span><b>${brl(i.atraso)} atrasado</b>${atr.length>1?' ('+atr.length+' parcelas)':' desde '+dBR(q.d)}</span><a class="link" target="_blank" rel="noopener" data-cobrar href="${waLink(h.whats,msgCobrar(h,{falta:i.atraso,d:q.d},i))}">Cobrar no WhatsApp</a></div>`}
+  else if(i.prox)aviso=`<div class="tip">Próximo: <b>${brl(i.prox.falta)}</b> ${i.prox.d===t?'<b>hoje</b>':'em '+dBR(i.prox.d)}</div>`;
+  const sug=i.prox?i.prox.falta:i.falta;
+  const recs=(p.recs||[]).slice().sort((a,b)=>a.d<b.d?1:a.d>b.d?-1:0);
+  B.innerHTML=`<div class="pg-topo"><small class="hint">Recebido</small><div class="big">${brl(i.rec)} <span class="hint" style="font-family:var(--body);font-size:14px">de ${brl(i.V)}</span></div>${barra(i)}
+    <div class="lin"><span>Falta receber <b>${brl(i.falta)}</b></span><span>${TIPOS[p.tipo]||''}</span></div></div>
+  ${aviso}
+  ${recForm?`<div class="cli-form"><b>Registrar pagamento</b>
+    <div class="row"><label>Valor <span class="hint">(R$)</span><input id="pr-valor" inputmode="decimal" value="${vtxt(sug)}" autocomplete="off"></label><label>Dia<input type="date" id="pr-d" value="${t}"></label></div>
+    <div class="chips">${FORMAS.map(f=>`<button class="chip${recForma===f?' on':''}" data-pr-forma="${f}">${f}</button>`).join('')}</div>
+    <div class="row2"><button class="sec" data-pg="rec-cancelar">Cancelar</button><button class="mic" data-pg="rec-salvar">Salvar</button></div></div>`
+  :(i.quit?'':`<button class="mic" data-pg="receber">+ Registrar pagamento</button>`)}
+  ${i.parc.length?`<p class="sec-t">Combinado</p><div class="parc">${i.parc.map((q,k)=>`<div><span>${i.parc.length>1?(k+1)+'ª · ':''}${dBR(q.d)}</span><span style="display:flex;gap:8px;align-items:center"><span class="v">${brl(q.v)}</span><span class="st ${q.st}">${q.st==='pago'?'Pago':q.st==='atrasada'?'Atrasada':q.st==='parcial'?'Falta '+brl0(q.falta):q.d===t?'Hoje':'A vencer'}</span></span></div>`).join('')}</div>`:''}
+  <p class="sec-t">Recebido</p>
+  ${recs.length?`<div class="parc">${recs.map(r=>`<div><span>${dBR(r.d)} · ${escH(r.f||'')}</span><span style="display:flex;gap:4px;align-items:center"><span class="v">${brl(r.v)}</span><button class="link del" data-pr-del="${r.id}" aria-label="Apagar pagamento">${recDel===r.id?'Toque de novo':'Apagar'}</button></span></div>`).join('')}</div>`:'<p class="hint">Nada recebido ainda.</p>'}
+  <div class="hi-acts" style="justify-content:center"><button class="link" data-pg="mudar">Mudar combinado</button>${dig(h.whats).length>=10?`<a class="link" target="_blank" rel="noopener" href="${waLink(h.whats)}">WhatsApp do cliente</a>`:''}<button class="link del" data-pg="parar">${pararPend?'Toque de novo para parar':'Parar de acompanhar'}</button></div>`}
+function lerComb(){[['valor','#pc-valor'],['ent','#pc-ent'],['entD','#pc-entD'],['ini','#pc-ini'],['n','#pc-n'],['fim','#pc-fim']].forEach(([k,s])=>{const el=$(s);if(el)pagRas[k]=el.value})}
+function depoisMudar(){hsave();renderHistRow();if(!$('#hist-wrap').hidden)renderHist();if(!$('#rec-wrap').hidden)renderRec()}
+$('#pag-fechar').addEventListener('click',()=>fecharOv('#pag-wrap'));
+$('#pag-wrap').addEventListener('input',e=>{if(pagModo!=='combinar')return;lerComb();$('#pc-prev').innerHTML=prevParc()});
+$('#pag-wrap').addEventListener('click',e=>{if(e.target.id==='pag-wrap'){fecharOv('#pag-wrap');return}
+  const h=H.find(x=>x.id===pagId);if(!h)return;
+  const b=e.target.closest('[data-pg]'),tp=e.target.closest('[data-pc-tipo]'),fm=e.target.closest('[data-pr-forma]'),dl=e.target.closest('[data-pr-del]');
+  if(e.target.closest('[data-cobrar]')){R.ev('pagamento-cobrou');return}
+  if(tp){lerComb();pagRas.tipo=tp.dataset.pcTipo;if(pagRas.tipo==='unica'&&!h.pag)pagRas.ini=hoje();renderPag();return}
+  if(fm){recForma=fm.dataset.prForma;$('#pag-corpo').querySelectorAll('[data-pr-forma]').forEach(c=>c.classList.toggle('on',c===fm));return}
+  if(dl){const id=dl.dataset.prDel;if(recDel!==id){recDel=id;renderPag();return}h.pag.recs=h.pag.recs.filter(r=>r.id!==id);recDel=null;depoisMudar();renderPag();toast('Pagamento apagado');return}
+  if(!b)return;const a=b.dataset.pg;
+  if(a!=='parar')pararPend=false;
+  if(a==='nao'){h.pag=Object.assign(h.pag||{},{acomp:false});R.ev('acompanhar-pagamento','nao');depoisMudar();fecharOv('#pag-wrap');toast('Tudo bem. Dá para ligar depois em Meus orçamentos.')}
+  else if(a==='sim'){R.ev('acompanhar-pagamento','sim');if(h.pag&&h.pag.parc&&h.pag.valor){h.pag.acomp=true;depoisMudar();pagModo='ver'}else{pagModo='combinar';pagRas=rascunhoDe(h)}renderPag()}
+  else if(a==='mudar'){pagModo='combinar';pagRas=rascunhoDe(h);renderPag()}
+  else if(a==='cancelar'){pagModo=h.pag&&h.pag.acomp?'ver':'pergunta';renderPag()}
+  else if(a==='salvar'){lerComb();const V=r2(num(pagRas.valor));if(!V){toast('Escreva o valor combinado');$('#pc-valor').focus();return}
+    if(num(pagRas.ent)>V){toast('A entrada não pode passar do valor combinado');return}
+    const n=Math.max(1,Math.min(52,parseInt(pagRas.n,10)||1));
+    h.pag=Object.assign(h.pag||{},{acomp:true,valor:V,tipo:pagRas.tipo,ent:r2(num(pagRas.ent)),entD:pagRas.entD,ini:pagRas.ini,n,fim:pagRas.fim,parc:gerarParcelas(Object.assign({},pagRas,{n}))});
+    if(!h.pag.recs)h.pag.recs=[];R.ev('pagamento-combinado',pagRas.tipo);depoisMudar();pagModo='ver';renderPag();toast('Combinado salvo')}
+  else if(a==='receber'){recForm=true;renderPag();const el=$('#pr-valor');if(el){el.focus();el.select()}}
+  else if(a==='rec-cancelar'){recForm=false;renderPag()}
+  else if(a==='rec-salvar'){const v=r2(num($('#pr-valor').value)),d=okD($('#pr-d').value)?$('#pr-d').value:hoje();
+    if(!v){toast('Escreva o valor recebido');$('#pr-valor').focus();return}
+    h.pag.recs=h.pag.recs||[];h.pag.recs.push({id:hid(),d,v,f:recForma});R.ev('pagamento-registrou',recForma);recForm=false;depoisMudar();renderPag();
+    const i=pagInfo(h);toast(i.quit?'Boa! Serviço quitado.':'Anotado. Falta '+brl(i.falta)+'.')}
+  else if(a==='parar'){if(!pararPend){pararPend=true;renderPag();return}pararPend=false;h.pag.acomp=false;depoisMudar();fecharOv('#pag-wrap');toast('Parou de acompanhar. O que foi anotado continua guardado.')}
+});
+
+// ---- tela Recebimentos (gráficos) ----
+function chartMeses(L){const now=new Date(),cur=now.getFullYear()*12+now.getMonth();const ks=[];for(let k=-3;k<=2;k++)ks.push(cur+k);
+  const idx=s=>{const[y,m]=String(s).split('-').map(Number);return y*12+m-1};
+  const S=ks.map(()=>({rec:0,atr:0,prev:0}));
+  H.forEach(h=>{if(!h.pag)return;(h.pag.recs||[]).forEach(r=>{const j=ks.indexOf(idx(r.d));if(j>=0)S[j].rec+=r.v})});
+  L.forEach(({i})=>i.parc.forEach(q=>{if(q.st==='pago')return;if(q.st==='atrasada'){S[3].atr+=q.falta;return}const j=ks.indexOf(idx(q.d));if(j>=0)S[j].prev+=q.falta}));
+  L.forEach(({i})=>{if(!i.parc.length&&i.falta)S[3].prev+=i.falta});
+  const W=340,Hh=190,top=22,bot=28,bw=34,gap=(W-ks.length*bw)/(ks.length);const max=Math.max(1,...S.map(s=>s.rec+s.atr+s.prev));const sc=v=>v/max*(Hh-top-bot);
+  let g='';ks.forEach((k,j)=>{const x=gap/2+j*(bw+gap),s=S[j];let y=Hh-bot;const tot=s.rec+s.atr+s.prev;
+    [['rec','var(--good)'],['atr','#D2361B'],['prev','var(--accent)']].forEach(([c,cor])=>{const hh=sc(s[c]);if(hh>0){y-=hh;g+=`<rect x="${x}" y="${y}" width="${bw}" height="${hh}" fill="${cor}" ${c==='prev'?'fill-opacity=".35"':''} rx="3"><title>${c==='rec'?'Recebido':c==='atr'?'Atrasado':'A receber'}: ${brl(s[c])}</title></rect>`}});
+    if(tot)g+=`<text class="val" x="${x+bw/2}" y="${y-6}" text-anchor="middle">${mil(tot).replace('R$ ','')}</text>`;
+    g+=`<text x="${x+bw/2}" y="${Hh-10}" text-anchor="middle" ${j===3?'class="val"':''}>${MESES[k%12]}${j===3?' (agora)':''}</text>`});
+  return `<svg viewBox="0 0 ${W} ${Hh}" role="img" aria-label="Recebido e a receber por mês"><line x1="0" x2="${W}" y1="${Hh-bot}" y2="${Hh-bot}" stroke="var(--line)"/>${g}</svg>
+  <div class="leg"><span><i style="background:var(--good)"></i>Recebido</span><span><i style="background:#D2361B"></i>Atrasado</span><span><i style="background:var(--accent);opacity:.35"></i>A receber</span></div>`}
+function renderRec(){const L=rastreados(),t=hoje(),mes=t.slice(0,7),B=$('#rec-corpo');
+  const aRec=r2(L.reduce((x,o)=>x+o.i.falta,0)),atr=r2(L.reduce((x,o)=>x+o.i.atraso,0));
+  const recMes=r2(H.reduce((x,h)=>x+((h.pag&&h.pag.recs)||[]).filter(r=>String(r.d).slice(0,7)===mes).reduce((y,r)=>y+r.v,0),0));
+  const sem=semAcomp();
+  const semHtml=sem.length?`<div class="cli-form"><b>Fechados sem acompanhamento</b>${sem.slice(0,6).map(h=>`<div class="hi-top" style="align-items:center"><span>${escH(h.cliente||'Sem nome')} · ${brl0(h.total||0)}</span><button class="link" data-r-acomp="${h.id}">Acompanhar</button></div>`).join('')}</div>`:'';
+  if(!L.length){B.innerHTML=`<div class="hist-vazio">Nenhum serviço com pagamento acompanhado ainda.<br>Quando um orçamento fechar, toque em <b>Fechou</b> em Meus orçamentos e anote o combinado.</div>${semHtml}`;return}
+  const ab=L.filter(o=>!o.i.quit).sort((a,b)=>(b.i.atraso-a.i.atraso)||(b.i.falta-a.i.falta)),qt=L.filter(o=>o.i.quit);
+  const prox=[];L.forEach(({h,i})=>i.parc.forEach(q=>{if(q.st!=='pago')prox.push({h,q})}));prox.sort((a,b)=>a.q.d<b.q.d?-1:1);
+  B.innerHTML=`<div class="resumo"><div><small>Falta receber</small><b>${brl0(aRec)}</b></div><div><small>Atrasado</small><b ${atr?'class="bad"':''}>${brl0(atr)}</b></div><div><small>Recebido no mês</small><b>${brl0(recMes)}</b></div></div>
+  <div class="rec-grid">
+  <div class="chart" id="ch-mes"><div class="chart-cab"><h3>Dinheiro por mês</h3><button class="link" data-cheia="ch-mes">Tela cheia</button></div>${chartMeses(L)}<p class="hint">Barras clarinhas: o que ainda vai entrar, pelas datas combinadas.</p></div>
+  <div class="chart" id="ch-sv"><div class="chart-cab"><h3>Cada serviço</h3><button class="link" data-cheia="ch-sv">Tela cheia</button></div>
+    ${ab.map(({h,i})=>`<button class="sv" data-r-abrir="${h.id}"><span class="lin"><b>${escH(h.cliente||'Sem nome')}</b><span>falta <b>${brl0(i.falta)}</b></span></span>${barra(i)}<small>Recebido ${brl0(i.rec)} de ${brl0(i.V)}${i.atraso?` · <b class="bad">${brl0(i.atraso)} atrasado</b>`:i.prox?` · próximo ${dBR(i.prox.d)}`:''}</small></button>`).join('')||'<p class="hint">Nada em aberto.</p>'}
+    ${qt.length?`<p class="hint">Quitados: ${qt.map(o=>escH(o.h.cliente||'Sem nome')).join(', ')}</p>`:''}</div>
+  </div>
+  ${prox.length?`<p class="sec-t">Próximos recebimentos</p><div class="parc">${prox.slice(0,8).map(({h,q})=>`<div><span>${dBR(q.d)} · ${escH(prim(h.cliente)||'Sem nome')}</span><span style="display:flex;gap:8px;align-items:center"><span class="v">${brl(q.falta)}</span><span class="st ${q.st}">${q.st==='atrasada'?'Atrasada':q.d===t?'Hoje':q.st==='parcial'?'Parcial':'A vencer'}</span></span></div>`).join('')}</div>`:''}
+  ${semHtml}`}
+function abrirRec(){R.ev('recebimentos','',true);renderRec();abrirOv('#rec-wrap','#rec-fechar')}
+function sairCheia(){document.querySelectorAll('.chart.cheia').forEach(c=>{c.classList.remove('cheia');const b=c.querySelector('[data-cheia]');if(b)b.textContent='Tela cheia'})}
+$('#rec-fechar').addEventListener('click',()=>{sairCheia();fecharOv('#rec-wrap')});
+$('#rec-wrap').addEventListener('click',e=>{if(e.target.id==='rec-wrap'){fecharOv('#rec-wrap');return}
+  const c=e.target.closest('[data-cheia]'),a=e.target.closest('[data-r-abrir]'),q=e.target.closest('[data-r-acomp]');
+  if(c){const el=$('#'+c.dataset.cheia),on=!el.classList.contains('cheia');sairCheia();if(on){el.classList.add('cheia');c.textContent='Fechar tela cheia';R.ev('grafico-tela-cheia',c.dataset.cheia)}return}
+  if(a){sairCheia();abrirPag(a.dataset.rAbrir)}else if(q)abrirPag(q.dataset.rAcomp,'combinar')});
+$('#rec-abrir').addEventListener('click',abrirRec);
+document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(document.querySelector('.chart.cheia')){sairCheia();e.stopImmediatePropagation();return}
+  if(!$('#pag-wrap').hidden){fecharOv('#pag-wrap');e.stopImmediatePropagation()}else if(!$('#rec-wrap').hidden){fecharOv('#rec-wrap');e.stopImmediatePropagation()}},true);
 renderHistRow();
 let tt;function toast(m){if(/não deu|não abre|grande demais|não é uma cópia|não grava/i.test(m))R.erro('aviso',m);const el=$('#toast');el.textContent=m;el.hidden=false;clearTimeout(tt);tt=setTimeout(()=>el.hidden=true,2600)}
 
