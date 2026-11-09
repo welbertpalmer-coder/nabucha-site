@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Na Bucha · Orçamento pronto no WhatsApp</title>
-<meta name="description" content="Mandou o áudio, saiu o orçamento. Entre na lista de espera do Na Bucha: grátis durante o teste. Começando pelos pintores.">
+<meta name="description" content="Mandou o áudio, saiu o orçamento. Monte seu orçamento de pintura no celular, grátis durante o teste. Começando pelos pintores.">
 <meta property="og:title" content="Na Bucha · Orçamento pronto no WhatsApp">
-<meta property="og:description" content="Mandou o áudio, saiu o orçamento. Entre na lista de espera: grátis durante o teste.">
+<meta property="og:description" content="Mandou o áudio, saiu o orçamento. Monte seu orçamento no celular, grátis durante o teste.">
 <meta property="og:type" content="website">
 <meta name="theme-color" content="#1F3BFF">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%231F3BFF'/%3E%3Cg transform='translate(14 30) scale(.36)' fill='%23C8FF2E'%3E%3Crect x='0' y='18' width='14' height='64' rx='6'/%3E%3Crect x='8' y='38' width='170' height='24' rx='10'/%3E%3Crect x='22' y='27' width='26' height='46' rx='11'/%3E%3Crect x='56' y='8' width='26' height='84' rx='11'/%3E%3Crect x='90' y='19' width='26' height='62' rx='11'/%3E%3Crect x='124' y='8' width='26' height='84' rx='11'/%3E%3Crect x='158' y='27' width='26' height='46' rx='11'/%3E%3Cpath d='M176 38 Q200 44 200 50 Q200 56 176 62 Z'/%3E%3C/g%3E%3C/svg%3E">
@@ -74,6 +74,7 @@ h1 span:nth-child(3){animation-delay:.3s;color:var(--limao)}
 
 .cta-area{margin-top:auto;padding-top:22px}
 .cta{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:60px;border-radius:16px;background:var(--limao);color:var(--noite);font-weight:700;font-size:18px;box-shadow:0 6px 0 var(--noite);transition:transform .12s,box-shadow .12s}
+.cta-2{display:block;margin:12px auto 0;background:none;border:0;color:rgba(244,241,234,.85);font:inherit;font-size:14px;text-decoration:underline;text-underline-offset:3px;padding:8px;cursor:pointer}
 .cta:active{transform:translateY(4px);box-shadow:0 2px 0 var(--noite)}
 .cta svg{width:20px;transition:transform .2s}
 .cta:hover svg{transform:translateX(3px)}
@@ -166,7 +167,7 @@ h1 span:nth-child(3){animation-delay:.3s;color:var(--limao)}
       <svg viewBox="-2 2 204 96" fill="#C8FF2E" aria-hidden="true"><rect x="0" y="18" width="14" height="64" rx="6"/><rect x="8" y="38" width="170" height="24" rx="10"/><rect x="22" y="27" width="26" height="46" rx="11"/><rect x="56" y="8" width="26" height="84" rx="11"/><rect x="90" y="19" width="26" height="62" rx="11"/><rect x="124" y="8" width="26" height="84" rx="11"/><rect x="158" y="27" width="26" height="46" rx="11"/><path d="M176 38 Q200 44 200 50 Q200 56 176 62 Z"/></svg>
       <span><small>na</small>bucha</span>
     </div>
-    <span class="selo">Em breve</span>
+    <span class="selo">Teste grátis</span>
   </div>
 
   <div class="hero-txt">
@@ -192,11 +193,12 @@ h1 span:nth-child(3){animation-delay:.3s;color:var(--limao)}
   </div>
 
   <div class="cta-area">
-    <button class="cta pulsa" id="comecar">Entrar na lista de espera
+    <a class="cta pulsa link" id="usar" href="orcamento/">Fazer um orçamento agora
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-    </button>
-    <div class="mini"><span>Grátis pra entrar</span><span>Leva 30 segundos</span></div>
-    <p class="rodape">Ainda sem data de lançamento. Preços e condições podem mudar antes de abrir. <a href="privacidade.html">Privacidade</a> · <a href="#" data-coment="inicio">Sugestão</a></p>
+    </a>
+    <div class="mini"><span>Grátis durante o teste</span><span>Sem cadastro</span></div>
+    <button class="cta-2" id="comecar">Só quero receber novidades</button>
+    <p class="rodape">Versão de teste. Preços e condições podem mudar depois do teste. <a href="privacidade.html">Privacidade</a> · <a href="#" data-coment="inicio">Sugestão</a></p>
   </div>
 </section>
 
@@ -273,9 +275,10 @@ h1 span:nth-child(3){animation-delay:.3s;color:var(--limao)}
   <div class="fim-in">
     <div class="fim-tr"><img src="img/capi/capi-feliz.webp" width="252" height="360" alt="Capi, a capivara do Na Bucha, comemorando"></div>
     <h2 id="fimTit">Fechou! Você tá na lista.</h2>
-    <p>Quando abrir, a gente te chama. Os primeiros da lista testam antes.</p>
+    <p>A gente te avisa das novidades. Enquanto isso, o orçamento já funciona.</p>
     <div class="fim-bts">
-      <a class="cta link" href="https://instagram.com/nabucha.app" target="_blank" rel="noopener">Seguir @nabucha.app</a>
+      <a class="cta link" href="orcamento/">Fazer um orçamento agora</a>
+      <a class="bt2" href="https://instagram.com/nabucha.app" target="_blank" rel="noopener">Seguir @nabucha.app</a>
       <a class="bt2" id="indicar" target="_blank" rel="noopener">Indicar pra um colega no WhatsApp</a>
     </div>
   </div>
@@ -397,7 +400,7 @@ h1 span:nth-child(3){animation-delay:.3s;color:var(--limao)}
   function fim(){
     const primeiro=nome.value.trim().split(" ")[0];
     $("#fimTit").textContent="Fechou, "+primeiro+"! Você tá na lista.";
-    const txt="Ó isso aqui: vai sair um app que monta o orçamento pelo WhatsApp. Tô na lista de espera do Na Bucha, entra também: https://nabucha.com.br";
+    const txt="Ó isso aqui: um app que monta o orçamento de pintura no celular e manda pro cliente no WhatsApp. Tá grátis no teste: https://nabucha.com.br/orcamento/?utm_source=indicacao";
     $("#indicar").href="https://wa.me/?text="+encodeURIComponent(txt);
     if(window.nbReg) nbReg.ev("lista-entrou");
     mostra("fim");
