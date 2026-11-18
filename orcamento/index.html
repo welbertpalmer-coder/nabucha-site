@@ -7,7 +7,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#1F3BFF">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}[hidden]{display:none!important}</style>
-<title>Na Bucha · Orçamento (teste)</title>
+<title>Na Bucha · Orçamento de pintura</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Figtree:wght@400;500;600;700&display=swap">
@@ -272,12 +272,13 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
 :root[data-theme="dark"] .alerta{background:#4A1A0E;color:#FFC9B8}:root[data-theme="dark"] .alerta a{color:#FFC9B8}:root[data-theme="dark"] .ok-box,:root[data-theme="dark"] .st.pago{background:#123D26;color:#9BF0BF}:root[data-theme="dark"] .st.atrasada{background:#4A1A0E;color:#FFC9B8}:root[data-theme="dark"] .hist-row .atr{color:#FF8A5C}
 </style>
 <script src="/registro.js"></script>
+<link rel="stylesheet" href="/tema-2026.css">
 </head>
 <body>
 
 <div class="wrap">
   <header>
-    <div class="brand"><span class="sym"><svg viewBox="-2 2 204 96" fill="#C8FF2E" aria-hidden="true"><rect x="0" y="18" width="14" height="64" rx="6"/><rect x="8" y="38" width="170" height="24" rx="10"/><rect x="22" y="27" width="26" height="46" rx="11"/><rect x="56" y="8" width="26" height="84" rx="11"/><rect x="90" y="19" width="26" height="62" rx="11"/><rect x="124" y="8" width="26" height="84" rx="11"/><rect x="158" y="27" width="26" height="46" rx="11"/><path d="M176 38 Q200 44 200 50 Q200 56 176 62 Z"/></svg></span><span class="brand-in">Na Bucha<span class="tag">Protótipo</span></span></div>
+    <div class="brand"><span class="sym"><svg viewBox="-2 2 204 96" fill="#C8FF2E" aria-hidden="true"><rect x="0" y="18" width="14" height="64" rx="6"/><rect x="8" y="38" width="170" height="24" rx="10"/><rect x="22" y="27" width="26" height="46" rx="11"/><rect x="56" y="8" width="26" height="84" rx="11"/><rect x="90" y="19" width="26" height="62" rx="11"/><rect x="124" y="8" width="26" height="84" rx="11"/><rect x="158" y="27" width="26" height="46" rx="11"/><path d="M176 38 Q200 44 200 50 Q200 56 176 62 Z"/></svg></span><span class="brand-in">Na Bucha</span></div>
     <div class="hd-right">
       <button class="tab" id="tab-orc">Orçamento</button>
       <button class="tab" id="tab-cfg">Meus preços</button>
@@ -364,7 +365,7 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
         <div class="chips" id="situ"></div>
         <p class="hint" id="situ-hint"></p>
         <label class="check"><input type="checkbox" id="liso">Acabamento liso (massa corrida)</label>
-        <p class="sub">Reparos (marque o que tiver)</p>
+        <p class="sub">Precisa de reparo antes de pintar?</p>
         <div class="chips" id="rep"></div>
         <p class="hint" id="rep-hint"></p>
         <p class="sub">Acabamento da tinta</p>
@@ -556,7 +557,7 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
         <button class="link" id="hist-folha">Meus orçamentos</button>
         <button class="link" data-coment="folha">Sugestão ou problema</button>
       </div>
-      <p class="note">Protótipo: a próxima versão também anexa a folha em PDF.</p>
+      <p class="note">Envie agora pelo WhatsApp ou copie o texto pronto.</p>
     </div>
   </div>
 </div>
@@ -870,7 +871,7 @@ function refresh(){
     if(O.step===2&&porM2())k.lines.forEach(l=>{const el=document.querySelector(`[data-pr="${l.k}"]`);if(!el)return;
       const d=l.dem-l.demBase;el.innerHTML=`<b>${brl(l.preco)}/m²</b>${d?` (${brl(l.base)} ${d>0?'+':'−'} ${Math.abs(d)} × ${brl(l.extra)})`:''} · ${m2(l.area)} = <b>${brl(l.sub)}</b>`});
     if(O.step===3){
-      const det=O.rooms.map(r=>{const a=areas(r);return r.modo==='area'?`${esc(r.nome)}: ${m2(a.p+a.t)}`:`${esc(r.nome)} ${esc(r.l)}×${esc(r.c)}, pé-direito ${esc(r.h)}, ${r.teto?'com teto':'sem teto'}, ${r.portas}p/${r.janelas}j`}).join(' · ');
+      const det=O.rooms.map(r=>{const a=areas(r);return r.modo==='area'?`${esc(r.nome)}: ${m2(a.p+a.t)}`:`${esc(r.nome)} ${esc(r.l)}×${esc(r.c)}, pé-direito ${esc(r.h)}, ${r.teto?'com teto':'sem teto'}, ${r.portas} ${r.portas===1?'porta':'portas'}, ${r.janelas} ${r.janelas===1?'janela':'janelas'}`}).join(' · ');
       $('#conta-card').hidden=!(k.P+k.T);
       $('#conta').innerHTML=`<strong>Paredes ${m2(k.P)} + teto ${m2(k.T)}</strong><span>${det}</span><span style="color:var(--accent);font-weight:700">Tocar para corrigir</span>`;
       $('#lines').innerHTML=k.lines.map(l=>`<div class="ln"><div>${esc(l.nome)}<small>${demTxt(l.dem)}${porM2()?` · ${m2(l.area)} × ${brl(l.preco)}`:''}</small></div><div class="v">${porM2()?brl(l.sub):''}</div></div>`).join('')+

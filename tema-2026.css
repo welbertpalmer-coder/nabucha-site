@@ -1,0 +1,1442 @@
+/* ==========================================================================
+   NA BUCHA — TEMA 2026 (Mini Guia Visual Unificado)
+   Aplicação: incluir no fim do <head> em index.html e orcamento/index.html
+   Compatibilidade: preserva 100% dos IDs, classes de JS, atributos [hidden],
+   data-*, names, values, ordem do DOM e testes automatizados.
+   ========================================================================== */
+
+/* 1. TIPOGRAFIA OFICIAL (Google Fonts: Plus Jakarta Sans + Inter) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap');
+
+/* 2. TOKENS DO MINI GUIA VISUAL E MAPEAMENTO DE VARIÁVEIS NATIVAS */
+:root {
+  /* Paleta oficial Na Bucha */
+  --nb-cobalto: #1F3BFF;
+  --nb-cobalto-hover: #162EE0;
+  --nb-cobalto-texto: #1428B8;
+  --nb-noite: #0D1A3D;
+  --nb-noite-card: #13224E;
+  --nb-limao: #C8FF2F;
+  --nb-limao-hover: #B8F21D;
+  --nb-gesso: #F4F1EA;
+  --nb-branco: #FFFFFF;
+  --nb-lavanda: #EEF2FF;
+  --nb-borda: #CBD5E1;
+  --nb-borda-suave: #E2E8F0;
+  --nb-apoio: #475569;
+  --nb-placeholder: #94A3B8;
+  --nb-sucesso: #16A34A;
+  --nb-sucesso-bg: #DCFCE7;
+  --nb-sucesso-ink: #14532D;
+  --nb-alerta-bg: #FEF3C7;
+  --nb-alerta-ink: #78350F;
+  --nb-erro: #DC2626;
+  --nb-erro-bg: #FEE2E2;
+  --nb-erro-ink: #7F1D1D;
+
+  /* Dupla tipográfica */
+  --nb-font-display: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --nb-font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Escala de raios de borda */
+  --nb-raio-card: 20px;
+  --nb-raio-botao: 14px;
+  --nb-raio-campo: 12px;
+  --nb-raio-pilula: 999px;
+
+  /* Escala de sombras (aposenta sombras pretas chapadas) */
+  --nb-sombra-card: 0 4px 16px rgba(13, 26, 61, 0.06), 0 1px 2px rgba(13, 26, 61, 0.04);
+  --nb-sombra-cta-cobalto: 0 6px 18px rgba(31, 59, 255, 0.24);
+  --nb-sombra-cta-escura: 0 8px 24px rgba(13, 26, 61, 0.28);
+  --nb-sombra-barra: 0 -4px 20px rgba(13, 26, 61, 0.08);
+  --nb-foco-anel: 0 0 0 3px rgba(31, 59, 255, 0.2);
+
+  /* Alturas ergonômicas ("Dedão de Obra") */
+  --nb-h-cta: 56px;
+  --nb-h-controle: 52px;
+  --nb-h-chip: 44px;
+
+  /* Mapeamento direto nas variáveis de index.html */
+  --cobalto: var(--nb-cobalto);
+  --limao: var(--nb-limao);
+  --gesso: var(--nb-gesso);
+  --noite: var(--nb-noite);
+  --cinza: var(--nb-apoio);
+  --linha: var(--nb-borda);
+  --t: var(--nb-font-display);
+  --b: var(--nb-font-body);
+  --m: var(--nb-font-display);
+
+  /* Mapeamento direto nas variáveis de orcamento/index.html */
+  --bg: var(--nb-gesso);
+  --surface: var(--nb-branco);
+  --ink: var(--nb-noite);
+  --muted: var(--nb-apoio);
+  --line: var(--nb-borda);
+  --accent: var(--nb-cobalto);
+  --lime: var(--nb-limao);
+  --btn: var(--nb-cobalto);
+  --btn-ink: var(--nb-branco);
+  --soft: var(--nb-lavanda);
+  --good: var(--nb-sucesso);
+  --warn: var(--nb-alerta-bg);
+  --warn-ink: var(--nb-alerta-ink);
+  --bad: var(--nb-erro);
+  --display: var(--nb-font-display);
+  --body: var(--nb-font-body);
+}
+
+/* Preserva e harmoniza o modo escuro da ferramenta de orçamento */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0D1A3D;
+    --surface: #13224E;
+    --ink: #F4F1EA;
+    --muted: #CBD5E1;
+    --line: #2B3F75;
+    --accent: #7C93FF;
+    --btn: #C8FF2F;
+    --btn-ink: #0D1A3D;
+    --soft: #1B2E63;
+    --good: #4ADE80;
+    --warn: #3B2F0C;
+    --warn-ink: #FDE68A;
+    --nb-sombra-card: 0 6px 20px rgba(0, 0, 0, 0.26);
+    --nb-sombra-barra: 0 -6px 24px rgba(0, 0, 0, 0.38);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #0D1A3D;
+  --surface: #13224E;
+  --ink: #F4F1EA;
+  --muted: #CBD5E1;
+  --line: #2B3F75;
+  --accent: #7C93FF;
+  --btn: #C8FF2F;
+  --btn-ink: #0D1A3D;
+  --soft: #1B2E63;
+  --good: #4ADE80;
+  --warn: #3B2F0C;
+  --warn-ink: #FDE68A;
+  --nb-sombra-card: 0 6px 20px rgba(0, 0, 0, 0.26);
+  --nb-sombra-barra: 0 -6px 24px rgba(0, 0, 0, 0.38);
+}
+
+/* Proteção absoluta do atributo [hidden] controlado pelo JavaScript */
+[hidden] {
+  display: none !important;
+}
+
+/* 3. BASE TIPOGRÁFICA E NÚMEROS TABULARES */
+body {
+  font-family: var(--nb-font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, .logo, .brand {
+  font-family: var(--nb-font-display);
+  letter-spacing: -0.02em;
+}
+
+/* Alinha larguras de dígitos em todos os preços, medidas, contadores e relógios */
+#aTot,
+#hero .orc .lin span:last-child,
+#fluxo .passo-n,
+#fluxo .op .preco,
+.voz .relogio,
+.tot strong,
+.opt strong,
+.opt span,
+.ln .v,
+.sv-price,
+.area,
+.step span,
+.hi-top strong,
+.resumo b,
+.pg-topo .big,
+.parc .v,
+.sh-total strong,
+.sh-tab {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Foco acessível visível sob luz forte */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+.chip:focus-visible {
+  outline: 3px solid var(--nb-limao);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   4. PÁGINA INICIAL (index.html — #hero, #fluxo, #fim)
+   ========================================================================== */
+
+/* --- 4.1 Hero e blindagem contra colisão da Capi em 360px–430px --- */
+#hero {
+  background: var(--nb-cobalto);
+  color: var(--nb-gesso);
+  padding: 18px 18px calc(24px + env(safe-area-inset-bottom, 0px));
+}
+
+#hero .logo {
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: -0.025em;
+}
+
+#hero .selo {
+  font-family: var(--nb-font-body);
+  font-size: 12.5px;
+  font-weight: 700;
+  background: rgba(13, 26, 61, 0.24);
+  border: 1px solid rgba(244, 241, 234, 0.38);
+  border-radius: var(--nb-raio-pilula);
+  padding: 6px 12px;
+}
+
+#hero h1 {
+  font-family: var(--nb-font-display);
+  font-weight: 800;
+  font-size: clamp(28px, 7.6vw, 40px);
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  margin-top: 20px;
+}
+
+/* Palco demonstrativo WhatsApp em Azul Noite com profundidade limpa */
+#hero .palco {
+  position: relative;
+  margin: 20px auto 0;
+  width: 100%;
+  max-width: 358px;
+  height: 326px;
+}
+
+#hero .zap {
+  background:
+    radial-gradient(circle at 85% 18%, rgba(31, 59, 255, 0.22), transparent 52%),
+    var(--nb-noite);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--nb-raio-card);
+  padding: 14px;
+  box-shadow: 0 16px 36px rgba(13, 26, 61, 0.34);
+}
+
+#hero .zap-topo {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: rgba(244, 241, 234, 0.85);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#hero .audio {
+  background: #176B4B;
+  border-radius: 14px 14px 4px 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+#hero .audio em {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Card interno de orçamento demonstrativo sem sombra preta dura */
+#hero .orc {
+  left: 14px;
+  top: 98px;
+  width: min(242px, calc(100% - 122px));
+  background: var(--nb-branco);
+  color: var(--nb-noite);
+  border-radius: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--nb-borda-suave);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+}
+
+#hero .orc h4 {
+  font-family: var(--nb-font-display);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+#hero .orc .lin {
+  font-size: 11.5px;
+  border-bottom: 1px solid var(--nb-borda-suave);
+}
+
+#hero .orc .tot span:first-child {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+#hero .orc .tot strong {
+  font-family: var(--nb-font-display);
+  font-weight: 800;
+  font-size: 18px;
+  background: var(--nb-limao);
+  color: var(--nb-noite);
+  border-radius: 8px;
+  padding: 3px 9px;
+}
+
+/* Balão final alinhado à esquerda para deixar o canto direito livre para a Capi */
+#hero .balao.check {
+  left: 14px;
+  right: auto;
+  bottom: 12px;
+  max-width: calc(100% - 126px);
+  background: #176B4B;
+  color: var(--nb-branco);
+  border-radius: 14px 14px 14px 4px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Capi ancorada na base do palco em todas as telas mobile (360–899px):
+   jamais invade a área do botão #usar e nunca intercepta toques */
+@media (max-width: 899px) {
+  #hero .tr-palco {
+    width: 110px;
+    right: -4px;
+    bottom: -6px;
+    z-index: 4;
+    pointer-events: none !important;
+    user-select: none;
+    filter: drop-shadow(0 8px 16px rgba(13, 26, 61, 0.4));
+  }
+
+  #hero .cta-area {
+    position: relative;
+    z-index: 6;
+    width: 100%;
+    margin-top: auto;
+    padding-top: 22px;
+  }
+
+  /* Garante 100% de largura e 1 linha limpa mesmo em 360px (sobrescreve regra antiga de <=400px) */
+  #hero .cta-area .cta {
+    width: 100% !important;
+    min-height: var(--nb-h-cta);
+    padding: 0 16px;
+    justify-content: center;
+    font-size: clamp(16px, 4.4vw, 18px);
+    white-space: nowrap;
+    gap: 10px;
+  }
+}
+
+@media (min-width: 900px) {
+  #hero {
+    padding: 32px 40px;
+  }
+  #hero h1 {
+    font-size: 50px;
+  }
+  #hero .tr-palco {
+    width: 152px;
+    right: -14px;
+    bottom: -18px;
+    pointer-events: none !important;
+  }
+}
+
+/* Botão principal (.cta) moderno sem borda inferior preta de desenho antigo */
+#hero .cta,
+#fluxo .cta,
+#fim .cta {
+  min-height: var(--nb-h-cta);
+  border-radius: var(--nb-raio-botao);
+  font-family: var(--nb-font-display);
+  font-weight: 800;
+  font-size: 17.5px;
+  letter-spacing: -0.01em;
+  background: var(--nb-limao);
+  color: var(--nb-noite);
+  box-shadow: var(--nb-sombra-cta-escura);
+  text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+#hero .cta:hover,
+#fim .cta:hover {
+  background: var(--nb-limao-hover);
+}
+
+#hero .cta:active,
+#fluxo .cta:active,
+#fim .cta:active {
+  transform: translateY(2px);
+  box-shadow: 0 4px 12px rgba(13, 26, 61, 0.24);
+}
+
+@keyframes pulsa {
+  0%, 100% {
+    box-shadow: var(--nb-sombra-cta-escura), 0 0 0 0 rgba(200, 255, 47, 0.5);
+  }
+  50% {
+    box-shadow: var(--nb-sombra-cta-escura), 0 0 0 10px rgba(200, 255, 47, 0);
+  }
+}
+
+#hero .mini {
+  margin-top: 14px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+/* Transforma "Só quero receber novidades" de link sublinhado em botão fantasma tátil */
+#hero .cta-2 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: var(--nb-h-chip);
+  margin: 14px auto 0;
+  padding: 0 16px;
+  border-radius: var(--nb-raio-campo);
+  border: 1.5px solid rgba(244, 241, 234, 0.32);
+  background: rgba(13, 26, 61, 0.22);
+  color: var(--nb-gesso);
+  font-family: var(--nb-font-body);
+  font-size: 14.5px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+#hero .cta-2:hover,
+#hero .cta-2:active {
+  background: rgba(13, 26, 61, 0.38);
+  border-color: rgba(244, 241, 234, 0.55);
+}
+
+/* Rodapé legal legível (>= 12px) sem sublinhado cru */
+#hero .rodape {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: rgba(244, 241, 234, 0.86);
+  margin-top: 16px;
+}
+
+#hero .rodape a {
+  color: var(--nb-limao);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(200, 255, 47, 0.55);
+  padding: 4px 2px;
+}
+
+/* --- 4.2 Fluxo de Perguntas (#fluxo) com App Shell Azul Noite contínuo --- */
+#fluxo {
+  background: var(--nb-gesso);
+  color: var(--nb-noite);
+}
+
+#fluxo .fluxo-in {
+  padding: 0 20px calc(24px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Barra superior 56px idêntica ao cabeçalho da ferramenta para continuidade imediata */
+#fluxo .barra-topo {
+  background: var(--nb-noite);
+  color: var(--nb-gesso);
+  min-height: 56px;
+  margin: 0 -20px;
+  padding: 8px 16px;
+  border-radius: 0 0 var(--nb-raio-card) var(--nb-raio-card);
+  box-shadow: 0 4px 16px rgba(13, 26, 61, 0.12);
+}
+
+#fluxo .voltar {
+  width: var(--nb-h-chip);
+  height: var(--nb-h-chip);
+  border-radius: var(--nb-raio-campo);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--nb-gesso);
+}
+
+#fluxo .voltar:active {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+#fluxo .prog {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: var(--nb-raio-pilula);
+}
+
+#fluxo .prog i {
+  background: var(--nb-limao);
+  transition: width 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#fluxo .passo-n {
+  font-family: var(--nb-font-display);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--nb-gesso);
+  min-width: 34px;
+}
+
+#fluxo .passos {
+  margin-top: 24px;
+}
+
+#fluxo .passo h2 {
+  font-family: var(--nb-font-display);
+  font-weight: 800;
+  font-size: clamp(22px, 6vw, 28px);
+  line-height: 1.18;
+  color: var(--nb-noite);
+}
+
+#fluxo .passo p.sub {
+  color: var(--nb-apoio);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* Cards de opção com borda visível sob sol forte e seleção nítida */
+#fluxo .op {
+  min-height: 60px;
+  border-radius: var(--nb-raio-campo);
+  background: var(--nb-branco);
+  border: 1.5px solid var(--nb-borda);
+  padding: 12px 16px;
+  font-family: var(--nb-font-body);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--nb-noite);
+  box-shadow: var(--nb-sombra-card);
+}
+
+#fluxo .op .bola {
+  width: 22px;
+  height: 22px;
+  border: 1.5px solid var(--nb-placeholder);
+}
+
+#fluxo .op.sel {
+  border-width: 2px;
+  border-color: var(--nb-cobalto);
+  background: var(--nb-lavanda);
+  font-weight: 700;
+}
+
+#fluxo .op.sel .bola {
+  border-color: var(--nb-cobalto);
+  background: var(--nb-cobalto);
+}
+
+#fluxo .op.sel .bola::after {
+  background: var(--nb-limao);
+}
+
+#fluxo .op .preco {
+  font-family: var(--nb-font-display);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--nb-cobalto-texto);
+}
+
+/* Campos do passo final padronizados em 16px / 52px */
+#fluxo .campo label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--nb-noite);
+}
+
+#fluxo .campo input {
+  min-height: var(--nb-h-controle);
+  border-radius: var(--nb-raio-campo);
+  border: 1.5px solid var(--nb-borda);
+  background: var(--nb-branco);
+  padding: 0 14px;
+  font-family: var(--nb-font-body);
+  font-weight: 500;
+  font-size: 16px;
+  color: var(--nb-noite);
+  box-shadow: 0 1px 2px rgba(13, 26, 61, 0.04);
+}
+
+#fluxo .campo input::placeholder {
+  color: var(--nb-placeholder);
+}
+
+#fluxo .campo input:focus {
+  border-color: var(--nb-cobalto);
+  box-shadow: var(--nb-foco-anel);
+}
+
+#fluxo .aviso {
+  min-height: var(--nb-h-controle);
+  border-radius: var(--nb-raio-campo);
+  border: 1.5px solid var(--nb-borda);
+  background: var(--nb-branco);
+  font-size: 15px;
+  font-weight: 600;
+  box-shadow: var(--nb-sombra-card);
+}
+
+#fluxo .aviso[aria-checked="true"] {
+  background: var(--nb-lavanda);
+  border-color: var(--nb-cobalto);
+}
+
+#fluxo .cta.enviar {
+  background: var(--nb-cobalto);
+  color: var(--nb-branco);
+  box-shadow: var(--nb-sombra-cta-cobalto);
+}
+
+#fluxo .lgpd {
+  font-size: 12.5px;
+  color: var(--nb-apoio);
+  line-height: 1.5;
+}
+
+#fluxo .lgpd a {
+  color: var(--nb-cobalto-texto);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(20, 40, 184, 0.4);
+}
+
+/* --- 4.3 Tela de Sucesso (#fim) --- */
+#fim h2 {
+  font-family: var(--nb-font-display);
+  font-weight: 800;
+}
+
+#fim .bt2 {
+  min-height: var(--nb-h-controle);
+  border-radius: var(--nb-raio-botao);
+  border: 1.5px solid rgba(244, 241, 234, 0.45);
+  background: rgba(13, 26, 61, 0.22);
+  color: var(--nb-gesso);
+  font-weight: 700;
+  font-size: 16px;
+}
+
+/* ==========================================================================
+   5. FERRAMENTA DE ORÇAMENTO (orcamento/index.html)
+   ========================================================================== */
+
+/* Espaço inferior ampliado para nenhum campo ou checkbox colar na barra fixa */
+.wrap {
+  padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px));
+  gap: 16px;
+}
+
+/* --- 5.1 App Shell Unificado (Topbar Azul Noite 56px) --- */
+.wrap > header {
+  min-height: 56px;
+  background: var(--nb-noite);
+  color: var(--nb-gesso);
+  padding: 10px max(16px, env(safe-area-inset-left, 0px));
+  border-radius: 0 0 var(--nb-raio-card) var(--nb-raio-card);
+  box-shadow: 0 4px 16px rgba(13, 26, 61, 0.14);
+}
+
+.brand {
+  font-family: var(--nb-font-display);
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+}
+
+.brand .sym {
+  width: 36px;
+  height: 36px;
+  background: rgba(200, 255, 47, 0.12);
+  border: 1px solid rgba(200, 255, 47, 0.28);
+}
+
+/* Discretiza o subtítulo "Protótipo" e oculta automaticamente caso esvaziado */
+.brand-in .tag {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(244, 241, 234, 0.72);
+}
+
+.brand-in .tag:empty {
+  display: none;
+}
+
+/* Abas do topo (Orçamento / Meus preços) com altura 44px e raio 12px */
+.tab {
+  min-height: var(--nb-h-chip);
+  padding: 0 14px;
+  border-radius: var(--nb-raio-campo);
+  font-family: var(--nb-font-display);
+  font-size: 13.5px;
+  font-weight: 700;
+  border: 1.5px solid rgba(244, 241, 234, 0.28);
+  color: var(--nb-gesso);
+  transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+.tab.on {
+  background: var(--nb-limao);
+  color: var(--nb-noite);
+  border-color: var(--nb-limao);
+  box-shadow: 0 2px 10px rgba(200, 255, 47, 0.25);
+}
+
+/* --- 5.2 Barra de Progresso de 3 Passos Contínua --- */
+.steps {
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.steps button {
+  min-height: var(--nb-h-chip);
+  padding: 8px 2px 4px;
+  border-top: 4px solid var(--line);
+  font-family: var(--nb-font-body);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--muted);
+  transition: border-color 0.24s cubic-bezier(0.22, 1, 0.36, 1), color 0.2s ease, opacity 0.2s ease;
+}
+
+.steps button.on {
+  font-family: var(--nb-font-display);
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--ink);
+  border-top-color: var(--accent);
+}
+
+.steps button.done {
+  border-top-color: var(--accent);
+  color: var(--ink);
+  opacity: 0.82;
+}
+
+/* --- 5.3 Cards, Títulos e Rótulos (fim do visual de ficha de ERP antigo) --- */
+.wrap h1 {
+  font-family: var(--nb-font-display);
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--nb-raio-card);
+  padding: 18px;
+  gap: 14px;
+  box-shadow: var(--nb-sombra-card);
+}
+
+.card h2 {
+  font-family: var(--nb-font-display);
+  font-weight: 800;
+  font-size: 18px;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+
+.ola h2 {
+  font-size: 20px !important;
+}
+
+.ola .tr-mini {
+  width: 72px;
+}
+
+/* Substitui CAIXA ALTA burocrática por subtítulos humanos e nítidos */
+.card .sub,
+.sec-t {
+  font-family: var(--nb-font-display);
+  font-size: 14.5px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin: 4px 0 -4px;
+}
+
+.hint {
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* --- 5.4 Campos de Formulário (16px obrigatório, altura 52px, raio 12px) --- */
+.wrap label,
+.hist-wrap label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+  gap: 6px;
+}
+
+.wrap input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.wrap select,
+.wrap textarea,
+.hist-wrap input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.hist-wrap select,
+.hist-wrap textarea {
+  font-family: var(--nb-font-body);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: var(--nb-raio-campo);
+  padding: 12px 14px;
+  min-height: var(--nb-h-controle);
+  box-shadow: 0 1px 2px rgba(13, 26, 61, 0.03);
+  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.wrap textarea,
+.hist-wrap textarea {
+  min-height: 76px;
+}
+
+.wrap input::placeholder,
+.wrap textarea::placeholder,
+.hist-wrap input::placeholder {
+  color: var(--nb-placeholder);
+  font-weight: 400;
+}
+
+.wrap input:not([type="checkbox"]):focus,
+.wrap select:focus,
+.wrap textarea:focus,
+.hist-wrap input:not([type="checkbox"]):focus {
+  border-color: var(--accent);
+  box-shadow: var(--nb-foco-anel);
+}
+
+/* Alinhamento vertical do prefixo "R$" com a nova altura de 52px */
+.money input {
+  padding-left: 42px !important;
+}
+
+.money::before {
+  left: 14px;
+  bottom: 15px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+/* --- 5.5 Botões de Voz, Entrada e Secundários (56px / 52px, raio 14px) --- */
+.voz {
+  border: 2px solid var(--accent);
+}
+
+.voz .mic,
+.entrada .mic,
+.hist .mic {
+  min-height: var(--nb-h-cta);
+  border-radius: var(--nb-raio-botao);
+  font-family: var(--nb-font-display);
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+  background: var(--btn);
+  color: var(--btn-ink);
+  box-shadow: var(--nb-sombra-cta-cobalto);
+  transition: transform 0.14s ease, box-shadow 0.14s ease, background-color 0.14s ease;
+}
+
+/* Ícone do microfone em verde-limão apenas quando o fundo do botão é Azul Cobalto (tema claro) */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .entrada .mic .ic,
+  :root:not([data-theme="dark"]) #voz-gravar .ic,
+  :root:not([data-theme="dark"]) #voz-mais .ic {
+    color: var(--nb-limao);
+  }
+}
+
+:root[data-theme="light"] .entrada .mic .ic,
+:root[data-theme="light"] #voz-gravar .ic,
+:root[data-theme="light"] #voz-mais .ic {
+  color: var(--nb-limao);
+}
+
+/* Destaque verde-limão para concluir e enviar o áudio gravado */
+#voz-enviar.enviar-g {
+  min-height: 60px;
+  background: var(--nb-limao);
+  color: var(--nb-noite);
+  box-shadow: var(--nb-sombra-cta-escura);
+}
+
+.voz .mic:active,
+.entrada .mic:active,
+.hist .mic:active {
+  transform: translateY(1px);
+}
+
+.voz .sec,
+.entrada .sec,
+.hist .sec,
+.ghost {
+  min-height: var(--nb-h-controle);
+  border-radius: var(--nb-raio-botao);
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--nb-font-body);
+  font-weight: 600;
+  font-size: 16px;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.entrada .sec {
+  min-height: var(--nb-h-cta);
+  font-weight: 700;
+}
+
+/* --- 5.6 Chips Táteis (44px, raio 12px, check visual sem alterar texto do DOM) --- */
+.chips {
+  gap: 8px;
+}
+
+.chip {
+  min-height: var(--nb-h-chip);
+  padding: 9px 15px;
+  border-radius: var(--nb-raio-campo);
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--nb-font-body);
+  font-size: 15px;
+  font-weight: 600;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.chip.on {
+  background-color: var(--nb-cobalto);
+  border-color: var(--nb-cobalto);
+  color: var(--nb-branco);
+  padding-left: 34px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23C8FF2F' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 10.5l4 4L16 6.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 11px center;
+  background-size: 16px 16px;
+  box-shadow: 0 4px 12px rgba(31, 59, 255, 0.22);
+}
+
+.chip.add {
+  border-style: dashed;
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--soft);
+  font-weight: 700;
+}
+
+/* --- 5.7 Checkboxes Modernos e Seletores Segmentados --- */
+label.check {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  font-size: 15.5px;
+  font-weight: 600;
+  color: var(--ink);
+  min-height: var(--nb-h-chip);
+  cursor: pointer;
+}
+
+/* Transforma checkboxes isolados (ex.: Massa corrida e Lista de material) em cards clicáveis */
+#p2 > .card > label.check,
+#p3 .card > label.check,
+#v-cfg .card .in > label.check {
+  min-height: var(--nb-h-controle);
+  padding: 12px 14px;
+  border-radius: var(--nb-raio-campo);
+  border: 1.5px solid var(--line);
+  background: var(--bg);
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+#p2 > .card > label.check:has(input:checked),
+#p3 .card > label.check:has(input:checked),
+#v-cfg .card .in > label.check:has(input:checked) {
+  background: var(--soft);
+  border-color: var(--accent);
+}
+
+label.check input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  min-height: 22px;
+  accent-color: var(--nb-cobalto);
+  border-radius: 6px;
+}
+
+/* Segmented controls folgados (grade 2x2 automática no celular quando tem 4 opções) */
+.seg {
+  border: 1.5px solid var(--line);
+  border-radius: var(--nb-raio-campo);
+  padding: 4px;
+  gap: 4px;
+  background: var(--bg);
+}
+
+.seg button {
+  min-height: var(--nb-h-chip);
+  border-radius: 9px;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 0 10px;
+  transition: background-color 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.seg button.on {
+  background: var(--nb-cobalto);
+  color: var(--nb-branco);
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(31, 59, 255, 0.24);
+}
+
+@media (max-width: 480px) {
+  #acab.seg,
+  #cfg-modo.seg {
+    grid-auto-flow: row;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Cards 2x2 de modo de cobrança e comparativo */
+.opt {
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  border-radius: var(--nb-raio-campo);
+  padding: 14px;
+  gap: 4px;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.opt.on {
+  border-width: 2px;
+  border-color: var(--accent);
+  background: var(--soft);
+  box-shadow: 0 4px 12px rgba(31, 59, 255, 0.12);
+}
+
+.opt small {
+  font-family: var(--nb-font-body);
+  font-size: 12.5px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Contadores +/- (Portas, Janelas, Demãos, Ajudantes) com alvo de 44px */
+.step button {
+  width: var(--nb-h-chip);
+  height: var(--nb-h-chip);
+  border-radius: var(--nb-raio-campo);
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  font-weight: 700;
+}
+
+.room,
+.cfg-svc {
+  border: 1.5px solid var(--line);
+  border-radius: var(--nb-raio-campo);
+  padding: 14px;
+  background: var(--bg);
+}
+
+.room-mini {
+  min-height: var(--nb-h-controle);
+  border-radius: var(--nb-raio-campo);
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  padding: 12px 14px;
+}
+
+.conta {
+  background: var(--soft);
+  border: 1.5px solid rgba(31, 59, 255, 0.2);
+  border-radius: var(--nb-raio-campo);
+  padding: 14px;
+  gap: 4px;
+}
+
+/* --- 5.8 Fim dos Hiperlinks Azuis Sublinhados (botões discretos de aplicativo) --- */
+.wrap .link,
+.hist-wrap .link {
+  text-decoration: none;
+  font-family: var(--nb-font-body);
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--soft);
+  border: 1px solid rgba(31, 59, 255, 0.18);
+  border-radius: 10px;
+  padding: 6px 12px;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.wrap .link:hover,
+.hist-wrap .link:hover {
+  border-color: var(--accent);
+}
+
+.hi-acts {
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.hi-acts .link {
+  min-height: 36px;
+  padding: 5px 10px;
+  font-size: 13px;
+}
+
+.hi-acts .link.del,
+.hist-wrap .link.del {
+  color: var(--nb-erro);
+  background: var(--nb-erro-bg);
+  border-color: rgba(220, 38, 38, 0.22);
+}
+
+.voz-links {
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.nb-sug {
+  margin-top: 12px;
+  gap: 8px;
+}
+
+/* --- 5.9 Barra Inferior Fixa de Avanço (.bar — 80px com botões de 52px) --- */
+.bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 15;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  box-shadow: var(--nb-sombra-barra);
+  padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+}
+
+.bar-in {
+  min-height: 56px;
+  gap: 12px;
+}
+
+.tot small {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.tot strong {
+  font-family: var(--nb-font-display);
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+}
+
+.go {
+  min-height: var(--nb-h-controle);
+  padding: 0 24px;
+  border-radius: var(--nb-raio-botao);
+  font-family: var(--nb-font-display);
+  font-size: 16px;
+  font-weight: 800;
+  background: var(--btn);
+  color: var(--btn-ink);
+  box-shadow: var(--nb-sombra-cta-cobalto);
+  transition: transform 0.14s ease, box-shadow 0.14s ease, background-color 0.14s ease;
+}
+
+.go:active {
+  transform: translateY(1px);
+}
+
+.back {
+  min-height: var(--nb-h-controle);
+  padding: 0 16px;
+  border-radius: var(--nb-raio-botao);
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 15.5px;
+}
+
+@media (max-width: 400px) {
+  .tot strong {
+    font-size: 19px;
+  }
+  .go {
+    padding: 0 18px;
+  }
+}
+
+/* --- 5.10 Proposta Final (#sheet-wrap) e Barra do WhatsApp Fixa Embaixo --- */
+.sheet-wrap {
+  background: rgba(13, 26, 61, 0.82);
+  padding-top: calc(14px + env(safe-area-inset-top, 0px));
+  padding-bottom: 0;
+  padding-left: max(12px, env(safe-area-inset-left, 0px));
+  padding-right: max(12px, env(safe-area-inset-right, 0px));
+}
+
+.sheet-col {
+  min-height: calc(100svh - 14px - env(safe-area-inset-top, 0px));
+  justify-content: space-between;
+  gap: 14px;
+}
+
+/* Folha de orçamento com acabamento de proposta comercial moderna */
+.sheet {
+  border-radius: var(--nb-raio-card);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+  font-size: 14.5px;
+}
+
+.sh-head {
+  background: var(--nb-noite);
+  border-bottom: 4px solid var(--nb-cobalto);
+  padding: 20px;
+}
+
+.sh-head h3 {
+  font-family: var(--nb-font-display);
+  font-weight: 800;
+  font-size: 19px;
+}
+
+.sh-num b {
+  font-family: var(--nb-font-display);
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--nb-limao);
+}
+
+.sh-sec h4 {
+  font-family: var(--nb-font-display);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--nb-apoio);
+}
+
+.sh-tab th {
+  font-size: 12px;
+  color: var(--nb-apoio);
+}
+
+.sh-total {
+  background: var(--nb-limao);
+  color: var(--nb-noite);
+  border-radius: var(--nb-raio-botao);
+  padding: 14px 16px;
+}
+
+.sh-total span {
+  font-family: var(--nb-font-display);
+  font-weight: 800;
+  font-size: 16px;
+}
+
+.sh-total strong {
+  font-family: var(--nb-font-display);
+  font-weight: 800;
+  font-size: 24px;
+}
+
+.sh-foot {
+  font-size: 12px;
+  color: var(--nb-apoio);
+}
+
+/* Barra de envio ancorada na parte inferior da tela (visível desde o 1º instante sem rolar) */
+#sheet-wrap .actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 12;
+  background: var(--nb-noite);
+  margin: 0 calc(-1 * max(12px, env(safe-area-inset-left, 0px)));
+  padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--nb-raio-card) var(--nb-raio-card) 0 0;
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.42);
+  gap: 8px;
+}
+
+@media (min-width: 600px) {
+  #sheet-wrap .actions {
+    margin: 0 0 12px;
+    border-radius: var(--nb-raio-card);
+    bottom: 12px;
+  }
+}
+
+/* Botão primário "Enviar no WhatsApp" (56px, Verde-Limão) */
+#sheet-wrap .wa {
+  min-height: var(--nb-h-cta);
+  border-radius: var(--nb-raio-botao);
+  background: var(--nb-limao);
+  color: var(--nb-noite);
+  font-family: var(--nb-font-display);
+  font-size: 17.5px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  box-shadow: 0 6px 20px rgba(200, 255, 47, 0.24);
+  transition: transform 0.14s ease, background-color 0.14s ease;
+}
+
+#sheet-wrap .wa:hover {
+  background: var(--nb-limao-hover);
+}
+
+#sheet-wrap .wa:active {
+  transform: translateY(1px);
+}
+
+/* Banner pós-envio compacto dentro da barra fixa */
+#sheet-wrap .festa {
+  background: var(--nb-cobalto);
+  border-radius: var(--nb-raio-botao);
+  padding: 10px 12px;
+}
+
+#sheet-wrap .festa .tr-mini {
+  width: 46px;
+}
+
+#sheet-wrap .festa .link {
+  text-decoration: none;
+  background: rgba(13, 26, 61, 0.28);
+  color: var(--nb-limao);
+  border-radius: 8px;
+  padding: 4px 10px;
+  min-height: 34px;
+  margin-top: 4px;
+}
+
+/* Ações secundárias da folha organizadas em pílulas compactas e legíveis */
+#sheet-wrap .acts-min {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+#sheet-wrap .acts-min .link {
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--nb-gesso);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+  padding: 5px 10px;
+  min-height: 36px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+#sheet-wrap .acts-min .link:active {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+#sheet-wrap .note {
+  font-size: 12px;
+  color: rgba(244, 241, 234, 0.72);
+}
+
+/* --- 5.11 Modais de Histórico, Clientes e Recebimentos --- */
+.hist {
+  border-radius: var(--nb-raio-card);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+}
+
+.hi,
+.cli-form,
+.pg-topo,
+.parc,
+.chart,
+.resumo div {
+  border-radius: var(--nb-raio-campo);
+  box-shadow: var(--nb-sombra-card);
+}
+
+.chart svg text {
+  font-size: 12px;
+}
+
+.toast {
+  background: var(--nb-noite);
+  color: var(--nb-gesso);
+  border: 1px solid rgba(200, 255, 47, 0.35);
+  box-shadow: 0 8px 24px rgba(13, 26, 61, 0.32);
+  font-size: 14.5px;
+}
+
+/* ==========================================================================
+   6. TRANSIÇÕES SUAVES ENTRE TELAS E PASSOS (com respeito a movimento reduzido)
+   ========================================================================== */
+@keyframes nbEntraSuave {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .tela.ativa,
+  #p1:not([hidden]),
+  #p2:not([hidden]),
+  #p3:not([hidden]),
+  #v-cfg:not([hidden]),
+  #entrada:not([hidden]),
+  .hist-wrap:not([hidden]) .hist {
+    animation: nbEntraSuave 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* 99. GARANTIA DE TOQUE (Claude, 18/11): nenhum botão das listas (Meus orçamentos, Meus clientes, Recebimentos) fica abaixo de 44 px — regra 18 do hub e testes automáticos */
+#hist-wrap button, #cli-wrap button, #cli-wrap a, #rec-wrap button, .sheet-wrap button { min-height: 44px !important; }
