@@ -157,44 +157,11 @@ h1 span:nth-child(3){animation-delay:.3s;color:var(--limao)}
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 
-/* ---- Parte de baixo da página inicial (18/11/2026) ---- */
-#mais{display:block}
-#hero:not(.ativa)+#mais{display:none}
-.m-bloco{padding:72px 20px}
-.m-in{max-width:1040px;margin:0 auto}
-.m-kick{font-family:var(--m);font-size:12px;letter-spacing:.08em;text-transform:uppercase;opacity:.75;margin-bottom:12px}
-.m-bloco h2{font-family:var(--t);font-size:clamp(26px,4.4vw,42px);line-height:1.08;letter-spacing:-.03em;margin-bottom:28px}
-.m-gesso{background:var(--gesso);color:var(--noite)}
-.m-noite{background:var(--noite);color:var(--gesso)}
-.m-cob{background:var(--cobalto);color:var(--gesso)}
-.m-passos{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));counter-reset:p}
-.m-card{background:#fff;border:2px solid var(--noite);border-radius:18px;padding:22px;box-shadow:6px 6px 0 var(--noite)}
-.m-card b{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:50%;background:var(--limao);font-family:var(--t);font-size:16px;margin-bottom:14px;border:2px solid var(--noite)}
-.m-card h3{font-family:var(--t);font-size:19px;letter-spacing:-.02em;margin-bottom:8px}
-.m-card p{color:var(--cinza);line-height:1.5}
-.m-duo{display:grid;gap:32px;align-items:center;grid-template-columns:1fr}
-@media(min-width:860px){.m-duo{grid-template-columns:1.2fr .8fr}}
-.m-lista{list-style:none;display:grid;gap:14px}
-.m-lista li{display:flex;gap:14px;align-items:flex-start;background:rgba(255,255,255,.06);border-radius:16px;padding:16px 18px}
-.m-lista i{flex:none;width:12px;height:12px;border-radius:50%;background:var(--limao);margin-top:7px}
-.m-lista strong{display:block;font-size:18px;margin-bottom:2px}
-.m-lista span{opacity:.75;line-height:1.45}
-.m-duo img{width:100%;max-width:340px;height:auto;margin:0 auto;display:block}
-.m-largo img{width:100%;height:auto;display:block;margin:8px auto 28px;max-width:900px}
-.m-cob p.m-sub{font-size:18px;line-height:1.5;opacity:.9;max-width:620px;margin:-8px 0 24px}
-.m-btn{display:inline-flex;align-items:center;gap:10px;min-height:52px;padding:0 24px;border-radius:14px;background:var(--limao);color:var(--noite);font-weight:700;font-size:17px;text-decoration:none;border:2px solid var(--noite);box-shadow:0 5px 0 var(--noite)}
-.m-btn.claro{background:transparent;color:var(--gesso);border-color:var(--gesso);box-shadow:none}
-.m-faq details{border-bottom:2px solid var(--linha);padding:18px 0}
-.m-faq summary{font-weight:700;font-size:18px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:16px;min-height:28px}
-.m-faq summary::after{content:"+";font-family:var(--t)}
-.m-faq details[open] summary::after{content:"–"}
-.m-faq p{color:var(--cinza);line-height:1.55;margin-top:10px;max-width:680px}
-.m-fim{text-align:center}
-.m-fim h2{margin-bottom:24px}
-.m-rod{padding:28px 20px 40px;text-align:center;color:var(--gesso);opacity:.8;font-size:14px;line-height:1.8}
-.m-rod a{color:var(--limao)}
-.m-desce{display:inline-block;margin-top:10px;color:var(--gesso);opacity:.85;font-size:14px}
-@media (prefers-reduced-motion:no-preference){.m-rev{opacity:0;transform:translateY(18px);transition:opacity .6s,transform .6s}.m-rev.vis{opacity:1;transform:none}}
+/* celular pequeno: botão encolhe e a Capi não fica por cima dele (18/11) */
+@media (max-width:400px){
+  .tr-palco{width:132px;right:-8px;bottom:-104px}
+  .cta-area .cta{width:calc(100% - 118px);font-size:15.5px;min-height:56px;padding:0 12px;justify-content:flex-start;gap:8px}
+}
 </style>
 <script src="/registro.js"></script>
 </head>
@@ -239,67 +206,8 @@ h1 span:nth-child(3){animation-delay:.3s;color:var(--limao)}
     <div class="mini"><span>Grátis durante o teste</span><span>Sem cadastro</span></div>
     <button class="cta-2" id="comecar">Só quero receber novidades</button>
     <p class="rodape">Versão de teste. Preços e condições podem mudar depois do teste. <a href="privacidade.html">Privacidade</a> · <a href="#" data-coment="inicio">Sugestão</a></p>
-    <a class="m-desce" href="#como">Como funciona ↓</a>
   </div>
 </section>
-<div id="mais">
-  <section class="m-bloco m-gesso" id="como" aria-label="Como funciona">
-    <div class="m-in">
-      <p class="m-kick">Como funciona</p>
-      <h2 class="m-rev">Orçamento de pintura em 3 passos, no celular.</h2>
-      <div class="m-passos">
-        <div class="m-card m-rev"><b>1</b><h3>Fale o serviço</h3><p>Aperte e fale: cômodos, medidas, como está a parede. A IA preenche e você confere.</p></div>
-        <div class="m-card m-rev"><b>2</b><h3>Confira a conta</h3><p>Material, dias, equipe e o seu preço. Tudo dá pra ajustar do seu jeito.</p></div>
-        <div class="m-card m-rev"><b>3</b><h3>Mande no WhatsApp</h3><p>O orçamento sai pronto e vai direto pro WhatsApp do cliente.</p></div>
-      </div>
-    </div>
-  </section>
-  <section class="m-bloco m-noite" aria-label="Depois de mandar">
-    <div class="m-in m-duo">
-      <div>
-        <p class="m-kick">Depois de mandar</p>
-        <h2 class="m-rev">Seu serviço organizado, sem caderno.</h2>
-        <ul class="m-lista">
-          <li class="m-rev"><i></i><div><strong>Meus orçamentos</strong><span>Todos num lugar só, pra reabrir e mandar de novo.</span></div></li>
-          <li class="m-rev"><i></i><div><strong>Meus clientes</strong><span>Nome, WhatsApp e endereço guardados.</span></div></li>
-          <li class="m-rev"><i></i><div><strong>Recebimentos</strong><span>Quanto já entrou e quanto falta receber, mês a mês.</span></div></li>
-        </ul>
-      </div>
-      <img class="m-rev" src="img/capi/capi-pensando.webp" alt="Capi, a capivara do Na Bucha, pensando" loading="lazy">
-    </div>
-  </section>
-  <section class="m-bloco m-cob m-largo" aria-label="Para quem é">
-    <div class="m-in">
-      <p class="m-kick">Para quem é</p>
-      <h2 class="m-rev">Começando pelos pintores.</h2>
-      <p class="m-sub">Depois vêm outros ofícios da obra. Quer saber quando chegar o seu?</p>
-      <img class="m-rev" src="img/capi/capi-profissoes.webp" alt="A Capi vestida de vários ofícios da obra" loading="lazy">
-      <button class="m-btn claro" type="button" id="maisAvisa">Quero ser avisado</button>
-    </div>
-  </section>
-  <section class="m-bloco m-gesso m-faq" aria-label="Perguntas frequentes">
-    <div class="m-in">
-      <p class="m-kick">Dúvidas</p>
-      <h2 class="m-rev">Perguntas rápidas</h2>
-      <details><summary>Quanto custa?</summary><p>É grátis durante o teste. Preços e condições podem mudar depois do teste.</p></details>
-      <details><summary>Preciso criar conta?</summary><p>Não. Abre no navegador do celular e já usa, sem cadastro e sem instalar nada.</p></details>
-      <details><summary>Onde ficam meus orçamentos?</summary><p>No seu próprio celular, guardados no navegador. Se você limpar os dados do navegador, eles somem.</p></details>
-      <details><summary>Serve para outros serviços além de pintura?</summary><p>Por enquanto o orçamento é feito para pintura. Outros ofícios vêm depois. Entre na lista para ser avisado.</p></details>
-    </div>
-  </section>
-  <section class="m-bloco m-cob m-fim" aria-label="Comece agora">
-    <div class="m-in">
-      <h2 class="m-rev">Próximo orçamento? Na bucha.</h2>
-      <a class="m-btn" href="orcamento/">Fazer um orçamento agora
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-    </div>
-  </section>
-  <footer class="m-rod">
-    <a href="privacidade.html">Privacidade</a> · <a href="https://instagram.com/nabucha.app" rel="noopener">@nabucha.app</a> · <a href="mailto:contato.nabucha@gmail.com">contato.nabucha@gmail.com</a><br>
-    Versão de teste.
-  </footer>
-</div>
-
 
 <!-- ============ PERGUNTAS ============ -->
 <section class="tela" id="fluxo" aria-label="Lista de espera">
@@ -504,17 +412,6 @@ h1 span:nth-child(3){animation-delay:.3s;color:var(--limao)}
     if(window.nbReg) nbReg.ev("lista-entrou");
     mostra("fim");
   }
-})();
-</script>
-
-<script>
-(function(){
-  var b=document.getElementById('maisAvisa'), c=document.getElementById('comecar');
-  if(b&&c) b.addEventListener('click',function(){c.click();});
-  var els=document.querySelectorAll('.m-rev');
-  if(!('IntersectionObserver' in window)){els.forEach(function(e){e.classList.add('vis')});return;}
-  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('vis');io.unobserve(e.target);}})},{threshold:.15});
-  els.forEach(function(e){io.observe(e)});
 })();
 </script>
 </body>
