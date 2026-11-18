@@ -1061,7 +1061,7 @@ function sheet(k){
       k.reps.filter(r=>!r.aviso).map(r=>`<tr><td>Reparo: ${esc(r.nome)}</td><td class="r">${brl(num(r.preco))}</td></tr>`).join('')
     :escopo(k).map(t=>`<tr><td>${esc(t)}</td><td class="r">✓</td></tr>`).join('')+`<tr><td><strong>Mão de obra</strong></td><td class="r">${brl(k.mao)}</td></tr>`;
   return`
-  <div class="sh-head"><div class="sh-who">${okLogo()?`<div class="sh-logo"><img src="${okLogo()}" alt=""></div>`:''}<div><h3>${esc(p.nome)||'<span style="opacity:.7">Seu nome aqui</span>'}</h3><p>${esc(p.whats)}${p.cidade?' · '+esc(p.cidade):''}</p>${p.cnpj?`<p>CNPJ ${esc(p.cnpj)}</p>`:''}</div></div>
+  <div class="sh-head"><div class="sh-who">${okLogo()?`<div class="sh-logo"><img src="${okLogo()}" alt=""></div>`:''}<div><h3>${esc(p.nome)||'<span style="opacity:.7">Orçamento de pintura</span>'}</h3><p>${esc(p.whats)}${p.cidade?' · '+esc(p.cidade):''}</p>${p.cnpj?`<p>CNPJ ${esc(p.cnpj)}</p>`:''}</div></div>
   <div class="sh-num">Orçamento<b>Nº ${numero()}</b>${hoje}</div></div>
   <div class="sh-body">
     <div class="sh-sec"><h4>Cliente</h4><strong>${esc(c.nome)||'—'}</strong>${c.local?'<br>'+esc(c.local):''}</div>

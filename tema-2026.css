@@ -1440,3 +1440,24 @@ label.check input[type="checkbox"] {
 
 /* 99. GARANTIA DE TOQUE (Claude, 18/11): nenhum botão das listas (Meus orçamentos, Meus clientes, Recebimentos) fica abaixo de 44 px — regra 18 do hub e testes automáticos */
 #hist-wrap button, #cli-wrap button, #cli-wrap a, #rec-wrap button, .sheet-wrap button { min-height: 44px !important; }
+
+/* 100. AJUSTES FINAIS (Claude, 18/11) */
+/* Topo da ferramenta: as duas abas sempre inteiras; no celular o nome some e fica só o símbolo */
+header { gap: 8px; }
+header .brand { min-width: 0; overflow: hidden; }
+header .hd-right { flex-shrink: 0; display: flex; gap: 6px; }
+header .hd-right .tab { white-space: nowrap; padding-left: 12px; padding-right: 12px; }
+@media (max-width: 430px) {
+  header .brand > :not(.sym) { display: none !important; }
+  header .hd-right .tab { font-size: 14px; padding-left: 10px; padding-right: 10px; }
+}
+/* Barra de baixo: o total tem espaço próprio, os botões não espremem o valor */
+.bar .bar-in { gap: 8px; }
+.bar .tot { flex: 1 1 auto; min-width: 0; }
+.bar .tot strong { white-space: nowrap; }
+.bar .back, .bar .go { flex: 0 0 auto; white-space: nowrap; }
+@media (max-width: 430px) {
+  .bar .back:not([hidden]) { padding-left: 12px; padding-right: 12px; }
+  .bar .back:not([hidden]) ~ .go { padding-left: 14px; padding-right: 14px; }
+  .bar .back:not([hidden]) ~ .tot strong, .bar .back:not([hidden]) + .tot strong { font-size: 16px; }
+}
