@@ -626,7 +626,7 @@ const DEF_CFG={
     {k:'massa',nome:'Massa corrida',base:'15',extra:'6',demBase:2,aplica:'paredes',prod:'25',m:{mat:'Massa corrida',g:'lata 18 L',p:'galão 3,6 L',rend:'60',pg:'120',pp:'35'}},
     {k:'sel',nome:'Selador',base:'5',extra:'3',demBase:1,aplica:'tudo',prod:'80',m:{mat:'Selador acrílico',g:'lata 18 L',p:'galão 3,6 L',rend:'150',pg:'180',pp:'50'}},
     {k:'fundo',nome:'Fundo preparador',base:'6',extra:'3',demBase:1,aplica:'paredes',prod:'80',m:{mat:'Fundo preparador',g:'lata 18 L',p:'galão 3,6 L',rend:'150',pg:'220',pp:'60'}},
-    {k:'textura',nome:'Textura / grafiato',base:'25',extra:'10',demBase:1,aplica:'paredes',prod:'12',m:{mat:'Textura',g:'balde 25 kg',p:'balde 5 kg',rend:'25',pg:'110',pp:'35'}}
+    {k:'textura',nome:'Textura / grafiato',base:'25',extra:'10',demBase:1,aplica:'paredes',prod:'12',m:{mat:'Textura',g:'balde 25 kg',p:'balde 5 kg',rend:'10',pg:'110',pp:'35'}}
   ],
   reparos:[
     {k:'mofo',nome:'Mofo',dias:'0,5',preco:'120',txt:'Limpeza com produto antimofo e tempo de secagem antes da tinta.'},
@@ -919,7 +919,7 @@ function goStep(n){R.ev('passo',String(n),true);
 }
 
 // ---------- eventos: orçamento ----------
-bind('#c-nome',()=>O.cliente.nome,v=>{O.cliente.nome=v;O.cliId=null});
+bind('#c-nome',()=>O.cliente.nome,v=>{const h=O.id&&H.find(x=>x.id===O.id);if(h&&stOf(h)!=='rascunho'&&(h.cliente||'').trim()!==(v||'').trim()){O.id=null}O.cliente.nome=v;O.cliId=null});
 bind('#c-whats',()=>O.cliente.whats,v=>O.cliente.whats=v);
 bind('#c-local',()=>O.cliente.local,v=>O.cliente.local=v);
 $('#rooms').addEventListener('input',e=>{const box=e.target.closest('[data-room]');const f=e.target.dataset.f;if(!box||!f)return;const r=O.rooms.find(x=>x.id===box.dataset.room);
@@ -1033,6 +1033,7 @@ function texto(k){
   const p=C.pintor,c=O.cliente;const L=[];const m2m=O.modo==='m2';
   L.push(`*Orçamento de pintura* — Nº ${numero()}`);
   if(c.nome)L.push(`Cliente: ${c.nome}${c.local?' ('+c.local+')':''}`);
+  if(O.rooms&&O.rooms.length){const amb=O.rooms.map(r=>{const a=areas(r);return (a.p+a.t)>0?`${r.nome||'Cômodo'} (${m2(a.p)} de parede${a.t?' + '+m2(a.t)+' de teto':''})`:(r.nome||'Cômodo')});L.push(`Ambientes: ${amb.join(', ')}`)}
   L.push('','*Serviço:*');
   if(m2m){k.lines.forEach(l=>L.push(`• ${l.nome} (${demTxt(l.dem)}): ${m2(l.area)} × ${brl(l.preco)} = ${brl(l.sub)}`));
     k.reps.filter(r=>!r.aviso).forEach(r=>L.push(`• Reparo: ${r.nome}: ${brl(num(r.preco))}`))}
@@ -1041,13 +1042,13 @@ function texto(k){
   if(k.mat)L.push(`Material: ${brl(k.mat)}`);
   L.push(`*Total: ${brl(k.total)}*`,'');
   L.push('*Não incluso:*');naoIncl().forEach(t=>L.push('• '+t));L.push('');
-  if(O.prazo)L.push(`Prazo estimado: ${O.prazo} dias`);
+  if(O.prazo)L.push(`Prazo estimado: ${String(O.prazo).replace(/\s*dias?\s*$/i,'')} dias`);
   if(O.pay.length)L.push(`Pagamento: ${O.pay.join(', ')}`);
   if(C.garantia)L.push(`Garantia: ${C.garantia}`);
   if(O.validade)L.push(`Válido por ${O.validade} dias`);
   if(O.showMat&&k.mats.length){L.push('',O.mat.inclui?'*Material incluso:*':'*Material para comprar:*');k.mats.forEach(m=>L.push(`• ${m.mat}: ${m.txt}`))}
   if(O.obs)L.push('',O.obs);
-  L.push('',`${p.nome||'Seu nome'}${p.whats?' · '+p.whats:''}`);if(p.cnpj)L.push(`CNPJ ${p.cnpj}`);
+  {const ass=[p.nome,p.whats].filter(x=>(x||'').trim()).join(' · ');if(ass)L.push('',ass);else L.push('')}if(p.cnpj)L.push(`CNPJ ${p.cnpj}`);
   L.push('Orçamento feito no Na Bucha · nabucha.com.br');
   return L.join('\n');
 }
@@ -1449,7 +1450,8 @@ async function vozEnviar(blob){
 
 function vozAplicar(d,texto){
   voz.undo=clone(O);
-  if(/\(exemplo\)/i.test(O.cliente.nome||'')){O=novoOrc(C,false);aplicarSituacao()} // primeiro uso: o exemplo sai, entra o serviço de verdade
+  const jaEnv=O.id&&H.some(h=>h.id===O.id&&stOf(h)!=='rascunho');
+  if(/\(exemplo\)/i.test(O.cliente.nome||'')||(!vozSomar&&jaEnv)){O=novoOrc(C,false);aplicarSituacao()} // primeiro uso ou orçamento já enviado: o exemplo sai, entra o serviço de verdade
   O.entrada='voz';const campos=new Set(O.vozCampos||[]);campos.add('cliente');const parede=[];
   const feito=[],falta=[];
   const s=v=>String(v==null?'':v).trim();
@@ -1491,8 +1493,9 @@ function vozAplicar(d,texto){
   save();renderOrc();refresh();vozSet('feito',O.vozRes);
   const alvo=document.querySelector('.room.falta');if(alvo)alvo.scrollIntoView({behavior:'smooth',block:'center'});
 }
-$('#voz-gravar').addEventListener('click',vozGravar);
-$('#voz-mais').addEventListener('click',vozGravar);
+let vozSomar=false;
+$('#voz-gravar').addEventListener('click',()=>{vozSomar=false;vozGravar()});
+$('#voz-mais').addEventListener('click',()=>{vozSomar=true;vozGravar()});
 $('#voz-enviar').addEventListener('click',()=>vozParar(false));
 $('#voz-cancelar').addEventListener('click',()=>vozParar(true));
 $('#voz-desfazer').addEventListener('click',()=>{if(!voz.undo)return;O=voz.undo;voz.undo=null;save();renderOrc();refresh();toast('Desfeito: voltou como estava antes do áudio')});
