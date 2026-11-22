@@ -59,3 +59,28 @@ Sons reais da coleção [mod-sounds](https://github.com/AntumMT/mod-sounds) (Ant
 | trovao1.mp3 | bajko | CC0 |
 | trovao2.mp3 | Josh74000MC | CC0 |
 | cobra.mp3 | U.S. Fish & Wildlife Service | CC0 |
+
+## Cachorros, sirenes e outros (clipes do ESC-50, originais no Freesound)
+
+| Arquivo | Original | Autor | Licença |
+|---|---|---|---|
+| cao_bravo.mp3 | angry_dogs.wav (freesound 117271) | polipa | CC0 |
+| cao_corrente.mp3 | Dog on a chain (freesound 157695) | urupin | CC BY |
+| cachorrao.mp3 | Big_dog_bark_01.aiff (freesound 182395) | pgonsilva | CC BY |
+| chihuahua.mp3 | Chihuahua Barks (freesound 208030) | Mewsel | CC0 |
+| sirene1.mp3 | police.wav (freesound 70936) | guitarguy1985 | CC0 |
+| sirene2.mp3 | police2.wav (freesound 70938) | guitarguy1985 | CC0 |
+| sirene3.mp3 | police3.wav (freesound 70939) | guitarguy1985 | CC0 |
+| sirene4.mp3 | Whelen WPS-3016 Siren.mp3 (freesound 133989) | 2887679652 | CC0 |
+| sirene5.mp3 | police siren perpignan.wav (freesound 90014) | thfc140491 | CC BY |
+| alarme.mp3 | Tornado siren test (freesound 121532) | thaighaudio | CC0 |
+| risada3.mp3 | laughter.wav (freesound 33658) | sagetyrtle | CC0 |
+| risada4.mp3 | laugh5_woman.wav (freesound 72695) | sagetyrtle | CC0 |
+| espirro.mp3 | Sneeze.wav (freesound 59324) | transitking | CC0 |
+| ronco.mp3 | snore.wav (freesound 20545) | sirplus | CC0 |
+| vidro.mp3 | breaking_glass.wav (freesound 20133) | gezortenplotz | CC BY |
+| motosserra.mp3 | chainsaw.WAV (freesound 47250) | stomachache | CC0 |
+| bebe.mp3 | crying baby merged.wav (freesound 66637) | bonehead | CC0 |
+| despertador.mp3 | alarm_clock.wav (freesound 14262) | xyzr_kx | CC0 |
+
+Fonte dos clipes: ESC-50 (https://github.com/karolpiczak/ESC-50), com a licença de cada clipe listada no arquivo LICENSE do projeto.

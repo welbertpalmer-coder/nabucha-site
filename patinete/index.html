@@ -25,6 +25,17 @@
   .pill.rec{background:rgba(239,68,68,.15);color:var(--red)} .pill.rec i{background:var(--red);animation:blink 1s infinite}
   .pill.play{background:rgba(59,130,246,.15);color:var(--blue)} .pill.play i{background:var(--blue)}
   @keyframes blink{50%{opacity:.2}}
+  .outbar{width:100%;display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:11px 14px;color:var(--txt);font-size:.9rem;margin-bottom:14px;text-align:left}
+  .outbar b{flex:1;font-weight:600}
+  .outbar span{color:var(--mut);font-size:.8rem}
+  .ov{position:fixed;inset:0;background:rgba(5,8,20,.8);z-index:20;display:none;align-items:flex-end;justify-content:center}
+  .ov.show{display:flex}
+  .sheet{background:var(--card);border-radius:22px 22px 0 0;padding:18px 16px calc(env(safe-area-inset-bottom) + 18px);width:100%;max-width:480px;max-height:88vh;overflow:auto}
+  .sheet h3{margin:0 0 6px;font-size:1.05rem}
+  .sheet p,.sheet li{color:var(--mut);font-size:.88rem;line-height:1.5}
+  .sheet ol{padding-left:20px;margin:6px 0 12px}
+  .devbtn{width:100%;text-align:left;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px;color:var(--txt);font-size:.92rem;margin-bottom:8px}
+  .devbtn.on{border-color:var(--green);background:rgba(34,197,94,.12)}
 
   .card{background:var(--card);border-radius:22px;padding:18px;margin-bottom:14px;border:1px solid var(--line)}
   .card h2{font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);margin:0 0 14px;font-weight:600}
@@ -117,6 +128,8 @@
       <div id="pill" class="pill"><i></i><span>Pronto</span></div>
     </div>
   </header>
+  <button id="outBar" class="outbar"><span style="font-size:1.2rem">🔈</span><b id="outTxt">Som saindo pelo aparelho conectado</b><span>trocar ▾</span></button>
+  <div id="outOv" class="ov"><div class="sheet" id="outSheet"></div></div>
 
   <div id="err" class="err"></div>
 
@@ -199,6 +212,16 @@
   </section>
 
   <section class="card">
+    <h2>Cachorro bravo 🐕</h2>
+    <div id="sfxCaes" class="sfx"></div>
+  </section>
+
+  <section class="card">
+    <h2>Sirene 🚨</h2>
+    <div id="sfxSirene" class="sfx"></div>
+  </section>
+
+  <section class="card">
     <h2>Susto 👻</h2>
     <div id="sfxSusto" class="sfx"></div>
   </section>
@@ -253,6 +276,7 @@
     • Hiena rindo: Mathevon N., Koralek A., Weldele M., Glickman S. &amp; Theunissen F. (CC BY 2.0)<br>
     Pum: coleção “So Many Farts” (github.com/3mta3/farts), sem licença informada. Arrotos: Kaboom.js (Replit, MIT) e Sonic Pi (CC0).<br>
     Susto: lobo bravo (newagesoup, CC BY 3.0), porta rangendo (InspectorJ, CC BY 3.0), fantasmas (BlockMen, CC BY-SA 3.0); os demais CC0.<br>
+    Cachorros, sirenes e outros: gravações do Freesound reunidas no ESC-50; créditos CC BY: urupin, pgonsilva, thfc140491, gezortenplotz; os demais CC0.<br>
     Lista completa: <a href="sons/CREDITOS.md" style="color:var(--mut)">sons/CREDITOS.md</a>
   </details>
 </div>
@@ -286,6 +310,7 @@
     }
     setSession('playback');
     unlockMedia();
+    if (sinkId) applySink();
     if (ctx.state === 'suspended') await ctx.resume();
   }
   function setSession(t) { try { if (navigator.audioSession) navigator.audioSession.type = t; } catch(_) {} }
@@ -430,16 +455,25 @@
     ['arroto1','🤢','Arroto'],['arroto2','🤢','Arroto 2'],
     ['arroto1','🫃','Arrotão',0.7],['arroto2','🫃','Arrotão 2',0.7],['arroto1','🐭','Arrotinho',1.5],['pum3','🐘','Pum gigante',0.6],
   ];
+  const CAES = [
+    ['cao_bravo','😡','Cachorros bravos'],['cao_corrente','⛓️','Cão na corrente'],['cachorrao','🐕‍🦺','Cachorrão'],['chihuahua','🐶','Chihuahua bravo'],
+  ];
+  const SIRENES = [
+    ['sirene5','🚓','Polícia (BR/Europa)'],['sirene1','🚔','Polícia 1'],['sirene2','🚔','Polícia 2'],['sirene3','🚔','Polícia 3'],
+    ['sirene4','🚨','Sirene EUA'],['alarme','📢','Alarme geral'],
+  ];
   const SUSTO = [
     ['lobo_bravo','🐺','Lobo bravo'],['tigre_bravo','🐯','Tigre bravo'],['gorila_bravo','🦍','Gorila bravo'],
     ['zumbi1','🧟','Zumbi'],['zumbi2','🧟','Zumbi 2'],['zumbi3','🧟','Zumbi 3'],
     ['fantasma1','👻','Fantasma'],['fantasma2','👻','Fantasma 2'],['risada2','😈','Risada sinistra'],
     ['porta_range','🚪','Porta rangendo'],['porta_bate','✊','Batendo na porta'],['arvore_range','🌳','Árvore rangendo'],
     ['trovao1','⛈️','Trovão'],['trovao2','⛈️','Trovão 2'],['cobra','🐍','Cascavel'],
+    ['motosserra','🪚','Motosserra'],['vidro','💥','Vidro quebrando'],['bebe','👶','Bebê chorando'],
   ];
   const ENGRACADOS = [
     ['boing','🦘','Boing'],['brinquedo','🧸','Fiu-fiu'],['fonfon','📯','Fon fon'],['buzina','🚗','Buzina'],
     ['balao','🎈','Balão'],['apito','😙','Apito'],['risada','😈','Risada'],['vomito','🤮','Blééé'],
+    ['risada3','😂','Gargalhada'],['risada4','🤭','Risadinha'],['espirro','🤧','Atchim!'],['ronco','😴','Ronco'],['despertador','⏰','Despertador'],
   ];
   const sfxCache = {};
   async function loadSfx(id) {
@@ -476,11 +510,13 @@
   makeSfxGrid(ENGRACADOS, $('sfxEngr'));
   makeSfxGrid(PUNS, $('sfxPum'));
   makeSfxGrid(SUSTO, $('sfxSusto'));
+  makeSfxGrid(CAES, $('sfxCaes'));
+  makeSfxGrid(SIRENES, $('sfxSirene'));
   // pré-carrega em segundo plano depois do primeiro toque (para funcionar sem atraso)
   document.addEventListener('pointerdown', async function pre() {
     document.removeEventListener('pointerdown', pre);
     await ensureAudio();
-    for (const [id] of [...PUNS, ...SUSTO, ...BICHOS, ...ENGRACADOS]) { try { await loadSfx(id); } catch(_) {} }
+    for (const [id] of [...SIRENES, ...CAES, ...PUNS, ...SUSTO, ...BICHOS, ...ENGRACADOS]) { try { await loadSfx(id); } catch(_) {} }
   });
 
   function bellAt(t0) {
@@ -742,6 +778,45 @@
     if (document.visibilityState === 'visible' && stream) keepAwake();
     if (document.visibilityState === 'hidden') { pttUp(); if (mode === 'recording') stopRec(); }
   });
+
+  // ---------- Onde o som sai (Bluetooth x celular) ----------
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const canSink = typeof AudioContext !== 'undefined' && 'setSinkId' in AudioContext.prototype;
+  let sinkId = load('sink') || '';
+  async function listOutputs() {
+    try { const d = await navigator.mediaDevices.enumerateDevices(); return d.filter(x => x.kind === 'audiooutput'); } catch (_) { return []; }
+  }
+  async function applySink() {
+    if (!canSink || !ctx) return;
+    try { await ctx.setSinkId(sinkId || ''); } catch (_) {}
+  }
+  async function openOut() {
+    const outs = canSink ? await listOutputs() : [];
+    const named = outs.filter(o => o.label);
+    let html = '<h3>Onde o som vai sair?</h3>';
+    if (named.length >= 2) {
+      html += '<p>Escolha o aparelho:</p>' + named.map(o => '<button class="devbtn' + ((sinkId || 'default') === o.deviceId ? ' on' : '') + '" data-id="' + o.deviceId + '">' + (o.deviceId === 'default' ? '⭐ Padrão do celular — ' : '') + o.label.replace(/</g, '&lt;') + '</button>').join('');
+      html += '<p style="margin-top:4px">Se o aparelho que você quer não aparece, use o jeito do sistema abaixo.</p>';
+    } else {
+      html += '<p>O navegador do celular não deixa o app escolher sozinho a saída do som. Mas dá para trocar em 2 toques, <b>sem desconectar o Bluetooth</b>, e o app continua funcionando:</p>';
+    }
+    html += isIOS
+      ? '<b>📱 No iPhone</b><ol><li>Abra a <b>Central de Controle</b> (deslize de cima, no canto direito).</li><li>No quadrinho de música, toque no ícone de <b>AirPlay</b> (triângulo com ondas).</li><li>Escolha <b>iPhone</b> para ouvir no celular, ou o <b>patinete</b> para mandar para ele.</li></ol>'
+      : '<b>🤖 No Android</b><ol><li>Com um som tocando no app, <b>puxe a barra de notificações</b> de cima para baixo.</li><li>No quadro de mídia, toque no ícone de <b>saída de áudio</b> (alto-falante/Bluetooth). Na Samsung aparece como <b>“Saída de mídia”</b>.</li><li>Escolha <b>Este celular</b> para ouvir no celular, ou o <b>patinete</b> para mandar para ele.</li></ol><p>Se não aparecer a opção: Configurações → Bluetooth → toque na engrenagem do patinete → desligue <b>“Áudio de mídia”</b> para ouvir no celular (e ligue de novo para voltar).</p>';
+    html += '<button class="btn" id="outClose" style="width:100%;margin-top:6px;background:var(--card2)">Fechar</button>';
+    $('outSheet').innerHTML = html;
+    $('outOv').classList.add('show');
+    $('outClose').onclick = () => $('outOv').classList.remove('show');
+    $('outSheet').querySelectorAll('.devbtn').forEach(b => b.onclick = async () => {
+      sinkId = b.dataset.id === 'default' ? '' : b.dataset.id; save('sink', sinkId);
+      await ensureAudio(); await applySink();
+      $('outTxt').textContent = 'Som saindo em: ' + b.textContent.replace('⭐ Padrão do celular — ', '');
+      openOut(); bellAt(ctx.currentTime + .05);
+    });
+  }
+  $('outBar').addEventListener('click', openOut);
+  $('outOv').addEventListener('click', e => { if (e.target === $('outOv')) $('outOv').classList.remove('show'); });
+  if (!canSink) $('outTxt').textContent = 'Som saindo pelo aparelho conectado';
 
   // ---------- Meus sons (importados do celular) ----------
   let meus = [], pendingFile = null;
