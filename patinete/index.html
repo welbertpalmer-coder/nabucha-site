@@ -84,7 +84,7 @@
 
   /* Efeito de voz */
   .chips{display:flex;flex-wrap:wrap;gap:8px}
-  .chip{border:1px solid var(--line);background:var(--card2);color:var(--txt);border-radius:999px;padding:10px 14px;font-size:.9rem;font-weight:600}
+  .chip{border:1px solid var(--line);background:var(--card2);color:var(--txt);border-radius:999px;padding:9px 12px;font-size:.86rem;font-weight:600}
   .chip.on{background:var(--green);border-color:var(--green);color:#052e12}
   .fx-note{color:var(--mut);font-size:.78rem;margin-top:10px;min-height:1em}
 
@@ -163,12 +163,26 @@
     <div id="chips" class="chips">
       <button class="chip on" data-fx="normal">🙂 Normal</button>
       <button class="chip" data-fx="robo">🤖 Robô</button>
+      <button class="chip" data-fx="alien">👽 Alien</button>
+      <button class="chip" data-fx="megafone">📢 Megafone</button>
+      <button class="chip" data-fx="agua">🫧 Debaixo d'água</button>
+      <button class="chip" data-fx="bebado">🥴 Tontinho</button>
+      <button class="chip" data-fx="cabrita">🐐 Cabrita</button>
+      <button class="chip" data-fx="coral">👯 Clones</button>
+      <button class="chip" data-fx="caverna">🦇 Caverna</button>
+      <button class="chip" data-fx="fantasma">👻 Fantasma</button>
       <button class="chip" data-fx="eco">🏔️ Eco</button>
       <button class="chip" data-fx="radio">📻 Rádio</button>
-      <button class="chip" data-fx="esquilo">🐿️ Esquilo</button>
-      <button class="chip" data-fx="monstro">👹 Monstro</button>
+      <button class="chip" data-fx="esquilo">🐿️ Esquilo ⭐</button>
+      <button class="chip" data-fx="bebe">👶 Bebê ⭐</button>
+      <button class="chip" data-fx="pato">🦆 Pato ⭐</button>
+      <button class="chip" data-fx="monstro">👹 Monstro ⭐</button>
+      <button class="chip" data-fx="gigante">🦖 Gigante ⭐</button>
+      <button class="chip" data-fx="lento">🐢 Câmera lenta ⭐</button>
+      <button class="chip" data-fx="contrario">🔄 Ao contrário ⭐</button>
     </div>
     <div id="fxNote" class="fx-note"></div>
+    <div class="fx-note">⭐ = só nos recados gravados. Grave um recado e toque com cada efeito!</div>
   </section>
 
   <!-- SONS ENGRAÇADOS -->
@@ -326,43 +340,57 @@
 
   // ---------- Efeitos de voz ----------
   let fx = 'normal', liveCleanup = null;
-  const RATE = { esquilo: 1.55, monstro: 0.68 };
-  function connectFx(node, kind) {
-    const extra = [];
-    if (kind === 'robo') {
-      const ring = ctx.createGain(); ring.gain.value = 0;
-      const osc = ctx.createOscillator(); osc.frequency.value = 55; osc.connect(ring.gain); osc.start();
-      const mk = ctx.createGain(); mk.gain.value = 2;
-      node.connect(ring).connect(mk).connect(master);
-      extra.push(() => { try { osc.stop(); } catch(_) {} ring.disconnect(); mk.disconnect(); });
-    } else if (kind === 'eco') {
-      const d = ctx.createDelay(1); d.delayTime.value = .28;
-      const fb = ctx.createGain(); fb.gain.value = .45;
-      const wet = ctx.createGain(); wet.gain.value = .6;
-      node.connect(master); node.connect(d); d.connect(fb).connect(d); d.connect(wet).connect(master);
-      extra.push(() => { d.disconnect(); fb.disconnect(); wet.disconnect(); });
-    } else if (kind === 'radio') {
-      const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 600;
-      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2800;
-      const ws = ctx.createWaveShaper(); const c = new Float32Array(256);
-      for (let i = 0; i < 256; i++) { const x = i / 128 - 1; c[i] = Math.tanh(x * 3); } ws.curve = c;
-      const mk = ctx.createGain(); mk.gain.value = 1.4;
-      node.connect(hp).connect(lp).connect(ws).connect(mk).connect(master);
-      extra.push(() => { hp.disconnect(); lp.disconnect(); ws.disconnect(); mk.disconnect(); });
-    } else {
-      node.connect(master);
+  // g = efeito de som (funciona ao vivo e no recado) | rate = muda o tom (só recado) | rev = de trás pra frente (só recado)
+  const FX = {
+    normal:{}, robo:{g:'robo'}, alien:{g:'alien'}, eco:{g:'eco'}, radio:{g:'radio'}, megafone:{g:'megafone'},
+    agua:{g:'agua'}, bebado:{g:'bebado'}, cabrita:{g:'cabrita'}, caverna:{g:'caverna'}, fantasma:{g:'fantasma'}, coral:{g:'coral'},
+    esquilo:{rate:1.55}, bebe:{rate:1.95}, monstro:{rate:.68}, gigante:{rate:.5, g:'caverna'},
+    pato:{rate:1.35, g:'pato'}, contrario:{rev:true}, lento:{rate:.78, g:'bebado'},
+  };
+  const irCache = {};
+  function impulse(sec, decay) {
+    const k = sec + '_' + decay; if (irCache[k]) return irCache[k];
+    const len = Math.floor(ctx.sampleRate * sec), b = ctx.createBuffer(2, len, ctx.sampleRate);
+    for (let c = 0; c < 2; c++) { const d = b.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay); }
+    return (irCache[k] = b);
+  }
+  function shaper(k) { const ws = ctx.createWaveShaper(), c = new Float32Array(1024); for (let i = 0; i < 1024; i++) { const x = i / 512 - 1; c[i] = Math.tanh(x * k); } ws.curve = c; return ws; }
+  function connectFx(node, g) {
+    const nodes = [], oscs = [];
+    const N = n => (nodes.push(n), n);
+    const gain = v => { const x = N(ctx.createGain()); x.gain.value = v; return x; };
+    const filt = (type, f, q = 1, gdb = 0) => { const x = N(ctx.createBiquadFilter()); x.type = type; x.frequency.value = f; x.Q.value = q; x.gain.value = gdb; return x; };
+    const lfo = (f, depth, target) => { const o = ctx.createOscillator(); o.frequency.value = f; const d = gain(depth); o.connect(d).connect(target); o.start(); oscs.push(o); return o; };
+    const delay = (base) => { const d = N(ctx.createDelay(1)); d.delayTime.value = base; return d; };
+    const conv = (sec, dec) => { const c = N(ctx.createConvolver()); c.buffer = impulse(sec, dec); return c; };
+    const out = gain(1); out.connect(master);
+    switch (g) {
+      case 'robo': { const r = gain(0); lfo(55, 1, r.gain); node.connect(r).connect(gain(2)).connect(out); break; }
+      case 'alien': { const r = gain(0); const o = lfo(320, 1, r.gain); lfo(4, 160, o.frequency); node.connect(r).connect(gain(2.2)).connect(out); break; }
+      case 'eco': { const d = delay(.28), fb = gain(.45); node.connect(out); node.connect(d); d.connect(fb).connect(d); d.connect(gain(.6)).connect(out); break; }
+      case 'radio': node.connect(filt('highpass', 600)).connect(filt('lowpass', 2800)).connect(N(shaper(3))).connect(gain(1.3)).connect(out); break;
+      case 'megafone': node.connect(filt('highpass', 500, .7)).connect(filt('peaking', 1500, 1, 9)).connect(filt('lowpass', 2400, .7)).connect(N(shaper(14))).connect(gain(.8)).connect(out); break;
+      case 'agua': { const d = delay(.012); lfo(3, .005, d.delayTime); const lp = filt('lowpass', 700, 6); lfo(.7, 400, lp.frequency); node.connect(d).connect(lp).connect(gain(1.7)).connect(out); break; }
+      case 'bebado': { const d = delay(.035); lfo(.55, .025, d.delayTime); node.connect(d).connect(out); break; }
+      case 'cabrita': { const d = delay(.006); lfo(7, .004, d.delayTime); const t = gain(.6); lfo(7, .4, t.gain); node.connect(d).connect(t).connect(gain(1.3)).connect(out); break; }
+      case 'caverna': { node.connect(gain(.6)).connect(out); node.connect(conv(3.5, 2.5)).connect(gain(.9)).connect(out); break; }
+      case 'fantasma': { const d = delay(.02); lfo(3, .007, d.delayTime); const lp = filt('lowpass', 1800); node.connect(d).connect(lp); lp.connect(gain(.25)).connect(out); lp.connect(conv(4, 2)).connect(gain(1.2)).connect(out); break; }
+      case 'coral': { node.connect(gain(.7)).connect(out); [[.018,.8],[.027,1.1],[.036,1.4],[.045,.6]].forEach(([b, f]) => { const d = delay(b); lfo(f, .005, d.delayTime); node.connect(d).connect(gain(.55)).connect(out); }); break; }
+      case 'pato': node.connect(filt('bandpass', 1600, 3)).connect(N(shaper(4))).connect(gain(2)).connect(out); break;
+      default: node.connect(out);
     }
-    return () => { try { node.disconnect(); } catch(_) {} extra.forEach(f => f()); };
+    return () => { try { node.disconnect(); } catch(_) {} oscs.forEach(o => { try { o.stop(); } catch(_) {} }); nodes.forEach(n => { try { n.disconnect(); } catch(_) {} }); };
   }
   function rewireLive() {
     if (!liveGain) return;
     if (liveCleanup) liveCleanup();
-    liveCleanup = connectFx(liveGain, RATE[fx] ? 'normal' : fx);
+    liveCleanup = connectFx(liveGain, (FX[fx] || {}).g);
   }
   function setFx(k) {
     fx = k; save('fx', k);
     document.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c.dataset.fx === k));
-    $('fxNote').textContent = RATE[k] ? 'Esquilo e Monstro mudam os recados. Ao vivo a voz sai normal.' : (k === 'normal' ? '' : 'Vale para falar ao vivo e para os recados.');
+    const d = FX[k] || {};
+    $('fxNote').textContent = k === 'normal' ? '' : (d.rate || d.rev) ? '⭐ Efeito completo nos recados gravados.' + (d.g ? ' Ao vivo sai uma parte dele.' : ' Ao vivo a voz sai normal.') : 'Vale para falar ao vivo e para os recados.';
     rewireLive();
   }
   document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => setFx(c.dataset.fx)));
@@ -575,9 +603,15 @@
     catch (e) { showErr('Não consegui tocar esse áudio.'); return; }
     const t0 = ctx.currentTime + .05;
     const lead = $('bellFirst').checked ? bellAt(t0) : 0;
+    const def = FX[fx] || {};
+    if (def.rev) {
+      const rb = ctx.createBuffer(buf.numberOfChannels, buf.length, buf.sampleRate);
+      for (let c = 0; c < buf.numberOfChannels; c++) rb.getChannelData(c).set(Float32Array.from(buf.getChannelData(c)).reverse());
+      buf = rb;
+    }
     const src = ctx.createBufferSource();
     src.buffer = buf;
-    const rate = RATE[fx] || 1;
+    const rate = def.rate || 1;
     src.playbackRate.value = rate;
     // Normaliza: leva o pico do recado perto do máximo (até 12x mais alto)
     let peak = 0;
@@ -586,7 +620,7 @@
     const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 110; hp.Q.value = .7;
     const pres = ctx.createBiquadFilter(); pres.type = 'peaking'; pres.frequency.value = 2800; pres.Q.value = 1; pres.gain.value = 3;
     src.connect(hp).connect(pres).connect(ng);
-    const cleanup = connectFx(ng, RATE[fx] ? 'normal' : fx);
+    const cleanup = connectFx(ng, def.g);
     src.start(t0 + lead);
     const total = lead + buf.duration / rate;
     current = { src, id, t0, total, cleanup };
