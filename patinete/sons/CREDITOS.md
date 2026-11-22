@@ -85,6 +85,6 @@ Sons reais da coleção [mod-sounds](https://github.com/AntumMT/mod-sounds) (Ant
 
 Fonte dos clipes: ESC-50 (https://github.com/karolpiczak/ESC-50), com a licença de cada clipe listada no arquivo LICENSE do projeto.
 
-## Viatura brasileira
+## Aviso
 
-pm_*.mp3 — tons de sirene eletrônica recriados por síntese (onda quadrada + filtro de corneta), feitos para este app. Não são gravações.
+| campainha.mp3 | doorbell (freesound 275072) | kwahmah_02 | CC BY 3.0 |

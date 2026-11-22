@@ -212,14 +212,28 @@
   </section>
 
   <section class="card">
-    <h2>Cachorro bravo 🐕</h2>
-    <div id="sfxCaes" class="sfx"></div>
+    <h2>Sons do YouTube 📺</h2>
+    <div id="ytGrid" class="sfx"></div>
+    <div class="row" style="margin-top:10px">
+      <button id="ytStop" class="btn" style="background:var(--card2)">■ Parar</button>
+      <button id="ytAddBtn" class="btn" style="background:var(--card2);border:1px dashed var(--line)">➕ Adicionar</button>
+    </div>
+    <div id="ytForm" class="draft" style="margin-top:12px">
+      <input id="ytLink" type="text" placeholder="Cole o link do YouTube">
+      <input id="ytName" type="text" maxlength="22" placeholder="Nome do botão (ex.: Sirene PM)">
+      <div class="row">
+        <input id="ytStart" type="text" inputmode="numeric" placeholder="Começa em (seg)">
+        <input id="ytEnd" type="text" inputmode="numeric" placeholder="Termina em (seg)">
+      </div>
+      <div class="row"><button id="ytSave" class="btn green">💾 Salvar</button><button id="ytCancel" class="btn ghost">Cancelar</button></div>
+    </div>
+    <div class="empty" style="padding:10px 0 0;font-size:.78rem">Toca direto do vídeo original no YouTube (precisa de internet). Dica: use “Começa/Termina em” para tocar só o trecho que interessa.</div>
+    <div id="ytBox" style="position:absolute;left:-9999px;top:0;width:200px;height:120px;overflow:hidden"><div id="ytPlayer"></div></div>
   </section>
 
   <section class="card">
-    <h2>Viatura brasileira 🚓</h2>
-    <div id="sfxViatura" class="sfx"></div>
-    <div class="empty" style="padding:10px 0 0;font-size:.78rem">Tons recriados do jeito que a sirene eletrônica da viatura gera (não são gravações).</div>
+    <h2>Cachorro bravo 🐕</h2>
+    <div id="sfxCaes" class="sfx"></div>
   </section>
 
   <section class="card">
@@ -258,10 +272,10 @@
       <input id="vol" type="range" min="0.5" max="4" step="0.1" value="2">
     </div>
     <div class="set">
-      <div><label for="bellFirst">Plim antes do recado</label><small>Chama a atenção antes de tocar</small></div>
+      <div><label for="bellFirst">Campainha antes do recado</label><small>Chama a atenção antes de tocar</small></div>
       <label class="sw"><input id="bellFirst" type="checkbox" checked><span></span></label>
     </div>
-    <button id="bell" class="btn bell-btn">🔔 Tocar plim-plim agora</button>
+    <button id="bell" class="btn bell-btn">🔔 Tocar campainha agora</button>
   </section>
 
   <details>
@@ -464,10 +478,6 @@
   const CAES = [
     ['cao_bravo','😡','Cachorros bravos'],['cao_corrente','⛓️','Cão na corrente'],['cachorrao','🐕‍🦺','Cachorrão'],['chihuahua','🐶','Chihuahua bravo'],
   ];
-  const VIATURA = [
-    ['pm_prupru','🚓','Prrr-prrr (abordagem)'],['pm_phaser','🚓','Prrrrrr'],['pm_yelp','🚨','Uiuiuiui'],
-    ['pm_wail','🚨','Uóóó uóóó'],['pm_hilo','🚑','Pó-pí'],
-  ];
   const SIRENES = [
     ['sirene5','🚓','Polícia (BR/Europa)'],['sirene1','🚔','Polícia 1'],['sirene2','🚔','Polícia 2'],['sirene3','🚔','Polícia 3'],
     ['sirene4','🚨','Sirene EUA'],['alarme','📢','Alarme geral'],
@@ -522,24 +532,21 @@
   makeSfxGrid(SUSTO, $('sfxSusto'));
   makeSfxGrid(CAES, $('sfxCaes'));
   makeSfxGrid(SIRENES, $('sfxSirene'));
-  makeSfxGrid(VIATURA, $('sfxViatura'));
   // pré-carrega em segundo plano depois do primeiro toque (para funcionar sem atraso)
   document.addEventListener('pointerdown', async function pre() {
     document.removeEventListener('pointerdown', pre);
     await ensureAudio();
-    for (const [id] of [...VIATURA, ...SIRENES, ...CAES, ...PUNS, ...SUSTO, ...BICHOS, ...ENGRACADOS]) { try { await loadSfx(id); } catch(_) {} }
+    for (const [id] of ['campainha', ...SIRENES, ...CAES, ...PUNS, ...SUSTO, ...BICHOS, ...ENGRACADOS]) { try { await loadSfx(id); } catch(_) {} }
   });
 
+  // Aviso antes do recado: campainha real (kwahmah_02, CC BY 3.0)
   function bellAt(t0) {
-    [[988,0],[784,.28],[988,.56]].forEach(([f,dt]) => {
-      const o = ctx.createOscillator(), g = ctx.createGain();
-      o.type = 'sine'; o.frequency.value = f;
-      g.gain.setValueAtTime(0, t0+dt);
-      g.gain.linearRampToValueAtTime(.5, t0+dt+.02);
-      g.gain.exponentialRampToValueAtTime(.001, t0+dt+.26);
-      o.connect(g).connect(sfxBus); o.start(t0+dt); o.stop(t0+dt+.28);
-    });
-    return .9; // duração
+    const c = sfxCache['campainha'];
+    if (!c) { loadSfx('campainha').catch(() => {}); return 0; }
+    const src = ctx.createBufferSource(); src.buffer = c.buf;
+    const g = ctx.createGain(); g.gain.value = c.norm * .8;
+    src.connect(g).connect(sfxBus); src.start(t0);
+    return Math.min(c.buf.duration, 2.2);
   }
 
   // ---------- Modo / interface ----------
@@ -724,8 +731,8 @@
     $('draftPlay').textContent = current?.id === 'draft' ? '■ Parar' : '▶ Tocar';
   }
 
-  $('testBtn').addEventListener('click', async () => { releaseMic(); await ensureAudio(); bellAt(ctx.currentTime + .05); });
-  $('bell').addEventListener('click', async () => { if (mode !== 'idle') return; await ensureAudio(); bellAt(ctx.currentTime + .03); });
+  $('testBtn').addEventListener('click', async () => { releaseMic(); await ensureAudio(); try { await loadSfx('campainha'); } catch(_) {} bellAt(ctx.currentTime + .05); });
+  $('bell').addEventListener('click', async () => { if (mode !== 'idle') return; await ensureAudio(); try { await loadSfx('campainha'); } catch(_) {} bellAt(ctx.currentTime + .03); });
   $('bellFirst').addEventListener('change', () => save('bell', $('bellFirst').checked ? '1' : '0'));
 
   // ---------- Recados salvos ----------
@@ -828,6 +835,67 @@
   $('outBar').addEventListener('click', openOut);
   $('outOv').addEventListener('click', e => { if (e.target === $('outOv')) $('outOv').classList.remove('show'); });
   if (!canSink) $('outTxt').textContent = 'Som saindo pelo aparelho conectado';
+
+  // ---------- Sons do YouTube (toca o vídeo original, sem baixar) ----------
+  const YT_DEFAULT = [{ id: 'pmesp', name: 'Abordagem PMESP 🚓', vid: 'tSa4O41J45E', start: 0, end: 0 }];
+  let ytItems = (() => { try { return JSON.parse(localStorage.getItem('fp_yt')) || YT_DEFAULT; } catch(_) { return YT_DEFAULT; } })();
+  const ytSave = () => { try { localStorage.setItem('fp_yt', JSON.stringify(ytItems)); } catch(_) {} };
+  let ytP = null, ytReady = false, ytNow = null;
+  window.onYouTubeIframeAPIReady = () => {
+    ytP = new YT.Player('ytPlayer', { width: 200, height: 120, playerVars: { playsinline: 1, controls: 0, rel: 0 },
+      events: {
+        onReady: () => { ytReady = true; },
+        onStateChange: e => { if (e.data === 0 || e.data === 2 || e.data === 5) { ytNow = null; renderYT(); } },
+        onError: () => { showErr('Esse vídeo do YouTube não deixa tocar fora do site deles. Tente outro link.'); ytNow = null; renderYT(); },
+      } });
+  };
+  (() => { const sc = document.createElement('script'); sc.src = 'https://www.youtube.com/iframe_api'; document.head.appendChild(sc); })();
+  function parseYT(u) {
+    u = (u || '').trim();
+    const m = u.match(/(?:youtu\.be\/|v=|shorts\/|embed\/|live\/)([A-Za-z0-9_-]{11})/) || u.match(/^([A-Za-z0-9_-]{11})$/);
+    const t = u.match(/[?&]t=(\d+)/);
+    return m ? { vid: m[1], t: t ? +t[1] : 0 } : null;
+  }
+  function renderYT() {
+    const g = $('ytGrid'); g.innerHTML = '';
+    ytItems.forEach(it => {
+      const b = document.createElement('button');
+      b.style.position = 'relative';
+      if (ytNow === it.id) b.classList.add('hit');
+      b.innerHTML = '<b>' + (ytNow === it.id ? '🔊' : '📺') + '</b><span class="nm"></span><span class="x" style="position:absolute;top:2px;right:6px;color:var(--mut);font-size:.9rem">✕</span>';
+      b.querySelector('.nm').textContent = it.name;
+      b.addEventListener('click', e => {
+        if (e.target.classList.contains('x')) {
+          if (b.dataset.arm) { ytItems = ytItems.filter(x => x.id !== it.id); ytSave(); renderYT(); }
+          else { b.dataset.arm = 1; b.querySelector('.x').textContent = 'apagar?'; b.querySelector('.x').style.color = 'var(--red)'; setTimeout(() => { if (b.isConnected) { delete b.dataset.arm; b.querySelector('.x').textContent = '✕'; b.querySelector('.x').style.color = 'var(--mut)'; } }, 2500); }
+          return;
+        }
+        if (mode === 'recording') return;
+        if (!ytReady) { showErr('Carregando o YouTube… toque de novo em 2 segundos.'); return; }
+        hideErr();
+        if (ytNow === it.id) { ytP.stopVideo(); ytNow = null; renderYT(); return; }
+        const opts = { videoId: it.vid, startSeconds: it.start || 0 };
+        if (it.end > (it.start || 0)) opts.endSeconds = it.end;
+        ytP.loadVideoById(opts); ytP.setVolume(100); ytP.unMute && ytP.unMute();
+        ytNow = it.id; renderYT();
+      });
+      g.appendChild(b);
+    });
+  }
+  $('ytStop').addEventListener('click', () => { try { ytP && ytP.stopVideo(); } catch(_) {} ytNow = null; renderYT(); });
+  $('ytAddBtn').addEventListener('click', () => { $('ytForm').classList.toggle('show'); $('ytLink').focus(); });
+  $('ytCancel').addEventListener('click', () => $('ytForm').classList.remove('show'));
+  $('ytSave').addEventListener('click', () => {
+    const p = parseYT($('ytLink').value);
+    if (!p) { showErr('Link do YouTube inválido. Copie o link pelo botão “Compartilhar” do vídeo.'); return; }
+    hideErr();
+    const start = parseInt($('ytStart').value) || p.t || 0, end = parseInt($('ytEnd').value) || 0;
+    ytItems.push({ id: Date.now().toString(36), name: $('ytName').value.trim() || ('Vídeo ' + (ytItems.length + 1)), vid: p.vid, start, end });
+    ytSave(); renderYT();
+    ['ytLink','ytName','ytStart','ytEnd'].forEach(id => $(id).value = '');
+    $('ytForm').classList.remove('show');
+  });
+  renderYT();
 
   // ---------- Meus sons (importados do celular) ----------
   let meus = [], pendingFile = null;
