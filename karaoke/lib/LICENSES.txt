@@ -1,0 +1,2 @@
+peerjs.min.js — PeerJS 1.5.4 (MIT) — https://github.com/peers/peerjs
+qrcode.js — qrcode-generator 1.4.4 by Kazuhiko Arase (MIT) — https://github.com/kazuhikoarase/qrcode-generator

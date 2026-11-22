@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0b0716">
+<title>Karaokê da Família</title>
+<style>
+  :root{--bg:#0b0716;--card:#171128;--card2:#221a3a;--line:#2f2550;--txt:#f5f3ff;--mut:#a59cc8;--pink:#ec4899;--violet:#8b5cf6;--green:#22c55e;--amber:#fbbf24;--red:#ef4444}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  button{font-family:inherit}
+  .hide{display:none!important}
+
+  /* ================= TV ================= */
+  body.tv{overflow:hidden;height:100vh}
+  #tv{position:fixed;inset:0}
+  #tvLobby{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.5vh;background:radial-gradient(circle at 30% 20%,#2a1650,#0b0716 70%)}
+  #tvLobby h1{font-size:6vh;margin:0}
+  .tvJoin{display:flex;align-items:center;gap:4vw;background:var(--card);border:2px solid var(--line);border-radius:3vh;padding:3vh 4vw}
+  .tvJoin canvas,.tvJoin img{width:26vh;height:26vh;background:#fff;border-radius:2vh;padding:1.2vh}
+  .tvCode{font-size:4vh;color:var(--mut)}
+  .tvCode b{display:block;font-size:13vh;letter-spacing:1.5vh;color:var(--amber);line-height:1.1}
+  .tvUrl{font-size:2.6vh;color:var(--mut)}
+  .tvRow{display:flex;gap:3vw;width:86vw;justify-content:center}
+  .tvBox{flex:1;max-width:40vw;background:var(--card);border-radius:2.5vh;padding:2.2vh 2vw;min-height:20vh}
+  .tvBox h3{margin:0 0 1.5vh;font-size:2.6vh;color:var(--mut);text-transform:uppercase;letter-spacing:.3vh}
+  .tvBox .it{font-size:2.8vh;padding:.8vh 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:2vw}
+  .tvBox .it:last-child{border:none}
+  .tvBox .empty{color:var(--mut);font-size:2.6vh}
+  #tvStart{font-size:3.4vh;padding:2vh 4vw;border-radius:99px;border:none;background:var(--pink);color:#fff;font-weight:700}
+  #tvStage{position:absolute;inset:0;background:#000}
+  #ytWrap{position:absolute;inset:0}
+  #ytWrap iframe{width:100%;height:100%}
+  #lyrShade{position:absolute;left:0;right:0;bottom:0;height:48vh;background:linear-gradient(transparent,rgba(5,2,15,.92) 45%);pointer-events:none}
+  #lyr{position:absolute;left:4vw;right:4vw;bottom:6vh;text-align:center;pointer-events:none}
+  #lyrCur{font-size:7.2vh;font-weight:800;line-height:1.15;filter:drop-shadow(0 .4vh .8vh rgba(0,0,0,.9));background:linear-gradient(90deg,var(--amber) var(--p,0%),#fff var(--p,0%));-webkit-background-clip:text;background-clip:text;color:transparent}
+  #lyrNext{font-size:4.4vh;color:#cfc8ea;margin-top:2vh;text-shadow:0 .3vh 1vh #000;min-height:5vh}
+  #lyrPrev{font-size:3.2vh;color:#8a82ad;margin-bottom:1.5vh;min-height:4vh}
+  #tvTop{position:absolute;top:2.5vh;left:2.5vw;right:2.5vw;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none}
+  .pillTv{background:rgba(10,6,25,.8);border-radius:99px;padding:1.2vh 2.2vw;font-size:2.6vh}
+  .pillTv b{color:var(--amber)}
+  #tvMsg{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(8,4,20,.88);text-align:center;gap:2vh}
+  #tvMsg .big{font-size:9vh;font-weight:800}
+  #tvMsg .mid{font-size:4vh;color:var(--mut)}
+  #tvMsg .score{font-size:20vh;font-weight:900;color:var(--amber);line-height:1}
+
+  /* ================= CELULAR ================= */
+  body.phone{padding:calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 90px)}
+  .wrap{max-width:460px;margin:0 auto}
+  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  header h1{font-size:1.2rem;margin:0}
+  .pill{font-size:.75rem;padding:6px 10px;border-radius:99px;background:var(--card);color:var(--mut)}
+  .pill.ok{color:var(--green)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;margin-bottom:12px}
+  .card h2{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);margin:0 0 12px}
+  input[type=text]{width:100%;background:var(--card2);border:1px solid var(--line);color:var(--txt);border-radius:12px;padding:13px 14px;font-size:1rem;margin-bottom:10px}
+  .btn{width:100%;border:none;border-radius:14px;padding:15px;font-size:1rem;font-weight:700;color:#fff;background:var(--pink)}
+  .btn.sec{background:var(--card2);color:var(--txt);border:1px solid var(--line)}
+  .btn:disabled{opacity:.4}
+  .row{display:flex;gap:8px}
+  .row .btn{flex:1}
+  .tabs{position:fixed;left:0;right:0;bottom:0;display:flex;background:#120c22;border-top:1px solid var(--line);padding:8px 8px calc(env(safe-area-inset-bottom) + 8px);z-index:5}
+  .tabs button{flex:1;background:none;border:none;color:var(--mut);font-size:.75rem;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;border-radius:12px}
+  .tabs button b{font-size:1.4rem;line-height:1}
+  .tabs button.on{color:var(--txt);background:var(--card2)}
+  .cats{display:flex;gap:6px;overflow-x:auto;margin-bottom:10px;padding-bottom:2px}
+  .cats button{flex:none;border:1px solid var(--line);background:var(--card2);color:var(--txt);border-radius:99px;padding:8px 12px;font-size:.85rem;font-weight:600}
+  .cats button.on{background:var(--violet);border-color:var(--violet)}
+  .song{display:flex;align-items:center;gap:10px;padding:12px 4px;border-bottom:1px solid var(--line)}
+  .song:last-child{border:none}
+  .song .t{flex:1;min-width:0}
+  .song .t b{display:block;font-size:.98rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .song .t span{font-size:.82rem;color:var(--mut)}
+  .song button{flex:none;border:none;background:var(--pink);color:#fff;border-radius:10px;padding:9px 12px;font-weight:700;font-size:.85rem}
+  .vids{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .vid{background:var(--card2);border:2px solid var(--line);border-radius:12px;overflow:hidden;color:var(--txt);text-align:left;padding:0}
+  .vid img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
+  .vid div{padding:6px 8px;font-size:.75rem;line-height:1.25;height:3.4em;overflow:hidden}
+  .q{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+  .q:last-child{border:none}
+  .q .n{width:28px;height:28px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;flex:none}
+  .q .t{flex:1;min-width:0;font-size:.92rem}
+  .q .t span{display:block;color:var(--mut);font-size:.8rem}
+  .q button{border:none;background:none;color:var(--mut);font-size:1.1rem}
+  .now{background:linear-gradient(135deg,#3b1d6e,#5b1d4e);border:none}
+  .ctrl{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .ctrl .btn{padding:16px 6px;font-size:.95rem}
+  .muted{color:var(--mut);font-size:.85rem;line-height:1.45}
+  .meter{height:14px;background:var(--card2);border-radius:7px;overflow:hidden;margin:10px 0}
+  .meter div{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--amber),var(--pink));transition:width .08s}
+  .bigScore{font-size:3.6rem;font-weight:900;text-align:center;color:var(--amber);line-height:1}
+  .rank{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:.95rem}
+  .rank:last-child{border:none}
+  .err{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.4);color:#fecaca;padding:12px;border-radius:12px;font-size:.88rem;margin-bottom:12px}
+  .modal{position:fixed;inset:0;background:rgba(5,2,15,.8);z-index:9;display:flex;align-items:flex-end;justify-content:center}
+  .sheet{background:var(--card);border-radius:22px 22px 0 0;padding:18px 16px calc(env(safe-area-inset-bottom) + 18px);width:100%;max-width:520px;max-height:88vh;overflow:auto}
+  .sheet h3{margin:0 0 4px;font-size:1.05rem}
+</style>
+</head>
+<body>
+
+<!-- ======================= TV ======================= -->
+<div id="tv" class="hide">
+  <div id="tvLobby">
+    <h1>🎤 Karaokê da Família</h1>
+    <div class="tvJoin">
+      <div id="qr"></div>
+      <div>
+        <div class="tvCode">Código da sala<b id="tvCode">····</b></div>
+        <div class="tvUrl">Aponte a câmera do celular para o QR<br>ou entre em <b>nabucha.com.br/karaoke</b></div>
+      </div>
+    </div>
+    <button id="tvStart">▶ Aperte OK no controle para liberar o som</button>
+    <div class="tvRow">
+      <div class="tvBox"><h3>Cantores</h3><div id="tvPlayers"><div class="empty">Ninguém entrou ainda</div></div></div>
+      <div class="tvBox"><h3>Próximas</h3><div id="tvQueue"><div class="empty">Escolha uma música no celular</div></div></div>
+    </div>
+  </div>
+  <div id="tvStage" class="hide">
+    <div id="ytWrap"><div id="yt"></div></div>
+    <div id="lyrShade"></div>
+    <div id="lyr"><div id="lyrPrev"></div><div id="lyrCur"></div><div id="lyrNext"></div></div>
+    <div id="tvTop"><div class="pillTv" id="tvNow"></div><div class="pillTv">Sala <b id="tvCode2"></b></div></div>
+  </div>
+  <div id="tvMsg" class="hide"></div>
+</div>
+
+<!-- ======================= CELULAR ======================= -->
+<div id="phone" class="wrap hide">
+  <header><h1>🎤 Karaokê</h1><div id="conn" class="pill">desconectado</div></header>
+  <div id="pErr" class="err hide"></div>
+
+  <!-- entrar -->
+  <section id="pJoin">
+    <div class="card">
+      <h2>Entrar na sala</h2>
+      <input id="jName" type="text" maxlength="16" placeholder="Seu nome (ex.: Webert)">
+      <input id="jCode" type="text" maxlength="4" placeholder="Código da sala (aparece na TV)" style="text-transform:uppercase;letter-spacing:.2em">
+      <button id="jGo" class="btn">Entrar</button>
+    </div>
+    <div class="card muted">
+      <b>Como usar:</b><br>
+      1. Na TV, abra o navegador em <b>nabucha.com.br/karaoke/#tv</b><br>
+      2. Aqui no celular, digite seu nome e o código que aparece na TV.<br>
+      3. Escolha a música, escolha o vídeo e cante quando chegar a sua vez!
+    </div>
+  </section>
+
+  <!-- abas -->
+  <section id="pApp" class="hide">
+    <div id="tabSongs">
+      <div id="myTurn" class="card now hide">
+        <h2 style="color:#fff">🎤 Sua vez de cantar!</h2>
+        <div class="meter"><div id="myMeter"></div></div>
+        <div class="row" style="align-items:center"><div class="muted" style="flex:1;color:#f0e6ff" id="myHint">Cante perto do celular. Sua nota vai sendo calculada.</div><div class="bigScore" id="myLive" style="font-size:2.4rem">0</div></div>
+      </div>
+      <div class="card">
+        <input id="sFind" type="text" placeholder="🔎 Buscar música ou cantor">
+        <div class="cats" id="cats"></div>
+        <div id="songList"></div>
+        <div id="otherBox" class="hide" style="padding-top:10px">
+          <div class="muted" style="margin-bottom:8px">Não está na lista? Busque direto:</div>
+          <button id="otherGo" class="btn sec">🔎 Procurar “<span id="otherQ"></span>” no YouTube</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="tabQueue" class="hide">
+      <div class="card now" id="nowCard"><h2 style="color:#fff">Tocando agora</h2><div id="nowTxt" class="muted" style="color:#f0e6ff">Nada tocando</div></div>
+      <div class="card"><h2>Fila</h2><div id="qList"></div></div>
+    </div>
+
+    <div id="tabCtrl" class="hide">
+      <div class="card">
+        <h2>Controle da TV</h2>
+        <div class="ctrl">
+          <button class="btn sec" data-cmd="pause">⏯ Pausar / tocar</button>
+          <button class="btn sec" data-cmd="skip">⏭ Pular música</button>
+          <button class="btn sec" data-cmd="restart">⏮ Recomeçar</button>
+          <button class="btn sec" data-cmd="fs">⛶ Tela cheia</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Letra fora do tempo?</h2>
+        <div class="muted" style="margin-bottom:10px">Se a letra aparece <b>antes</b> da voz, toque em “Atrasar”. Se aparece <b>depois</b>, “Adiantar”. Fica salvo para essa música.</div>
+        <div class="ctrl">
+          <button class="btn sec" data-cmd="off-">⏪ Atrasar letra</button>
+          <button class="btn sec" data-cmd="off+">⏩ Adiantar letra</button>
+        </div>
+        <div class="muted" style="text-align:center;margin-top:8px">Ajuste atual: <b id="offTxt">0,0 s</b></div>
+      </div>
+      <div class="card">
+        <h2>Volume da música</h2>
+        <div class="ctrl">
+          <button class="btn sec" data-cmd="vol-">🔉 Mais baixo</button>
+          <button class="btn sec" data-cmd="vol+">🔊 Mais alto</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="tabRank" class="hide">
+      <div class="card"><h2>Placar</h2><div id="rankList"></div></div>
+      <div class="card"><h2>Últimas notas</h2><div id="histList"></div></div>
+    </div>
+  </section>
+
+  <nav id="tabs" class="tabs hide">
+    <button data-tab="tabSongs" class="on"><b>🎵</b>Músicas</button>
+    <button data-tab="tabQueue"><b>📋</b>Fila</button>
+    <button data-tab="tabCtrl"><b>🎛️</b>Controle</button>
+    <button data-tab="tabRank"><b>🏆</b>Placar</button>
+  </nav>
+</div>
+
+<div id="modal" class="modal hide"><div class="sheet" id="sheet"></div></div>
+
+<script src="lib/peerjs.min.js"></script>
+<script src="lib/qrcode.js"></script>
+<script>
+(() => {
+const YT_KEY = 'AIzaSyAJr-f91Okbwdvk2mc-mji6ZazTlRWiLck';
+const PREFIX = 'nabucha-kk-';
+const TESTP = new URLSearchParams(location.search).get('peerhost');
+const PEER_OPTS = TESTP ? { host: TESTP, port: 9000, path: '/', secure: false, debug: 0 } : { debug: 0 };
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ls = { get(k, d) { try { const v = localStorage.getItem('kk_' + k); return v === null ? d : JSON.parse(v); } catch(_) { return d; } },
+             set(k, v) { try { localStorage.setItem('kk_' + k, JSON.stringify(v)); } catch(_) {} } };
+
+// ------------------------- MÚSICAS -------------------------
+const SONGS = [
+  // Modão / sertanejo
+  ['Evidências','Chitãozinho & Xororó','modao'],['Fio de Cabelo','Chitãozinho & Xororó','modao'],
+  ['Estrada da Vida','Milionário & José Rico','modao'],['Chico Mineiro','Tonico & Tinoco','modao'],
+  ['Menino da Porteira','Sérgio Reis','modao'],['Blusa Vermelha','Trio Parada Dura','modao'],
+  ['Telefone Mudo','Trio Parada Dura','modao'],['Pagode em Brasília','Tião Carreiro & Pardinho','modao'],
+  ['Ainda Ontem Chorei de Saudade','João Mineiro & Marciano','modao'],['Entre Tapas e Beijos','Leandro & Leonardo','modao'],
+  ['Pense em Mim','Leandro & Leonardo','modao'],['Talismã','Leonardo','modao'],
+  ['É o Amor','Zezé Di Camargo & Luciano','modao'],['No Dia em que Eu Saí de Casa','Zezé Di Camargo & Luciano','modao'],
+  ['Estou Apaixonado','João Paulo & Daniel','modao'],['Dormi na Praça','Bruno & Marrone','modao'],
+  ['Boate Azul','Bruno & Marrone','modao'],['Saudade','Chrystian & Ralf','modao'],
+  ['Romaria','Renato Teixeira','modao'],['Tocando em Frente','Almir Sater','modao'],
+  ['Cabecinha no Ombro','Paulo Borges','modao'],['Majestade o Sabiá','Roberta Miranda','modao'],
+  // Pop rock nacional
+  ['Tempo Perdido','Legião Urbana','nacional'],['Só os Loucos Sabem','Charlie Brown Jr.','nacional'],
+  ['Garota Nacional','Skank','nacional'],['Epitáfio','Titãs','nacional'],
+  ['Pro Dia Nascer Feliz','Barão Vermelho','nacional'],['Como uma Onda','Lulu Santos','nacional'],
+  ['Fácil','Jota Quest','nacional'],['Meu Erro','Os Paralamas do Sucesso','nacional'],
+  // Internacionais
+  ['Bohemian Rhapsody','Queen','inter'],["Livin' on a Prayer",'Bon Jovi','inter'],
+  ["Sweet Child O' Mine","Guns N' Roses",'inter'],["Don't Stop Believin'",'Journey','inter'],
+  ['Hotel California','Eagles','inter'],['Wonderwall','Oasis','inter'],
+  ["Summer of '69",'Bryan Adams','inter'],['It Must Have Been Love','Roxette','inter'],
+  ['Hey Jude','The Beatles','inter'],["Can't Help Falling in Love",'Elvis Presley','inter'],
+  ["I Don't Want to Miss a Thing",'Aerosmith','inter'],['Wind of Change','Scorpions','inter'],
+  ['Eye of the Tiger','Survivor','inter'],['I Will Survive','Gloria Gaynor','inter'],
+  ['Dancing Queen','ABBA','inter'],['Billie Jean','Michael Jackson','inter'],
+  ['I Will Always Love You','Whitney Houston','inter'],['Total Eclipse of the Heart','Bonnie Tyler','inter'],
+  ['Africa','Toto','inter'],['In the End','Linkin Park','inter'],
+  ['Barbie Girl','Aqua','inter'],
+].map(([title, artist, cat]) => ({ title, artist, cat }));
+const CATS = [['all','Todas'],['modao','🤠 Modão'],['nacional','🇧🇷 Pop rock'],['inter','🌎 Internacionais']];
+
+// ------------------------- LETRAS (LRCLIB) -------------------------
+function parseLRC(lrc) {
+  const out = [];
+  for (const raw of (lrc || '').split(/\r?\n/)) {
+    const tags = [...raw.matchAll(/\[(\d+):(\d+(?:\.\d+)?)\]/g)];
+    if (!tags.length) continue;
+    const text = raw.replace(/\[[^\]]*\]/g, '').trim();
+    for (const m of tags) out.push({ t: +m[1] * 60 + parseFloat(m[2]), text });
+  }
+  return out.sort((a, b) => a.t - b.t);
+}
+async function fetchLyrics(song, durHint) {
+  const norm = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  const urls = [
+    'https://lrclib.net/api/search?track_name=' + encodeURIComponent(song.title) + '&artist_name=' + encodeURIComponent(song.artist.split(/ & | e /)[0]),
+    'https://lrclib.net/api/search?q=' + encodeURIComponent(song.title + ' ' + song.artist),
+  ];
+  for (const u of urls) {
+    try {
+      const r = await fetch(u); if (!r.ok) continue;
+      const list = (await r.json()).filter(x => x.syncedLyrics && !x.instrumental && norm(x.trackName).includes(norm(song.title).slice(0, 8)));
+      if (!list.length) continue;
+      list.sort((a, b) => Math.abs((a.duration || 0) - (durHint || a.duration || 0)) - Math.abs((b.duration || 0) - (durHint || b.duration || 0)));
+      const best = list[0];
+      return { lines: parseLRC(best.syncedLyrics), duration: best.duration };
+    } catch (_) {}
+  }
+  return null;
+}
+
+// ------------------------- YOUTUBE -------------------------
+async function ytSearch(q) {
+  const cacheKey = 'yt_' + q.toLowerCase();
+  const cached = ls.get(cacheKey, null);
+  if (cached) return cached;
+  const u = 'https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&maxResults=6&q=' + encodeURIComponent(q) + '&key=' + YT_KEY;
+  const r = await fetch(u);
+  const j = await r.json();
+  if (j.error) throw new Error(j.error.message || 'YouTube');
+  const res = (j.items || []).map(it => ({ id: it.id.videoId, title: it.snippet.title.replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"'), ch: it.snippet.channelTitle, thumb: it.snippet.thumbnails?.medium?.url }));
+  ls.set(cacheKey, res);
+  return res;
+}
+
+// =========================================================
+// ========================== TV ===========================
+// =========================================================
+function startTV() {
+  document.body.className = 'tv';
+  $('tv').classList.remove('hide');
+  let code = ls.get('room', null);
+  if (!code) { code = Array.from({ length: 4 }, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.floor(Math.random() * 24)]).join(''); ls.set('room', code); }
+  $('tvCode').textContent = code; $('tvCode2').textContent = code;
+  try {
+    const qr = qrcode(0, 'M'); qr.addData('https://nabucha.com.br/karaoke/#sala-' + code); qr.make();
+    $('qr').innerHTML = qr.createImgTag(8, 0);
+  } catch (_) {}
+
+  const conns = new Map();         // peerId -> conn
+  const players = new Map();       // peerId -> {name, total, best, count}
+  let queue = [];                  // {qid, pid, name, song, videoId}
+  let current = null;              // item atual
+  let phase = 'lobby';             // lobby | loading | playing | result
+  let lines = [], offset = 0, history = ls.get('hist', []);
+  let player = null, ytReady = false, unlocked = false, volume = 80;
+  let lastTickSent = 0;
+
+  function snapshot() {
+    return {
+      type: 'state', phase,
+      current: current && { qid: current.qid, pid: current.pid, name: current.name, song: current.song },
+      queue: queue.map(q => ({ qid: q.qid, pid: q.pid, name: q.name, song: q.song })),
+      players: [...players.entries()].map(([pid, p]) => ({ pid, name: p.name, total: p.total, best: p.best, count: p.count, on: conns.has(pid) })),
+      history: history.slice(0, 15), offset,
+    };
+  }
+  function broadcast() {
+    const s = snapshot();
+    for (const c of conns.values()) { try { c.send(s); } catch(_) {} }
+    renderLobby();
+  }
+  function renderLobby() {
+    const ps = [...players.values()];
+    $('tvPlayers').innerHTML = ps.length ? ps.sort((a,b)=>b.total-a.total).map(p => '<div class="it"><span>🎤 ' + esc(p.name) + '</span><b>' + p.total + ' pts</b></div>').join('') : '<div class="empty">Ninguém entrou ainda</div>';
+    $('tvQueue').innerHTML = queue.length ? queue.slice(0, 6).map((q, i) => '<div class="it"><span>' + (i+1) + '. ' + esc(q.song.title) + '</span><span style="color:var(--mut)">' + esc(q.name) + '</span></div>').join('') : '<div class="empty">Escolha uma música no celular</div>';
+  }
+  function msg(html, ms) {
+    $('tvMsg').innerHTML = html; $('tvMsg').classList.remove('hide');
+    if (ms) setTimeout(() => $('tvMsg').classList.add('hide'), ms);
+  }
+  function hideMsg() { $('tvMsg').classList.add('hide'); }
+
+  // ---- conexão ----
+  let peer;
+  function openPeer() {
+    peer = new Peer(PREFIX + code, PEER_OPTS);
+    peer.on('open', () => {});
+    peer.on('error', e => {
+      if (e.type === 'unavailable-id') { // sala presa: gera outro código
+        code = Array.from({ length: 4 }, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.floor(Math.random() * 24)]).join(''); ls.set('room', code);
+        location.reload();
+      }
+    });
+    peer.on('disconnected', () => { try { peer.reconnect(); } catch(_) {} });
+    peer.on('connection', conn => {
+      conn.on('open', () => { conns.set(conn.peer, conn); conn.send(snapshot()); });
+      conn.on('data', d => onData(conn, d));
+      conn.on('close', () => { conns.delete(conn.peer); broadcast(); });
+    });
+  }
+  openPeer();
+
+  function onData(conn, d) {
+    const pid = conn.peer;
+    if (d.type === 'hello') {
+      const p = players.get(pid) || { name: d.name, total: 0, best: 0, count: 0 };
+      p.name = d.name; players.set(pid, p);
+      // mesmo nome reconectando: herda pontos
+      for (const [k, v] of players) if (k !== pid && v.name === d.name && !conns.has(k)) { p.total += v.total; p.best = Math.max(p.best, v.best); p.count += v.count; players.delete(k); queue.forEach(q => { if (q.pid === k) q.pid = pid; }); }
+      broadcast();
+    } else if (d.type === 'add') {
+      const p = players.get(pid); if (!p) return;
+      queue.push({ qid: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), pid, name: p.name, song: d.song, videoId: d.videoId });
+      broadcast();
+      if (phase === 'lobby' && unlocked) next();
+    } else if (d.type === 'remove') {
+      queue = queue.filter(q => q.qid !== d.qid); broadcast();
+    } else if (d.type === 'cmd') {
+      cmd(d.cmd);
+    } else if (d.type === 'score') {
+      if (!current || d.qid !== current.qid || phase !== 'playing') return;
+      finishSong(Math.max(0, Math.min(100, Math.round(d.value))));
+    }
+  }
+
+  function cmd(c) {
+    if (!player || !ytReady) return;
+    if (c === 'pause') { const st = player.getPlayerState(); st === 1 ? player.pauseVideo() : player.playVideo(); }
+    else if (c === 'skip') { if (current) askScoreOrSkip(); }
+    else if (c === 'restart') { player.seekTo(0, true); player.playVideo(); }
+    else if (c === 'off+' || c === 'off-') { offset = Math.round((offset + (c === 'off+' ? .5 : -.5)) * 10) / 10; if (current) ls.set('off_' + current.videoId, offset); broadcast(); }
+    else if (c === 'vol+' || c === 'vol-') { volume = Math.max(10, Math.min(100, volume + (c === 'vol+' ? 10 : -10))); player.setVolume(volume); }
+    else if (c === 'fs') { try { document.documentElement.requestFullscreen(); } catch(_) {} }
+  }
+
+  // ---- YouTube ----
+  window.onYouTubeIframeAPIReady = () => {
+    player = new YT.Player('yt', {
+      width: '100%', height: '100%',
+      playerVars: { autoplay: 0, controls: 0, rel: 0, modestbranding: 1, playsinline: 1, iv_load_policy: 3, disablekb: 1 },
+      events: {
+        onReady: () => { ytReady = true; player.setVolume(volume); },
+        onStateChange: e => { if (e.data === 0 && phase === 'playing') askScoreOrSkip(); },
+        onError: e => { if (phase === 'playing' || phase === 'loading') { msg('<div class="big">😕 Esse vídeo não toca aqui</div><div class="mid">Escolha outro vídeo para essa música no celular</div>', 4000); notify(current?.pid, { type: 'videoError', song: current?.song }); setTimeout(() => endSong(null), 4000); } },
+      },
+    });
+  };
+  const s = document.createElement('script'); s.src = 'https://www.youtube.com/iframe_api'; document.head.appendChild(s);
+
+  $('tvStart').addEventListener('click', () => {
+    unlocked = true;
+    $('tvStart').textContent = '✅ Som liberado! Escolha uma música no celular';
+    $('tvStart').style.background = 'var(--card2)';
+    try { document.documentElement.requestFullscreen(); } catch(_) {}
+    if (queue.length && phase === 'lobby') next();
+  });
+  $('tvStart').focus();
+
+  function notify(pid, obj) { const c = conns.get(pid); if (c) try { c.send(obj); } catch(_) {} }
+
+  async function next() {
+    if (!queue.length) { phase = 'lobby'; current = null; showLobby(); broadcast(); return; }
+    current = queue.shift();
+    phase = 'loading'; lines = [];
+    offset = ls.get('off_' + current.videoId, 0);
+    broadcast();
+    $('tvLobby').classList.add('hide'); $('tvStage').classList.remove('hide');
+    $('tvNow').innerHTML = '🎤 <b>' + esc(current.name) + '</b> · ' + esc(current.song.title) + ' — ' + esc(current.song.artist);
+    msg('<div class="mid">Agora é a vez de</div><div class="big">🎤 ' + esc(current.name) + '</div><div class="mid">' + esc(current.song.title) + ' — ' + esc(current.song.artist) + '</div><div class="mid" style="font-size:2.6vh">Carregando a letra…</div>');
+    $('lyrPrev').textContent = ''; $('lyrCur').textContent = ''; $('lyrNext').textContent = '';
+    const lyr = await fetchLyrics(current.song, null);
+    lines = lyr ? lyr.lines : [];
+    if (!lines.length) $('lyrNext').textContent = 'Letra sincronizada não encontrada para essa música — solta a voz assim mesmo! 🎶';
+    await new Promise(r => setTimeout(r, 2500));
+    if (!ytReady) await new Promise(r => { const iv = setInterval(() => { if (ytReady) { clearInterval(iv); r(); } }, 200); });
+    hideMsg();
+    phase = 'playing'; broadcast();
+    player.loadVideoById(current.videoId);
+    player.setVolume(volume);
+    notify(current.pid, { type: 'yourTurn', qid: current.qid });
+  }
+
+  function askScoreOrSkip() {
+    if (!current) return;
+    const c = conns.get(current.pid);
+    if (c) { try { c.send({ type: 'final', qid: current.qid }); } catch(_) {} setTimeout(() => { if (phase === 'playing' && current) finishSong(null); }, 2500); }
+    else finishSong(null);
+  }
+  function finishSong(score) {
+    if (phase !== 'playing') return;
+    phase = 'result';
+    try { player.stopVideo(); } catch(_) {}
+    if (score !== null && current) {
+      const p = players.get(current.pid);
+      if (p) { p.total += score; p.best = Math.max(p.best, score); p.count++; }
+      history.unshift({ name: current.name, title: current.song.title, score }); history = history.slice(0, 30); ls.set('hist', history);
+      const face = score >= 90 ? '🤩 Arrasou!' : score >= 75 ? '😎 Mandou bem!' : score >= 55 ? '🙂 Foi bem!' : '😅 Bora treinar!';
+      msg('<div class="mid">' + esc(current.name) + ' fez</div><div class="score">' + score + '</div><div class="big">' + face + '</div>');
+    } else {
+      msg('<div class="big">⏭ Próxima!</div>');
+    }
+    broadcast();
+    setTimeout(() => endSong(), score !== null ? 6000 : 1500);
+  }
+  function endSong() { hideMsg(); current = null; phase = 'lobby'; next(); }
+  function showLobby() { $('tvStage').classList.add('hide'); $('tvLobby').classList.remove('hide'); try { player.stopVideo(); } catch(_) {} }
+
+  // ---- letra sincronizada ----
+  function frame() {
+    requestAnimationFrame(frame);
+    if (phase !== 'playing' || !player || !ytReady || !lines.length) return;
+    let t;
+    try { t = player.getCurrentTime() + offset; } catch(_) { return; }
+    let i = -1;
+    for (let k = 0; k < lines.length; k++) { if (lines[k].t <= t) i = k; else break; }
+    const cur = lines[i], nxt = lines[i + 1];
+    const curTxt = cur ? (cur.text || '♪ ♪ ♪') : (lines[0] ? '♪ prepare-se… ♪' : '');
+    if ($('lyrCur').textContent !== curTxt) {
+      $('lyrCur').textContent = curTxt;
+      $('lyrPrev').textContent = (lines[i - 1] && lines[i - 1].text) || '';
+      $('lyrNext').textContent = nxt ? (nxt.text || '') : '';
+    }
+    let p = 0, active = false;
+    if (cur && cur.text) {
+      const end = nxt ? nxt.t : cur.t + 5;
+      p = Math.min(1, (t - cur.t) / Math.max(.5, (end - cur.t) * .9));
+      active = t < end - .2;
+    } else if (!cur && lines[0]) {
+      p = 0;
+    }
+    $('lyrCur').style.setProperty('--p', (p * 100).toFixed(1) + '%');
+    const now = performance.now();
+    if (now - lastTickSent > 250 && current) {
+      lastTickSent = now;
+      const st = player.getPlayerState();
+      notify(current.pid, { type: 'tick', qid: current.qid, active: active && st === 1 });
+    }
+  }
+  requestAnimationFrame(frame);
+  renderLobby();
+}
+
+// =========================================================
+// ======================== CELULAR ========================
+// =========================================================
+function startPhone() {
+  document.body.className = 'phone';
+  $('phone').classList.remove('hide');
+  const m = location.hash.match(/sala-([A-Z]{4})/i);
+  $('jName').value = ls.get('name', '');
+  $('jCode').value = m ? m[1].toUpperCase() : ls.get('code', '');
+
+  let peer = null, conn = null, state = null, myId = null, wantCode = null, retry = null;
+  const err = t => { $('pErr').textContent = t; $('pErr').classList.toggle('hide', !t); };
+  const setConn = (ok, t) => { $('conn').textContent = t; $('conn').classList.toggle('ok', ok); };
+
+  $('jGo').addEventListener('click', join);
+  async function join() {
+    const name = $('jName').value.trim(), code = $('jCode').value.trim().toUpperCase();
+    if (!name) return err('Digite seu nome.');
+    if (!/^[A-Z]{4}$/.test(code)) return err('O código tem 4 letras e aparece na TV.');
+    err(''); ls.set('name', name); ls.set('code', code); wantCode = code;
+    $('jGo').disabled = true; $('jGo').textContent = 'Conectando…';
+    connect(name, code);
+  }
+  function connect(name, code) {
+    if (!peer || peer.destroyed) {
+      peer = new Peer(PEER_OPTS);
+      peer.on('open', id => { myId = id; dial(name, code); });
+      peer.on('error', e => {
+        if (e.type === 'peer-unavailable') { err('Não achei a sala ' + code + '. Confira o código na TV e se a TV está com a página aberta.'); resetJoin(); }
+        else if (e.type === 'network' || e.type === 'server-error' || e.type === 'socket-error') { setConn(false, 'sem conexão'); scheduleRetry(name, code); }
+      });
+      peer.on('disconnected', () => { try { peer.reconnect(); } catch(_) {} });
+    } else dial(name, code);
+  }
+  function dial(name, code) {
+    conn = peer.connect(PREFIX + code, { reliable: true });
+    const to = setTimeout(() => { if (!conn.open) { err('A TV não respondeu. Confira se a página da TV está aberta.'); resetJoin(); } }, 12000);
+    conn.on('open', () => {
+      clearTimeout(to); err('');
+      conn.send({ type: 'hello', name });
+      setConn(true, '● sala ' + code);
+      $('pJoin').classList.add('hide'); $('pApp').classList.remove('hide'); $('tabs').classList.remove('hide');
+    });
+    conn.on('data', onData);
+    conn.on('close', () => { setConn(false, 'reconectando…'); scheduleRetry(name, code); });
+  }
+  function scheduleRetry(name, code) { clearTimeout(retry); retry = setTimeout(() => connect(name, code), 2500); }
+  function resetJoin() { $('jGo').disabled = false; $('jGo').textContent = 'Entrar'; }
+  const send = o => { if (conn && conn.open) conn.send(o); else err('Sem conexão com a TV. Tentando de novo…'); };
+
+  // ---- abas ----
+  document.querySelectorAll('#tabs button').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x === b));
+    ['tabSongs','tabQueue','tabCtrl','tabRank'].forEach(t => $(t).classList.toggle('hide', t !== b.dataset.tab));
+    window.scrollTo(0, 0);
+  }));
+
+  // ---- lista de músicas ----
+  let cat = 'all';
+  $('cats').innerHTML = CATS.map(([k, t]) => '<button data-c="' + k + '"' + (k === 'all' ? ' class="on"' : '') + '>' + t + '</button>').join('');
+  $('cats').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; cat = b.dataset.c; [...$('cats').children].forEach(x => x.classList.toggle('on', x === b)); renderSongs(); });
+  $('sFind').addEventListener('input', renderSongs);
+  const norm = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  function renderSongs() {
+    const q = norm($('sFind').value.trim());
+    const list = SONGS.filter(s => (cat === 'all' || s.cat === cat) && (!q || norm(s.title + ' ' + s.artist).includes(q)));
+    $('songList').innerHTML = list.map(s => '<div class="song"><div class="t"><b>' + esc(s.title) + '</b><span>' + esc(s.artist) + '</span></div><button data-i="' + SONGS.indexOf(s) + '">Cantar</button></div>').join('') || '<div class="muted" style="padding:8px 0">Nenhuma música da lista com esse nome.</div>';
+    $('otherBox').classList.toggle('hide', !q);
+    $('otherQ').textContent = $('sFind').value.trim();
+  }
+  $('songList').addEventListener('click', e => { const b = e.target.closest('button[data-i]'); if (b) pickVideo(SONGS[+b.dataset.i]); });
+  $('otherGo').addEventListener('click', () => {
+    const raw = $('sFind').value.trim(); if (!raw) return;
+    const parts = raw.split(/ - | – /);
+    pickVideo({ title: parts[0].trim(), artist: (parts[1] || '').trim(), cat: 'busca', free: true });
+  });
+  renderSongs();
+
+  // ---- escolher vídeo ----
+  function closeModal() { $('modal').classList.add('hide'); }
+  $('modal').addEventListener('click', e => { if (e.target === $('modal')) closeModal(); });
+  async function pickVideo(song, kind = 'playback') {
+    $('modal').classList.remove('hide');
+    $('sheet').innerHTML = '<h3>' + esc(song.title) + '</h3><div class="muted" style="margin-bottom:12px">' + esc(song.artist) + '</div><div class="muted">Procurando vídeos…</div>';
+    const q = (song.title + ' ' + song.artist + ' ' + (kind === 'playback' ? 'playback' : kind === 'karaoke' ? 'karaoke' : '')).trim();
+    let vids;
+    try { vids = await ytSearch(q); }
+    catch (e) { $('sheet').innerHTML = '<h3>Não consegui buscar no YouTube</h3><div class="muted" style="margin:10px 0">' + esc(e.message) + '</div><button class="btn sec" id="mClose">Fechar</button>'; $('mClose').onclick = closeModal; return; }
+    const kinds = [['playback','🎼 Playback (sem voz)'],['karaoke','🎤 Karaokê'],['original','🎵 Original']];
+    $('sheet').innerHTML =
+      '<h3>' + esc(song.title) + '</h3><div class="muted" style="margin-bottom:10px">' + esc(song.artist) + ' · escolha o vídeo que vai tocar na TV</div>' +
+      '<div class="cats">' + kinds.map(([k, t]) => '<button data-k="' + k + '"' + (k === kind ? ' class="on"' : '') + '>' + t + '</button>').join('') + '</div>' +
+      '<div class="muted" style="margin-bottom:10px">Dica: prefira <b>playback</b> — o vídeo sem voz, só a música. Evite vídeos que já têm letra escrita, para não ficar duas letras na tela.</div>' +
+      '<div class="vids">' + (vids.map((v, i) => '<button class="vid" data-v="' + i + '">' + (v.thumb ? '<img src="' + esc(v.thumb) + '" alt="">' : '') + '<div>' + esc(v.title) + '</div></button>').join('') || '<div class="muted">Nada encontrado.</div>') + '</div>' +
+      '<button class="btn sec" id="mClose" style="margin-top:12px">Cancelar</button>';
+    $('mClose').onclick = closeModal;
+    $('sheet').querySelectorAll('.cats button').forEach(b => b.onclick = () => pickVideo(song, b.dataset.k));
+    $('sheet').querySelectorAll('.vid').forEach(b => b.onclick = () => {
+      const v = vids[+b.dataset.v];
+      send({ type: 'add', song: { title: song.title, artist: song.artist || v.ch }, videoId: v.id });
+      closeModal();
+      toast('✅ “' + song.title + '” entrou na fila!');
+    });
+  }
+  function toast(t) {
+    const d = document.createElement('div');
+    d.textContent = t;
+    d.style.cssText = 'position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:#22c55e;color:#052e12;font-weight:700;padding:12px 18px;border-radius:14px;z-index:20;max-width:90%;text-align:center';
+    document.body.appendChild(d); setTimeout(() => d.remove(), 2600);
+  }
+
+  // ---- controle ----
+  $('tabCtrl').addEventListener('click', e => { const b = e.target.closest('button[data-cmd]'); if (b) { send({ type: 'cmd', cmd: b.dataset.cmd }); navigator.vibrate?.(20); } });
+
+  // ---- estado vindo da TV ----
+  function onData(d) {
+    if (d.type === 'state') { state = d; render(); }
+    else if (d.type === 'yourTurn') startSinging(d.qid);
+    else if (d.type === 'tick') onTick(d);
+    else if (d.type === 'final') { const sc = stopSinging(); send({ type: 'score', qid: d.qid, value: sc }); }
+    else if (d.type === 'videoError') { stopSinging(); toast('😕 Esse vídeo não toca na TV. Escolha outro.'); if (d.song) pickVideo(d.song); }
+  }
+  function render() {
+    if (!state) return;
+    const c = state.current;
+    $('nowTxt').innerHTML = c ? '<b style="font-size:1.1rem;color:#fff">' + esc(c.song.title) + '</b><br>' + esc(c.song.artist) + ' · 🎤 ' + esc(c.name) : 'Nada tocando. Escolha uma música!';
+    $('qList').innerHTML = state.queue.length ? state.queue.map((q, i) => '<div class="q"><div class="n">' + (i + 1) + '</div><div class="t">' + esc(q.song.title) + '<span>' + esc(q.song.artist) + ' · 🎤 ' + esc(q.name) + '</span></div>' + (q.pid === myId ? '<button data-rm="' + q.qid + '">✕</button>' : '') + '</div>').join('') : '<div class="muted">Fila vazia.</div>';
+    $('rankList').innerHTML = state.players.length ? [...state.players].sort((a, b) => b.total - a.total).map((p, i) => '<div class="rank"><span>' + (['🥇','🥈','🥉'][i] || '🎤') + ' ' + esc(p.name) + (p.pid === myId ? ' (você)' : '') + '</span><b>' + p.total + ' pts</b></div>').join('') : '<div class="muted">Ninguém pontuou ainda.</div>';
+    $('histList').innerHTML = state.history.length ? state.history.map(h => '<div class="rank"><span>' + esc(h.name) + ' · ' + esc(h.title) + '</span><b>' + h.score + '</b></div>').join('') : '<div class="muted">Ainda sem notas.</div>';
+    $('offTxt').textContent = (state.offset > 0 ? '+' : '') + String(state.offset).replace('.', ',') + ' s';
+  }
+  $('qList').addEventListener('click', e => { const b = e.target.closest('button[data-rm]'); if (b) send({ type: 'remove', qid: b.dataset.rm }); });
+
+  // ---- pontuação pelo microfone ----
+  let mic = null, actx = null, an = null, buf = null, singing = null, loopT = null, lastTick = { active: false, at: 0 }, wake = null;
+  async function startSinging(qid) {
+    singing = { qid, activeFrames: 0, voicedActive: 0, stab: 0, lastPitch: 0 };
+    $('myTurn').classList.remove('hide');
+    document.querySelector('#tabs button[data-tab="tabSongs"]').click();
+    navigator.vibrate?.([80, 60, 80]);
+    try { wake = await navigator.wakeLock?.request('screen'); } catch(_) {}
+    try {
+      mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+      actx = new (window.AudioContext || window.webkitAudioContext)();
+      const src = actx.createMediaStreamSource(mic);
+      an = actx.createAnalyser(); an.fftSize = 2048; buf = new Float32Array(an.fftSize);
+      src.connect(an);
+      loopT = setInterval(analyse, 100);
+      $('myHint').textContent = 'Cante perto do celular. Sua nota vai sendo calculada.';
+    } catch (e) {
+      $('myHint').textContent = 'Sem microfone: permita o acesso ao microfone para valer pontos.';
+    }
+  }
+  function onTick(d) { if (singing && d.qid === singing.qid) lastTick = { active: d.active, at: performance.now() }; }
+  function detectPitch() {
+    an.getFloatTimeDomainData(buf);
+    let rms = 0; for (let i = 0; i < buf.length; i++) rms += buf[i] * buf[i]; rms = Math.sqrt(rms / buf.length);
+    if (rms < 0.02) return { rms, f: 0 };
+    const sr = actx.sampleRate, minLag = Math.floor(sr / 1000), maxLag = Math.floor(sr / 70);
+    let best = 0, bestLag = 0, n0 = 0;
+    for (let i = 0; i < buf.length - maxLag; i++) n0 += buf[i] * buf[i];
+    for (let lag = minLag; lag <= maxLag; lag++) {
+      let s = 0; for (let i = 0; i < buf.length - maxLag; i++) s += buf[i] * buf[i + lag];
+      const c = s / (n0 || 1); if (c > best) { best = c; bestLag = lag; }
+    }
+    return { rms, f: best > 0.55 ? sr / bestLag : 0 };
+  }
+  function analyse() {
+    if (!singing || !an) return;
+    const { rms, f } = detectPitch();
+    $('myMeter').style.width = Math.min(100, rms * 600) + '%';
+    const active = lastTick.active && performance.now() - lastTick.at < 800;
+    if (active) {
+      singing.activeFrames++;
+      if (f) {
+        singing.voicedActive++;
+        if (singing.lastPitch) {
+          const cents = Math.abs(1200 * Math.log2(f / singing.lastPitch));
+          const c = cents > 600 ? cents % 1200 : cents; // perdoa saltos de oitava
+          singing.stab += Math.max(0, 1 - Math.min(c, 1200 - c) / 180);
+        }
+        singing.lastPitch = f;
+      }
+    }
+    $('myLive').textContent = currentScore();
+  }
+  function currentScore() {
+    if (!singing || singing.activeFrames < 5) return 0;
+    const pres = Math.min(1, singing.voicedActive / (singing.activeFrames * 0.75));
+    const stab = singing.voicedActive ? singing.stab / singing.voicedActive : 0;
+    return Math.round(20 + 50 * pres + 30 * stab * pres);
+  }
+  function stopSinging() {
+    const sc = singing ? currentScore() : 0;
+    singing = null; clearInterval(loopT);
+    try { mic && mic.getTracks().forEach(t => t.stop()); } catch(_) {}
+    try { actx && actx.close(); } catch(_) {}
+    try { wake && wake.release(); } catch(_) {}
+    mic = actx = an = null;
+    $('myTurn').classList.add('hide');
+    return sc;
+  }
+
+  if ($('jName').value && $('jCode').value && m) join();
+}
+
+// ------------------------- INÍCIO -------------------------
+if (/^#tv/i.test(location.hash)) startTV(); else startPhone();
+})();
+</script>
+</body>
+</html>
