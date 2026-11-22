@@ -42,3 +42,20 @@ Sons reais da coleção [mod-sounds](https://github.com/AntumMT/mod-sounds) (Ant
 | pum1–pum12.mp3 | https://github.com/3mta3/farts | não informada (usado a pedido do dono do site) |
 | arroto1.mp3 | https://github.com/replit/kaboom (src/assets/burp.mp3) | MIT (repositório) |
 | arroto2.mp3 | https://github.com/sonic-pi-net/sonic-pi (etc/samples/misc_burp.flac) | CC0 |
+
+## Susto
+
+| Arquivo | Autor | Licença |
+|---|---|---|
+| lobo_bravo.mp3 | newagesoup | CC BY 3.0 |
+| tigre_bravo.mp3 | schots | CC0 |
+| gorila_bravo.mp3 | (ver mod-sounds) | CC0 |
+| zumbi1–3.mp3 | Under7dude | CC0 |
+| fantasma1–2.mp3 | BlockMen | CC BY-SA 3.0 |
+| risada2.mp3 | AntumDeluge | CC0 |
+| porta_range.mp3 | Jonathan Shaw (InspectorJ) | CC BY 3.0 |
+| porta_bate.mp3 | Patrick Hunt | CC0 |
+| arvore_range.mp3 | Department64 | CC0 |
+| trovao1.mp3 | bajko | CC0 |
+| trovao2.mp3 | Josh74000MC | CC0 |
+| cobra.mp3 | U.S. Fish & Wildlife Service | CC0 |

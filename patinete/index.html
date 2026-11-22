@@ -186,6 +186,23 @@
   </section>
 
 
+  <!-- MEUS SONS -->
+  <section class="card">
+    <h2>Meus sons</h2>
+    <div id="sfxMeus" class="sfx"></div>
+    <div id="meusEmpty" class="empty" style="padding-top:2px">Coloque aqui qualquer áudio do seu celular: sirene, cachorro chorando, um áudio do WhatsApp… Fica guardado só neste celular.</div>
+    <label class="btn" style="margin-top:10px;background:var(--card2);border:1px dashed var(--line);cursor:pointer">➕ Adicionar meu som<input id="meuFile" type="file" accept="audio/*,.mp3,.m4a,.ogg,.wav,.opus,.aac" style="display:none"></label>
+    <div id="meuNameBox" class="draft" style="margin-top:12px">
+      <input id="meuName" type="text" maxlength="20" placeholder="Nome do som (ex.: Sirene)">
+      <div class="row"><button id="meuSave" class="btn green">💾 Salvar som</button><button id="meuCancel" class="btn ghost">Cancelar</button></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Susto 👻</h2>
+    <div id="sfxSusto" class="sfx"></div>
+  </section>
+
   <!-- SONS ENGRAÇADOS -->
   <section class="card">
     <h2>Pum e arroto</h2>
@@ -235,6 +252,7 @@
     • Có có: www.bonson.ca (CC BY 3.0)<br>
     • Hiena rindo: Mathevon N., Koralek A., Weldele M., Glickman S. &amp; Theunissen F. (CC BY 2.0)<br>
     Pum: coleção “So Many Farts” (github.com/3mta3/farts), sem licença informada. Arrotos: Kaboom.js (Replit, MIT) e Sonic Pi (CC0).<br>
+    Susto: lobo bravo (newagesoup, CC BY 3.0), porta rangendo (InspectorJ, CC BY 3.0), fantasmas (BlockMen, CC BY-SA 3.0); os demais CC0.<br>
     Lista completa: <a href="sons/CREDITOS.md" style="color:var(--mut)">sons/CREDITOS.md</a>
   </details>
 </div>
@@ -412,6 +430,13 @@
     ['arroto1','🤢','Arroto'],['arroto2','🤢','Arroto 2'],
     ['arroto1','🫃','Arrotão',0.7],['arroto2','🫃','Arrotão 2',0.7],['arroto1','🐭','Arrotinho',1.5],['pum3','🐘','Pum gigante',0.6],
   ];
+  const SUSTO = [
+    ['lobo_bravo','🐺','Lobo bravo'],['tigre_bravo','🐯','Tigre bravo'],['gorila_bravo','🦍','Gorila bravo'],
+    ['zumbi1','🧟','Zumbi'],['zumbi2','🧟','Zumbi 2'],['zumbi3','🧟','Zumbi 3'],
+    ['fantasma1','👻','Fantasma'],['fantasma2','👻','Fantasma 2'],['risada2','😈','Risada sinistra'],
+    ['porta_range','🚪','Porta rangendo'],['porta_bate','✊','Batendo na porta'],['arvore_range','🌳','Árvore rangendo'],
+    ['trovao1','⛈️','Trovão'],['trovao2','⛈️','Trovão 2'],['cobra','🐍','Cascavel'],
+  ];
   const ENGRACADOS = [
     ['boing','🦘','Boing'],['brinquedo','🧸','Fiu-fiu'],['fonfon','📯','Fon fon'],['buzina','🚗','Buzina'],
     ['balao','🎈','Balão'],['apito','😙','Apito'],['risada','😈','Risada'],['vomito','🤮','Blééé'],
@@ -450,11 +475,12 @@
   makeSfxGrid(BICHOS, $('sfxBichos'));
   makeSfxGrid(ENGRACADOS, $('sfxEngr'));
   makeSfxGrid(PUNS, $('sfxPum'));
+  makeSfxGrid(SUSTO, $('sfxSusto'));
   // pré-carrega em segundo plano depois do primeiro toque (para funcionar sem atraso)
   document.addEventListener('pointerdown', async function pre() {
     document.removeEventListener('pointerdown', pre);
     await ensureAudio();
-    for (const [id] of [...PUNS, ...BICHOS, ...ENGRACADOS]) { try { await loadSfx(id); } catch(_) {} }
+    for (const [id] of [...PUNS, ...SUSTO, ...BICHOS, ...ENGRACADOS]) { try { await loadSfx(id); } catch(_) {} }
   });
 
   function bellAt(t0) {
@@ -691,14 +717,17 @@
   function dbOpen() {
     return new Promise(res => {
       try {
-        const r = indexedDB.open('fala-patinete', 1);
-        r.onupgradeneeded = () => r.result.createObjectStore('recados', { keyPath: 'id' });
+        const r = indexedDB.open('fala-patinete', 2);
+        r.onupgradeneeded = () => { const d = r.result; if (!d.objectStoreNames.contains('recados')) d.createObjectStore('recados', { keyPath: 'id' }); if (!d.objectStoreNames.contains('sons')) d.createObjectStore('sons', { keyPath: 'id' }); };
         r.onsuccess = () => { db = r.result; res(); };
         r.onerror = () => res();
       } catch (e) { res(); }
     });
   }
-  const tx = (m) => db.transaction('recados', m).objectStore('recados');
+  const tx = (m, store = 'recados') => db.transaction(store, m).objectStore(store);
+  const sAll = () => new Promise(res => { if (!db) return res([]); try { const q = tx('readonly','sons').getAll(); q.onsuccess = () => res(q.result || []); q.onerror = () => res([]); } catch(_) { res([]); } });
+  const sPut = it => new Promise(res => { if (!db) return res(); const q = tx('readwrite','sons').put(it); q.onsuccess = q.onerror = () => res(); });
+  const sDel = id => new Promise(res => { if (!db) return res(); const q = tx('readwrite','sons').delete(id); q.onsuccess = q.onerror = () => res(); });
   function dbAll() { return new Promise(res => { if (!db) return res([]); const q = tx('readonly').getAll(); q.onsuccess = () => res(q.result || []); q.onerror = () => res([]); }); }
   function dbPut(it) { return new Promise(res => { if (!db) return res(); const q = tx('readwrite').put(it); q.onsuccess = q.onerror = () => res(); }); }
   function dbDel(id) { return new Promise(res => { if (!db) return res(); const q = tx('readwrite').delete(id); q.onsuccess = q.onerror = () => res(); }); }
@@ -714,6 +743,65 @@
     if (document.visibilityState === 'hidden') { pttUp(); if (mode === 'recording') stopRec(); }
   });
 
+  // ---------- Meus sons (importados do celular) ----------
+  let meus = [], pendingFile = null;
+  const meuCache = {};
+  $('meuFile').addEventListener('change', e => {
+    const f = e.target.files[0]; e.target.value = '';
+    if (!f) return;
+    if (f.size > 8 * 1024 * 1024) { showErr('Esse arquivo é muito grande (máx. 8 MB). Escolha um áudio mais curto.'); return; }
+    pendingFile = f;
+    $('meuName').value = f.name.replace(/\.[^.]+$/, '').slice(0, 20);
+    $('meuNameBox').classList.add('show');
+    $('meuName').focus();
+  });
+  $('meuCancel').addEventListener('click', () => { pendingFile = null; $('meuNameBox').classList.remove('show'); });
+  $('meuSave').addEventListener('click', async () => {
+    if (!pendingFile) return;
+    await ensureAudio();
+    const blob = pendingFile;
+    try { await ctx.decodeAudioData(await blob.arrayBuffer()); }
+    catch (e) { showErr('Não consegui abrir esse áudio. Tente outro formato (MP3 funciona em todos os celulares).'); return; }
+    hideErr();
+    const item = { id: Date.now().toString(36), name: $('meuName').value.trim() || ('Som ' + (meus.length + 1)), blob };
+    meus.push(item); await sPut(item);
+    pendingFile = null; $('meuNameBox').classList.remove('show');
+    renderMeus();
+  });
+  function renderMeus() {
+    const g = $('sfxMeus'); g.innerHTML = '';
+    $('meusEmpty').style.display = meus.length ? 'none' : 'block';
+    meus.forEach(item => {
+      const b = document.createElement('button');
+      b.style.position = 'relative';
+      b.innerHTML = '<b>🔊</b><span class="nm"></span><span class="x" style="position:absolute;top:2px;right:6px;color:var(--mut);font-size:.9rem">✕</span>';
+      b.querySelector('.nm').textContent = item.name;
+      b.addEventListener('click', async e => {
+        if (e.target.classList.contains('x')) {
+          if (b.dataset.arm) { meus = meus.filter(m => m.id !== item.id); await sDel(item.id); renderMeus(); }
+          else { b.dataset.arm = 1; b.querySelector('.x').textContent = 'apagar?'; b.querySelector('.x').style.color = 'var(--red)'; setTimeout(() => { if (b.isConnected) { delete b.dataset.arm; b.querySelector('.x').textContent = '✕'; b.querySelector('.x').style.color = 'var(--mut)'; } }, 2500); }
+          return;
+        }
+        if (mode === 'recording') return;
+        await ensureAudio();
+        b.classList.add('hit');
+        try {
+          if (!meuCache[item.id]) {
+            const buf = await ctx.decodeAudioData(await item.blob.arrayBuffer());
+            let peak = 0; const d = buf.getChannelData(0); for (let i = 0; i < d.length; i += 2) { const v = Math.abs(d[i]); if (v > peak) peak = v; }
+            meuCache[item.id] = { buf, norm: peak > 0 ? Math.min(6, 0.95 / peak) : 1 };
+          }
+          const { buf, norm } = meuCache[item.id];
+          const src = ctx.createBufferSource(); src.buffer = buf;
+          const g = ctx.createGain(); g.gain.value = norm;
+          src.connect(g).connect(sfxBus); src.start();
+          src.onended = () => b.classList.remove('hit');
+        } catch (_) { b.classList.remove('hit'); showErr('Não consegui tocar esse som.'); }
+      });
+      g.appendChild(b);
+    });
+  }
+
   // ---------- Início ----------
   (async () => {
     const v = load('vol'); if (v) $('vol').value = v;
@@ -722,6 +810,8 @@
     await dbOpen();
     saved = (await dbAll()).sort((a, b) => a.id.localeCompare(b.id));
     renderSaved();
+    meus = (await sAll()).sort((a, b) => a.id.localeCompare(b.id));
+    renderMeus();
     if (!navigator.mediaDevices?.getUserMedia) showErr('Abra esta página pelo endereço https (nabucha.com.br/patinete) no Chrome ou Safari.');
   })();
 })();
