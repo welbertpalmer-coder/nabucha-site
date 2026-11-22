@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Fala Patinete</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --txt:#f1f5f9; --mut:#94a3b8; --pri:#22c55e; --red:#ef4444; --blu:#3b82f6; --yel:#f59e0b; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; font-family:system-ui,-apple-system,sans-serif; background:var(--bg); color:var(--txt); min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:20px 16px 40px; user-select:none; }
+  h1 { font-size:1.4rem; margin:4px 0 2px; }
+  .sub { color:var(--mut); font-size:.9rem; margin-bottom:18px; text-align:center; }
+  .card { background:var(--card); border-radius:18px; padding:18px; width:100%; max-width:420px; margin-bottom:14px; }
+  .card h2 { font-size:1rem; margin:0 0 6px; }
+  .card p { color:var(--mut); font-size:.85rem; margin:0 0 14px; }
+  .big { width:100%; border:none; border-radius:999px; padding:26px 0; font-size:1.2rem; font-weight:700; color:#fff; background:var(--pri); touch-action:none; transition:transform .1s, background .2s; }
+  .big:active { transform:scale(.97); }
+  .big.on { background:var(--red); box-shadow:0 0 0 8px rgba(239,68,68,.25); }
+  .row { display:flex; gap:10px; }
+  .btn { flex:1; border:none; border-radius:14px; padding:16px 0; font-size:1rem; font-weight:600; color:#fff; }
+  .rec { background:var(--red); } .play { background:var(--blu); } .bell { background:var(--yel); color:#111; }
+  .btn:disabled { opacity:.4; }
+  label { font-size:.85rem; color:var(--mut); display:block; margin-bottom:6px; }
+  input[type=range] { width:100%; }
+  #status { color:var(--mut); font-size:.85rem; text-align:center; min-height:1.2em; margin-top:4px; }
+  .meter { height:8px; background:#334155; border-radius:4px; overflow:hidden; margin-top:12px; }
+  .meter div { height:100%; width:0; background:var(--pri); transition:width .05s; }
+  .tips { font-size:.8rem; color:var(--mut); line-height:1.5; }
+</style>
+</head>
+<body>
+  <h1>🛴 Fala Patinete</h1>
+  <div class="sub">Conecte o celular no Bluetooth do patinete e fale com ela</div>
+
+  <div class="card">
+    <h2>🎙️ Falar ao vivo</h2>
+    <p>Segure o botão e fale. Solte para parar.</p>
+    <button id="ptt" class="big">Segure para falar</button>
+    <div class="meter"><div id="lvl"></div></div>
+  </div>
+
+  <div class="card">
+    <h2>📼 Gravar recado</h2>
+    <p>Grave de perto e toque quando quiser. Não dá microfonia.</p>
+    <div class="row">
+      <button id="rec" class="btn rec">● Gravar</button>
+      <button id="play" class="btn play" disabled>▶ Tocar</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🔔 Chamar atenção</h2>
+    <p>Toca um "plim-plim" antes de você falar.</p>
+    <button id="bell" class="btn bell" style="width:100%">Plim-plim!</button>
+  </div>
+
+  <div class="card">
+    <label for="vol">Volume do app</label>
+    <input id="vol" type="range" min="0" max="3" step="0.1" value="1.5">
+    <div id="status">Toque em qualquer botão para liberar o microfone.</div>
+  </div>
+
+  <div class="card tips">
+    <b>Dicas</b><br>
+    • Volume do celular e do patinete no máximo.<br>
+    • Se apitar (microfonia), afaste-se do patinete ou baixe o volume.<br>
+    • O Bluetooth alcança uns 10 metros.
+  </div>
+
+<script>
+let ctx, stream, micSrc, gain, analyser, liveOn = false;
+let recorder, chunks = [], recURL = null, recording = false;
+const $ = id => document.getElementById(id);
+const status = t => $('status').textContent = t;
+
+async function setup() {
+  if (ctx) { if (ctx.state === 'suspended') await ctx.resume(); return true; }
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+  } catch (e) {
+    status('Não consegui acessar o microfone. Permita o acesso e abra a página por um endereço https.');
+    return false;
+  }
+  ctx = new (window.AudioContext || window.webkitAudioContext)();
+  micSrc = ctx.createMediaStreamSource(stream);
+  gain = ctx.createGain(); gain.gain.value = 0;
+  analyser = ctx.createAnalyser(); analyser.fftSize = 256;
+  micSrc.connect(analyser);
+  micSrc.connect(gain).connect(ctx.destination);
+  meter();
+  status('Pronto! Microfone liberado.');
+  return true;
+}
+
+function meter() {
+  const d = new Uint8Array(analyser.frequencyBinCount);
+  (function loop() {
+    analyser.getByteTimeDomainData(d);
+    let m = 0; for (const v of d) m = Math.max(m, Math.abs(v - 128));
+    $('lvl').style.width = (liveOn || recording ? Math.min(100, m * 1.6) : 0) + '%';
+    requestAnimationFrame(loop);
+  })();
+}
+
+const vol = () => parseFloat($('vol').value);
+$('vol').oninput = () => { if (gain && liveOn) gain.gain.value = vol(); };
+
+async function startLive(e) {
+  e.preventDefault();
+  if (!(await setup())) return;
+  liveOn = true;
+  gain.gain.setTargetAtTime(vol(), ctx.currentTime, 0.02);
+  $('ptt').classList.add('on'); $('ptt').textContent = '🔴 Falando...';
+}
+function stopLive() {
+  if (!liveOn) return;
+  liveOn = false;
+  gain.gain.setTargetAtTime(0, ctx.currentTime, 0.02);
+  $('ptt').classList.remove('on'); $('ptt').textContent = 'Segure para falar';
+}
+const p = $('ptt');
+p.addEventListener('pointerdown', startLive);
+['pointerup','pointerleave','pointercancel'].forEach(ev => p.addEventListener(ev, stopLive));
+p.addEventListener('contextmenu', e => e.preventDefault());
+
+$('rec').onclick = async () => {
+  if (!(await setup())) return;
+  if (!recording) {
+    chunks = [];
+    try { recorder = new MediaRecorder(stream); } catch (e) { status('Gravação não suportada neste navegador.'); return; }
+    recorder.ondataavailable = ev => chunks.push(ev.data);
+    recorder.onstop = () => {
+      if (recURL) URL.revokeObjectURL(recURL);
+      recURL = URL.createObjectURL(new Blob(chunks, { type: recorder.mimeType }));
+      $('play').disabled = false;
+      status('Recado gravado. Toque ▶ para mandar.');
+    };
+    recorder.start(); recording = true;
+    $('rec').textContent = '■ Parar'; status('Gravando...');
+  } else {
+    recorder.stop(); recording = false;
+    $('rec').textContent = '● Gravar';
+  }
+};
+
+$('play').onclick = async () => {
+  if (!recURL) return;
+  await setup();
+  const a = new Audio(recURL);
+  a.volume = 1;
+  try {
+    const src = ctx.createMediaElementSource(a);
+    const g = ctx.createGain(); g.gain.value = vol();
+    src.connect(g).connect(ctx.destination);
+  } catch (e) {}
+  a.play().catch(() => status('Não consegui tocar. Tente de novo.'));
+  status('Tocando recado...');
+  a.onended = () => status('Pronto.');
+};
+
+$('bell').onclick = async () => {
+  if (!ctx) { ctx = null; if (!(await setup())) return; }
+  if (ctx.state === 'suspended') await ctx.resume();
+  const t = ctx.currentTime;
+  [[880, 0], [660, 0.35], [880, 0.7], [660, 1.05]].forEach(([f, dt]) => {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine'; o.frequency.value = f;
+    g.gain.setValueAtTime(0, t + dt);
+    g.gain.linearRampToValueAtTime(0.6 * Math.min(vol(), 2), t + dt + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dt + 0.3);
+    o.connect(g).connect(ctx.destination);
+    o.start(t + dt); o.stop(t + dt + 0.32);
+  });
+};
+</script>
+</body>
+</html>
