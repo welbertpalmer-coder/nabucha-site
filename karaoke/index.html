@@ -184,6 +184,16 @@
         <h2 style="color:#fff">🎤 Sua vez de cantar!</h2>
         <div class="meter"><div id="myMeter"></div></div>
         <div class="row" style="align-items:center"><div class="muted" style="flex:1;color:#f0e6ff" id="myHint">Cante perto do celular. Sua nota vai sendo calculada.</div><div class="bigScore" id="myLive" style="font-size:2.4rem">0</div></div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn" id="vToggle" style="flex:2;background:var(--green);color:#052e12">🎤 Voz na TV: ligada</button>
+          <button class="btn sec" id="vEcho" style="flex:1">Eco</button>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn sec" data-vc="mic-">🔉 Voz</button>
+          <div class="muted" id="vVol" style="flex:1;text-align:center;align-self:center;color:#f0e6ff">100%</div>
+          <button class="btn sec" data-vc="mic+">🔊 Voz</button>
+        </div>
+        <div class="muted" style="font-size:.75rem;margin-top:8px;color:#e9dcff">Se der apito (microfonia), abaixe a voz ou afaste o celular da TV.</div>
       </div>
       <div class="card">
         <input id="sFind" type="text" placeholder="🔎 Buscar música ou cantor">
@@ -281,6 +291,7 @@ const SONGS = [
   ['Pro Dia Nascer Feliz','Barão Vermelho','nacional'],['Como uma Onda','Lulu Santos','nacional'],
   ['Fácil','Jota Quest','nacional'],['Meu Erro','Os Paralamas do Sucesso','nacional'],
   // Internacionais
+  ['Barbie Girl','Aqua','inter'],
   ['Bohemian Rhapsody','Queen','inter'],["Livin' on a Prayer",'Bon Jovi','inter'],
   ["Sweet Child O' Mine","Guns N' Roses",'inter'],["Don't Stop Believin'",'Journey','inter'],
   ['Hotel California','Eagles','inter'],['Wonderwall','Oasis','inter'],
@@ -291,7 +302,6 @@ const SONGS = [
   ['Dancing Queen','ABBA','inter'],['Billie Jean','Michael Jackson','inter'],
   ['I Will Always Love You','Whitney Houston','inter'],['Total Eclipse of the Heart','Bonnie Tyler','inter'],
   ['Africa','Toto','inter'],['In the End','Linkin Park','inter'],
-  ['Barbie Girl','Aqua','inter'],
 ].map(([title, artist, cat]) => ({ title, artist, cat }));
 const CATS = [['all','Todas'],['modao','🤠 Modão'],['nacional','🇧🇷 Pop rock'],['inter','🌎 Internacionais']];
 
@@ -375,6 +385,7 @@ function startTV() {
   let lines = [], fit = { a: 1, b: 0, pts: [] }, shownNext = -1, history = ls.get('hist', []);
   let player = null, ytReady = false, unlocked = false, volume = 80;
   let lastTickSent = 0, paused = false, hold = false;
+  let vctx = null, micGain = null, echoWet = null, micVol = 1.2, echoOn = true, voiceCall = null, voiceEl = null, voiceOn = false;
 
   function snapshot() {
     return {
@@ -382,6 +393,7 @@ function startTV() {
       current: current && { qid: current.qid, pid: current.pid, name: current.name, song: current.song },
       queue: queue.map(q => ({ qid: q.qid, pid: q.pid, name: q.name, song: q.song })),
       players: [...players.entries()].map(([pid, p]) => ({ pid, name: p.name, total: p.total, best: p.best, count: p.count, on: conns.has(pid) })),
+      micVol, echoOn, voiceOn,
       history: history.slice(0, 15), offset: Math.round(fit.b * 10) / 10, tempo: fit.a, paused, hold,
     };
   }
@@ -413,6 +425,14 @@ function startTV() {
       }
     });
     peer.on('disconnected', () => { try { peer.reconnect(); } catch(_) {} });
+    peer.on('call', call => {
+      try { voiceCall && voiceCall.close(); } catch(_) {}
+      voiceCall = call;
+      call.answer();
+      call.on('stream', st => attachVoice(st));
+      call.on('close', () => { if (voiceCall === call) detachVoice(); });
+      call.on('error', () => { if (voiceCall === call) detachVoice(); });
+    });
     peer.on('connection', conn => {
       conn.on('open', () => { conns.set(conn.peer, conn); conn.send(snapshot()); });
       conn.on('data', d => onData(conn, d));
@@ -445,6 +465,7 @@ function startTV() {
   }
 
   function cmd(c) {
+    if (c === 'mic+' || c === 'mic-' || c === 'echo') return cmdVoice(c);
     if (!player || !ytReady) return;
     if (c === 'pause') { if (phase !== 'playing') return; setPaused(!paused); }
     else if (c === 'stop') { stopSong(); }
@@ -480,6 +501,7 @@ function startTV() {
 
   $('tvStart').addEventListener('click', () => {
     unlocked = true;
+    ensureVctx(); try { vctx && vctx.resume(); } catch(_) {}
     $('tvStart').textContent = '✅ Som liberado! Escolha uma música no celular';
     $('tvStart').style.background = 'var(--card2)';
     try { document.documentElement.requestFullscreen(); } catch(_) {}
@@ -507,6 +529,43 @@ function startTV() {
   }
   let toastT = null;
   function tvToast(t) { $('tvToast').textContent = t; $('tvToast').classList.remove('hide'); clearTimeout(toastT); toastT = setTimeout(() => $('tvToast').classList.add('hide'), 1500); }
+  function cmdVoice(c) {
+    if (c === 'mic+' || c === 'mic-') { micVol = Math.max(0, Math.min(3, Math.round((micVol + (c === 'mic+' ? .2 : -.2)) * 10) / 10)); if (micGain) micGain.gain.value = micVol; broadcast(); tvToast('🎤 Volume da voz ' + Math.round(micVol / 1.2 * 100) + '%'); }
+    else if (c === 'echo') { echoOn = !echoOn; if (echoWet) echoWet.gain.value = echoOn ? .28 : 0; broadcast(); tvToast(echoOn ? '🎤 Eco ligado' : '🎤 Eco desligado'); }
+  }
+  // ---- voz do cantor saindo na TV ----
+  function ensureVctx() {
+    if (vctx) return;
+    try {
+      vctx = new (window.AudioContext || window.webkitAudioContext)();
+      micGain = vctx.createGain(); micGain.gain.value = micVol;
+      const comp = vctx.createDynamicsCompressor(); comp.threshold.value = -24; comp.ratio.value = 4;
+      const hp = vctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 120;
+      const d = vctx.createDelay(1); d.delayTime.value = .11;
+      const fb = vctx.createGain(); fb.gain.value = .28;
+      echoWet = vctx.createGain(); echoWet.gain.value = echoOn ? .28 : 0;
+      micGain.connect(hp).connect(comp);
+      comp.connect(vctx.destination);
+      comp.connect(d); d.connect(fb).connect(d); d.connect(echoWet).connect(vctx.destination);
+    } catch (_) { vctx = null; }
+  }
+  function attachVoice(st) {
+    detachVoice(true);
+    voiceEl = new Audio(); voiceEl.srcObject = st; voiceEl.muted = true; voiceEl.play().catch(() => {});
+    ensureVctx();
+    if (vctx) {
+      if (vctx.state === 'suspended') vctx.resume().catch(() => {});
+      const src = vctx.createMediaStreamSource(st); src.connect(micGain); voiceEl._src = src;
+    } else { voiceEl.muted = false; voiceEl.volume = 1; }
+    voiceOn = true; broadcast();
+    tvToast('🎤 Voz de ' + (current ? current.name : 'cantor') + ' na TV');
+  }
+  function detachVoice(silent) {
+    try { voiceEl && voiceEl._src && voiceEl._src.disconnect(); } catch(_) {}
+    try { voiceEl && (voiceEl.srcObject = null); } catch(_) {}
+    voiceEl = null;
+    if (!silent) { voiceOn = false; broadcast(); }
+  }
   function setPaused(v) {
     paused = v;
     try { v ? player.pauseVideo() : player.playVideo(); } catch(_) {}
@@ -570,7 +629,7 @@ function startTV() {
     broadcast();
     setTimeout(() => endSong(), score !== null ? 6000 : 1500);
   }
-  function endSong() { hideMsg(); current = null; phase = 'lobby'; next(); }
+  function endSong() { hideMsg(); try { voiceCall && voiceCall.close(); } catch(_) {} detachVoice(); current = null; phase = 'lobby'; next(); }
   function showLobby() { $('tvStage').classList.add('hide'); $('tvLobby').classList.remove('hide'); try { player.stopVideo(); } catch(_) {} }
 
   // ---- letra sincronizada ----
@@ -762,6 +821,7 @@ function startPhone() {
     $('qList').innerHTML = state.queue.length ? state.queue.map((q, i) => '<div class="q"><div class="n">' + (i + 1) + '</div><div class="t">' + esc(q.song.title) + '<span>' + esc(q.song.artist) + ' · 🎤 ' + esc(q.name) + '</span></div>' + (q.pid === myId ? '<button data-rm="' + q.qid + '">✕</button>' : '') + '</div>').join('') : '<div class="muted">Fila vazia.</div>';
     $('rankList').innerHTML = state.players.length ? [...state.players].sort((a, b) => b.total - a.total).map((p, i) => '<div class="rank"><span>' + (['🥇','🥈','🥉'][i] || '🎤') + ' ' + esc(p.name) + (p.pid === myId ? ' (você)' : '') + '</span><b>' + p.total + ' pts</b></div>').join('') : '<div class="muted">Ninguém pontuou ainda.</div>';
     $('histList').innerHTML = state.history.length ? state.history.map(h => '<div class="rank"><span>' + esc(h.name) + ' · ' + esc(h.title) + '</span><b>' + h.score + '</b></div>').join('') : '<div class="muted">Ainda sem notas.</div>';
+    if (state.micVol !== undefined) { $('vVol').textContent = Math.round(state.micVol / 1.2 * 100) + '%'; $('vEcho').textContent = state.echoOn ? 'Eco ✓' : 'Eco'; }
     const offS = (state.offset > 0 ? '+' : '') + String(state.offset).replace('.', ',') + ' s' + (state.tempo && Math.abs(state.tempo - 1) > 0.004 ? ' · andamento ' + Math.round(state.tempo * 100) + '%' : '');
     $('offTxt').textContent = offS;
     if (playing) $('nbLyrTxt').innerHTML = (state.offset || (state.tempo && state.tempo !== 1)) ? 'Ajuste da letra: <b>' + offS + '</b> · toque de novo em Sincronizar em outra parte da música para acertar o andamento' : 'Toque em <b>Sincronizar</b> na hora em que a <b>linha de baixo</b> da TV deveria começar.';
@@ -783,6 +843,24 @@ function startPhone() {
   });
   $('qList').addEventListener('click', e => { const b = e.target.closest('button[data-rm]'); if (b) send({ type: 'remove', qid: b.dataset.rm }); });
 
+  // ---- voz do celular saindo na TV (como microfone de karaokê) ----
+  let voiceWanted = ls.get('voice', true), vcall = null;
+  function startVoice() {
+    if (!mic || !peer || !wantCode) return;
+    try { vcall && vcall.close(); } catch(_) {}
+    try { vcall = peer.call(PREFIX + wantCode, mic); } catch (_) { vcall = null; }
+  }
+  function stopVoice() { try { vcall && vcall.close(); } catch(_) {} vcall = null; }
+  function paintVoice() {
+    $('vToggle').textContent = voiceWanted ? '🎤 Voz na TV: ligada' : '🔇 Voz na TV: desligada';
+    $('vToggle').style.background = voiceWanted ? 'var(--green)' : 'var(--card2)';
+    $('vToggle').style.color = voiceWanted ? '#052e12' : 'var(--txt)';
+  }
+  $('vToggle').addEventListener('click', () => { voiceWanted = !voiceWanted; ls.set('voice', voiceWanted); paintVoice(); if (voiceWanted) startVoice(); else stopVoice(); });
+  $('vEcho').addEventListener('click', () => send({ type: 'cmd', cmd: 'echo' }));
+  document.querySelectorAll('[data-vc]').forEach(b => b.addEventListener('click', () => send({ type: 'cmd', cmd: b.dataset.vc })));
+  paintVoice();
+
   // ---- pontuação pelo microfone ----
   let mic = null, actx = null, an = null, buf = null, singing = null, loopT = null, lastTick = { active: false, at: 0 }, wake = null;
   async function startSinging(qid) {
@@ -792,7 +870,8 @@ function startPhone() {
     navigator.vibrate?.([80, 60, 80]);
     try { wake = await navigator.wakeLock?.request('screen'); } catch(_) {}
     try {
-      mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+      mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+      if (voiceWanted) startVoice();
       actx = new (window.AudioContext || window.webkitAudioContext)();
       const src = actx.createMediaStreamSource(mic);
       an = actx.createAnalyser(); an.fftSize = 2048; buf = new Float32Array(an.fftSize);
@@ -843,6 +922,7 @@ function startPhone() {
     return Math.round(20 + 50 * pres + 30 * stab * pres);
   }
   function stopSinging() {
+    stopVoice();
     const sc = singing ? currentScore() : 0;
     singing = null; clearInterval(loopT);
     try { mic && mic.getTracks().forEach(t => t.stop()); } catch(_) {}
