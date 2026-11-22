@@ -136,7 +136,7 @@
       <button id="recBtn" class="rec-btn" aria-label="Gravar"><div class="dot"></div></button>
       <div class="rec-info">
         <div id="recTime" class="rec-time">0:00</div>
-        <div id="recSub" class="rec-sub">Toque no botão vermelho para gravar</div>
+        <div id="recSub" class="rec-sub">Celular a um palmo da boca, longe do vento</div>
         <div class="bar"><div id="recBar"></div></div>
       </div>
     </div>
@@ -244,8 +244,8 @@
       ctx = new (window.AudioContext || window.webkitAudioContext)();
       master = ctx.createGain(); master.gain.value = vol();
       const comp = ctx.createDynamicsCompressor();
-      comp.threshold.value = -20; comp.knee.value = 8; comp.ratio.value = 6; comp.attack.value = .003; comp.release.value = .2;
-      const makeup = ctx.createGain(); makeup.gain.value = 2.2;
+      comp.threshold.value = -16; comp.knee.value = 10; comp.ratio.value = 3; comp.attack.value = .003; comp.release.value = .2;
+      const makeup = ctx.createGain(); makeup.gain.value = 1.6;
       const lim = ctx.createDynamicsCompressor();
       lim.threshold.value = -1.5; lim.knee.value = 0; lim.ratio.value = 20; lim.attack.value = .001; lim.release.value = .1;
       master.connect(comp).connect(makeup).connect(lim).connect(ctx.destination);
@@ -280,13 +280,19 @@
     setSession('playback');
   }
   function releaseMicSoon() { clearTimeout(releaseT); releaseT = setTimeout(() => { if (mode === 'idle') releaseMic(); }, 600); }
-  async function ensureMic() {
+  let micKind = null;
+  async function ensureMic(kind = 'live') {
     clearTimeout(releaseT);
+    if (stream && stream.active && micKind !== kind) releaseMic();
     await ensureAudio();
     if (stream && stream.active) return true;
     setSession('play-and-record');
     try {
-      stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: true } });
+      // Gravar: com redução de ruído (nada toca enquanto grava, então não atrapalha o Bluetooth).
+      // Ao vivo: sem cancelamento de eco, para o som continuar saindo no Bluetooth.
+      const base = { channelCount: 1, sampleRate: 48000, echoCancellation: false, autoGainControl: true };
+      stream = await navigator.mediaDevices.getUserMedia({ audio: kind === 'rec' ? { ...base, noiseSuppression: true } : { ...base, noiseSuppression: false } });
+      micKind = kind;
     } catch (e) {
       showErr('Não consegui usar o microfone. Toque no cadeado da barra de endereço, permita o microfone e recarregue a página.');
       return false;
@@ -494,10 +500,10 @@
   $('recBtn').addEventListener('click', async () => {
     if (mode === 'recording') return stopRec();
     if (mode !== 'idle') return;
-    if (!(await ensureMic())) return;
+    if (!(await ensureMic('rec'))) return;
     if (draftBlob) discardDraft();
     let mime = ['audio/webm;codecs=opus','audio/mp4','audio/webm'].find(t => window.MediaRecorder?.isTypeSupported?.(t)) || '';
-    try { recorder = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined); }
+    try { recorder = new MediaRecorder(stream, { ...(mime ? { mimeType: mime } : {}), audioBitsPerSecond: 128000 }); }
     catch (e) { showErr('Este navegador não grava áudio. Tente pelo Chrome ou Safari atualizado.'); return; }
     recChunks = [];
     recorder.ondataavailable = ev => ev.data.size && recChunks.push(ev.data);
@@ -542,7 +548,7 @@
     draftBlob = null;
     $('draft').classList.remove('show');
     $('recTime').textContent = '0:00';
-    $('recSub').textContent = 'Toque no botão vermelho para gravar';
+    $('recSub').textContent = 'Celular a um palmo da boca, longe do vento';
   }
   $('draftDel').addEventListener('click', () => { if (mode === 'idle') discardDraft(); });
   $('draftPlay').addEventListener('click', () => {
@@ -576,8 +582,10 @@
     // Normaliza: leva o pico do recado perto do máximo (até 12x mais alto)
     let peak = 0;
     for (let c = 0; c < buf.numberOfChannels; c++) { const d = buf.getChannelData(c); for (let i = 0; i < d.length; i += 4) { const v = Math.abs(d[i]); if (v > peak) peak = v; } }
-    const ng = ctx.createGain(); ng.gain.value = peak > 0 ? Math.min(12, 0.95 / peak) * 1.4 : 1;
-    src.connect(ng);
+    const ng = ctx.createGain(); ng.gain.value = peak > 0 ? Math.min(5, 0.9 / peak) : 1;
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 110; hp.Q.value = .7;
+    const pres = ctx.createBiquadFilter(); pres.type = 'peaking'; pres.frequency.value = 2800; pres.Q.value = 1; pres.gain.value = 3;
+    src.connect(hp).connect(pres).connect(ng);
     const cleanup = connectFx(ng, RATE[fx] ? 'normal' : fx);
     src.start(t0 + lead);
     const total = lead + buf.duration / rate;
