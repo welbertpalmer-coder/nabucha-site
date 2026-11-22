@@ -144,6 +144,11 @@
 
   <!-- SONS ENGRAÇADOS -->
   <section class="card">
+    <h2>Pum e arroto</h2>
+    <div id="sfxPum" class="sfx"></div>
+  </section>
+
+  <section class="card">
     <h2>Bichos</h2>
     <div id="sfxBichos" class="sfx"></div>
   </section>
@@ -211,6 +216,7 @@
     • Miau: blimp66 (CC BY 3.0)<br>
     • Có có: www.bonson.ca (CC BY 3.0)<br>
     • Hiena rindo: Mathevon N., Koralek A., Weldele M., Glickman S. &amp; Theunissen F. (CC BY 2.0)<br>
+    Pum: coleção “So Many Farts” (github.com/3mta3/farts), sem licença informada. Arrotos: Kaboom.js (Replit, MIT) e Sonic Pi (CC0).<br>
     Lista completa: <a href="sons/CREDITOS.md" style="color:var(--mut)">sons/CREDITOS.md</a>
   </details>
 </div>
@@ -331,6 +337,13 @@
     ['macaco','🐒','Macaco'],['coruja','🦉','Coruja'],['pinguim','🐧','Pinguim'],['foca','🦭','Foca'],
     ['gorila','🦍','Gorila'],['hiena','🤣','Hiena rindo'],
   ];
+  const PUNS = [
+    ['pum1','💨','Pum rápido'],['pum2','💨','Pum curto'],['pum3','💨','Pum seco'],['pum4','💨','Pum 4'],
+    ['pum5','💨','Pum 5'],['pum6','💨','Pum 6'],['pum7','💨','Pum 7'],['pum8','💨','Pum 8'],
+    ['pum9','🌪️','Pum longo'],['pum10','🌪️','Pum longão'],['pum11','🌪️','Pum épico'],['pum12','☢️','Pum infinito'],
+    ['arroto1','🤢','Arroto'],['arroto2','🤢','Arroto 2'],
+    ['arroto1','🫃','Arrotão',0.7],['arroto2','🫃','Arrotão 2',0.7],['arroto1','🐭','Arrotinho',1.5],['pum3','🐘','Pum gigante',0.6],
+  ];
   const ENGRACADOS = [
     ['boing','🦘','Boing'],['brinquedo','🧸','Fiu-fiu'],['fonfon','📯','Fon fon'],['buzina','🚗','Buzina'],
     ['balao','🎈','Balão'],['apito','😙','Apito'],['risada','😈','Risada'],['vomito','🤮','Blééé'],
@@ -346,7 +359,7 @@
   }
   let sfxPlaying = [];
   function makeSfxGrid(list, el) {
-    list.forEach(([id, em, name]) => {
+    list.forEach(([id, em, name, rate]) => {
       const b = document.createElement('button');
       b.innerHTML = '<b>' + em + '</b>' + name;
       b.addEventListener('click', async () => {
@@ -355,7 +368,7 @@
         b.classList.add('hit');
         try {
           const { buf, norm } = await loadSfx(id);
-          const src = ctx.createBufferSource(); src.buffer = buf;
+          const src = ctx.createBufferSource(); src.buffer = buf; if (rate) src.playbackRate.value = rate;
           const g = ctx.createGain(); g.gain.value = norm;
           src.connect(g).connect(sfxBus);
           src.start();
@@ -368,11 +381,12 @@
   }
   makeSfxGrid(BICHOS, $('sfxBichos'));
   makeSfxGrid(ENGRACADOS, $('sfxEngr'));
+  makeSfxGrid(PUNS, $('sfxPum'));
   // pré-carrega em segundo plano depois do primeiro toque (para funcionar sem atraso)
   document.addEventListener('pointerdown', async function pre() {
     document.removeEventListener('pointerdown', pre);
     await ensureAudio();
-    for (const [id] of [...BICHOS, ...ENGRACADOS]) { try { await loadSfx(id); } catch(_) {} }
+    for (const [id] of [...PUNS, ...BICHOS, ...ENGRACADOS]) { try { await loadSfx(id); } catch(_) {} }
   });
 
   function bellAt(t0) {

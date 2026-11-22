@@ -34,3 +34,11 @@ Sons reais da coleção [mod-sounds](https://github.com/AntumMT/mod-sounds) (Ant
 | apito.mp3 | pawsound | CC0 | https://freesound.org/s/154873/ |
 | risada.mp3 | AntumDeluge | CC0 | https://opengameart.org/node/81237 |
 | vomito.mp3 | Anko6 | CC0 | https://freesound.org/s/388525/ |
+
+## Pum e arroto
+
+| Arquivo | Origem | Licença |
+|---|---|---|
+| pum1–pum12.mp3 | https://github.com/3mta3/farts | não informada (usado a pedido do dono do site) |
+| arroto1.mp3 | https://github.com/replit/kaboom (src/assets/burp.mp3) | MIT (repositório) |
+| arroto2.mp3 | https://github.com/sonic-pi-net/sonic-pi (etc/samples/misc_burp.flac) | CC0 |
