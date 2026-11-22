@@ -217,6 +217,12 @@
   </section>
 
   <section class="card">
+    <h2>Viatura brasileira 🚓</h2>
+    <div id="sfxViatura" class="sfx"></div>
+    <div class="empty" style="padding:10px 0 0;font-size:.78rem">Tons recriados do jeito que a sirene eletrônica da viatura gera (não são gravações).</div>
+  </section>
+
+  <section class="card">
     <h2>Sirene 🚨</h2>
     <div id="sfxSirene" class="sfx"></div>
   </section>
@@ -458,6 +464,10 @@
   const CAES = [
     ['cao_bravo','😡','Cachorros bravos'],['cao_corrente','⛓️','Cão na corrente'],['cachorrao','🐕‍🦺','Cachorrão'],['chihuahua','🐶','Chihuahua bravo'],
   ];
+  const VIATURA = [
+    ['pm_prupru','🚓','Prrr-prrr (abordagem)'],['pm_phaser','🚓','Prrrrrr'],['pm_yelp','🚨','Uiuiuiui'],
+    ['pm_wail','🚨','Uóóó uóóó'],['pm_hilo','🚑','Pó-pí'],
+  ];
   const SIRENES = [
     ['sirene5','🚓','Polícia (BR/Europa)'],['sirene1','🚔','Polícia 1'],['sirene2','🚔','Polícia 2'],['sirene3','🚔','Polícia 3'],
     ['sirene4','🚨','Sirene EUA'],['alarme','📢','Alarme geral'],
@@ -512,11 +522,12 @@
   makeSfxGrid(SUSTO, $('sfxSusto'));
   makeSfxGrid(CAES, $('sfxCaes'));
   makeSfxGrid(SIRENES, $('sfxSirene'));
+  makeSfxGrid(VIATURA, $('sfxViatura'));
   // pré-carrega em segundo plano depois do primeiro toque (para funcionar sem atraso)
   document.addEventListener('pointerdown', async function pre() {
     document.removeEventListener('pointerdown', pre);
     await ensureAudio();
-    for (const [id] of [...SIRENES, ...CAES, ...PUNS, ...SUSTO, ...BICHOS, ...ENGRACADOS]) { try { await loadSfx(id); } catch(_) {} }
+    for (const [id] of [...VIATURA, ...SIRENES, ...CAES, ...PUNS, ...SUSTO, ...BICHOS, ...ENGRACADOS]) { try { await loadSfx(id); } catch(_) {} }
   });
 
   function bellAt(t0) {

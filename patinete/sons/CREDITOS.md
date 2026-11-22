@@ -84,3 +84,7 @@ Sons reais da coleção [mod-sounds](https://github.com/AntumMT/mod-sounds) (Ant
 | despertador.mp3 | alarm_clock.wav (freesound 14262) | xyzr_kx | CC0 |
 
 Fonte dos clipes: ESC-50 (https://github.com/karolpiczak/ESC-50), com a licença de cada clipe listada no arquivo LICENSE do projeto.
+
+## Viatura brasileira
+
+pm_*.mp3 — tons de sirene eletrônica recriados por síntese (onda quadrada + filtro de corneta), feitos para este app. Não são gravações.
