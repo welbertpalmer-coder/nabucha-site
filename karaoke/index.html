@@ -286,12 +286,12 @@ const SONGS = [
   ['Romaria','Renato Teixeira','modao'],['Tocando em Frente','Almir Sater','modao'],
   ['Cabecinha no Ombro','Paulo Borges','modao'],['Majestade o Sabiá','Roberta Miranda','modao'],
   // Pop rock nacional
+  ['Sou a Barbie Girl','Kelly Key','nacional'],
   ['Tempo Perdido','Legião Urbana','nacional'],['Só os Loucos Sabem','Charlie Brown Jr.','nacional'],
   ['Garota Nacional','Skank','nacional'],['Epitáfio','Titãs','nacional'],
   ['Pro Dia Nascer Feliz','Barão Vermelho','nacional'],['Como uma Onda','Lulu Santos','nacional'],
   ['Fácil','Jota Quest','nacional'],['Meu Erro','Os Paralamas do Sucesso','nacional'],
   // Internacionais
-  ['Barbie Girl','Aqua','inter'],
   ['Bohemian Rhapsody','Queen','inter'],["Livin' on a Prayer",'Bon Jovi','inter'],
   ["Sweet Child O' Mine","Guns N' Roses",'inter'],["Don't Stop Believin'",'Journey','inter'],
   ['Hotel California','Eagles','inter'],['Wonderwall','Oasis','inter'],
@@ -303,7 +303,23 @@ const SONGS = [
   ['I Will Always Love You','Whitney Houston','inter'],['Total Eclipse of the Heart','Bonnie Tyler','inter'],
   ['Africa','Toto','inter'],['In the End','Linkin Park','inter'],
 ].map(([title, artist, cat]) => ({ title, artist, cat }));
-const CATS = [['all','Todas'],['modao','🤠 Modão'],['nacional','🇧🇷 Pop rock'],['inter','🌎 Internacionais']];
+const CATS = [['all','Todas'],['modao','🤠 Modão'],['nacional','🇧🇷 Nacionais'],['inter','🌎 Internacionais']];
+
+// ------------------------- VOZ: baixa latência -------------------------
+function lowLatSdp(sdp) {
+  const m = sdp.match(/a=rtpmap:(\d+) opus\/48000/i);
+  if (!m) return sdp;
+  const pt = m[1];
+  sdp = sdp.replace(new RegExp('a=fmtp:' + pt + ' ([^\r\n]*)'), (all, p) => 'a=fmtp:' + pt + ' ' + p.split(';').map(x => x.trim()).filter(x => x && !/^(minptime|ptime|maxptime|stereo|useinbandfec|maxaveragebitrate)=/.test(x)).concat(['minptime=10', 'stereo=0', 'useinbandfec=0', 'maxaveragebitrate=64000']).join(';'));
+  sdp = sdp.replace(/a=ptime:\d+\r?\n/g, '').replace(/a=maxptime:\d+\r?\n/g, '');
+  sdp = sdp.replace(/(m=audio[^\r\n]*\r?\n)/, '$1a=ptime:10\r\na=maxptime:10\r\n');
+  return sdp;
+}
+function zeroJitter(pc) {
+  if (!pc) return;
+  const apply = () => { try { pc.getReceivers().forEach(r => { try { r.playoutDelayHint = 0; } catch(_) {} try { r.jitterBufferTarget = 0; } catch(_) {} }); } catch(_) {} };
+  apply(); [200, 800, 2000, 5000].forEach(t => setTimeout(apply, t));
+}
 
 // ------------------------- LETRAS (LRCLIB) -------------------------
 function parseLRC(lrc) {
@@ -385,7 +401,7 @@ function startTV() {
   let lines = [], fit = { a: 1, b: 0, pts: [] }, shownNext = -1, history = ls.get('hist', []);
   let player = null, ytReady = false, unlocked = false, volume = 80;
   let lastTickSent = 0, paused = false, hold = false;
-  let vctx = null, micGain = null, echoWet = null, micVol = 1.2, echoOn = true, voiceCall = null, voiceEl = null, voiceOn = false;
+  let vctx = null, micGain = null, echoWet = null, micVol = 1.2, echoOn = false, voiceCall = null, voiceEl = null, voiceOn = false;
 
   function snapshot() {
     return {
@@ -428,7 +444,8 @@ function startTV() {
     peer.on('call', call => {
       try { voiceCall && voiceCall.close(); } catch(_) {}
       voiceCall = call;
-      call.answer();
+      call.answer(undefined, { sdpTransform: lowLatSdp });
+      setTimeout(() => zeroJitter(call.peerConnection), 100);
       call.on('stream', st => attachVoice(st));
       call.on('close', () => { if (voiceCall === call) detachVoice(); });
       call.on('error', () => { if (voiceCall === call) detachVoice(); });
@@ -537,7 +554,7 @@ function startTV() {
   function ensureVctx() {
     if (vctx) return;
     try {
-      vctx = new (window.AudioContext || window.webkitAudioContext)();
+      vctx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 0 });
       micGain = vctx.createGain(); micGain.gain.value = micVol;
       const comp = vctx.createDynamicsCompressor(); comp.threshold.value = -24; comp.ratio.value = 4;
       const hp = vctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 120;
@@ -557,6 +574,7 @@ function startTV() {
       if (vctx.state === 'suspended') vctx.resume().catch(() => {});
       const src = vctx.createMediaStreamSource(st); src.connect(micGain); voiceEl._src = src;
     } else { voiceEl.muted = false; voiceEl.volume = 1; }
+    zeroJitter(voiceCall && voiceCall.peerConnection);
     voiceOn = true; broadcast();
     tvToast('🎤 Voz de ' + (current ? current.name : 'cantor') + ' na TV');
   }
@@ -848,7 +866,7 @@ function startPhone() {
   function startVoice() {
     if (!mic || !peer || !wantCode) return;
     try { vcall && vcall.close(); } catch(_) {}
-    try { vcall = peer.call(PREFIX + wantCode, mic); } catch (_) { vcall = null; }
+    try { vcall = peer.call(PREFIX + wantCode, mic, { sdpTransform: lowLatSdp }); } catch (_) { vcall = null; }
   }
   function stopVoice() { try { vcall && vcall.close(); } catch(_) {} vcall = null; }
   function paintVoice() {
@@ -870,7 +888,7 @@ function startPhone() {
     navigator.vibrate?.([80, 60, 80]);
     try { wake = await navigator.wakeLock?.request('screen'); } catch(_) {}
     try {
-      mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+      mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: true, latency: 0, channelCount: 1 } });
       if (voiceWanted) startVoice();
       actx = new (window.AudioContext || window.webkitAudioContext)();
       const src = actx.createMediaStreamSource(mic);
