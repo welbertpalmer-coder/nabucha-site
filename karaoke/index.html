@@ -85,6 +85,15 @@
   .q .t span{display:block;color:var(--mut);font-size:.8rem}
   .q button{border:none;background:none;color:var(--mut);font-size:1.1rem}
   .now{background:linear-gradient(135deg,#3b1d6e,#5b1d4e);border:none}
+  #nowBar{position:sticky;top:0;z-index:4;margin:0 -14px 12px;padding:10px 14px;background:rgba(18,12,34,.96);border-bottom:1px solid var(--line);backdrop-filter:blur(6px)}
+  #nowBar .ttl{font-size:.82rem;color:var(--mut);margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #nowBar .ttl b{color:var(--txt)}
+  #nowBar .row .btn{padding:13px 4px;font-size:.92rem}
+  .btn.warn{background:var(--red)}
+  .btn.go{background:var(--green);color:#052e12}
+  #tvPause{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(8,4,20,.75);gap:2vh}
+  #tvPause .big{font-size:12vh;font-weight:900}
+  #tvPause .mid{font-size:3.6vh;color:var(--mut)}
   .ctrl{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   .ctrl .btn{padding:16px 6px;font-size:.95rem}
   .muted{color:var(--mut);font-size:.85rem;line-height:1.45}
@@ -123,6 +132,7 @@
     <div id="lyrShade"></div>
     <div id="lyr"><div id="lyrPrev"></div><div id="lyrCur"></div><div id="lyrNext"></div></div>
     <div id="tvTop"><div class="pillTv" id="tvNow"></div><div class="pillTv">Sala <b id="tvCode2"></b></div></div>
+    <div id="tvPause" class="hide"><div class="big">⏸ Pausado</div><div class="mid">Toque em “Continuar” no celular</div></div>
   </div>
   <div id="tvMsg" class="hide"></div>
 </div>
@@ -150,6 +160,15 @@
 
   <!-- abas -->
   <section id="pApp" class="hide">
+    <div id="nowBar" class="hide">
+      <div class="ttl" id="nbTitle"></div>
+      <div class="row" id="nbPlay">
+        <button class="btn sec" id="nbPause">⏸ Pausar</button>
+        <button class="btn sec" id="nbStop">⏹ Parar</button>
+        <button class="btn sec" id="nbSkip">⏭ Pular</button>
+      </div>
+      <button class="btn go hide" id="nbNext">▶ Tocar a próxima</button>
+    </div>
     <div id="tabSongs">
       <div id="myTurn" class="card now hide">
         <h2 style="color:#fff">🎤 Sua vez de cantar!</h2>
@@ -328,7 +347,7 @@ function startTV() {
   let phase = 'lobby';             // lobby | loading | playing | result
   let lines = [], offset = 0, history = ls.get('hist', []);
   let player = null, ytReady = false, unlocked = false, volume = 80;
-  let lastTickSent = 0;
+  let lastTickSent = 0, paused = false, hold = false;
 
   function snapshot() {
     return {
@@ -336,7 +355,7 @@ function startTV() {
       current: current && { qid: current.qid, pid: current.pid, name: current.name, song: current.song },
       queue: queue.map(q => ({ qid: q.qid, pid: q.pid, name: q.name, song: q.song })),
       players: [...players.entries()].map(([pid, p]) => ({ pid, name: p.name, total: p.total, best: p.best, count: p.count, on: conns.has(pid) })),
-      history: history.slice(0, 15), offset,
+      history: history.slice(0, 15), offset, paused, hold,
     };
   }
   function broadcast() {
@@ -387,7 +406,7 @@ function startTV() {
       const p = players.get(pid); if (!p) return;
       queue.push({ qid: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), pid, name: p.name, song: d.song, videoId: d.videoId });
       broadcast();
-      if (phase === 'lobby' && unlocked) next();
+      if (phase === 'lobby' && unlocked && !hold) next();
     } else if (d.type === 'remove') {
       queue = queue.filter(q => q.qid !== d.qid); broadcast();
     } else if (d.type === 'cmd') {
@@ -400,7 +419,9 @@ function startTV() {
 
   function cmd(c) {
     if (!player || !ytReady) return;
-    if (c === 'pause') { const st = player.getPlayerState(); st === 1 ? player.pauseVideo() : player.playVideo(); }
+    if (c === 'pause') { if (phase !== 'playing') return; setPaused(!paused); }
+    else if (c === 'stop') { stopSong(); }
+    else if (c === 'playnext') { hold = false; if (phase === 'lobby' && queue.length) next(); else broadcast(); }
     else if (c === 'skip') { if (current) askScoreOrSkip(); }
     else if (c === 'restart') { player.seekTo(0, true); player.playVideo(); }
     else if (c === 'off+' || c === 'off-') { offset = Math.round((offset + (c === 'off+' ? .5 : -.5)) * 10) / 10; if (current) ls.set('off_' + current.videoId, offset); broadcast(); }
@@ -415,7 +436,10 @@ function startTV() {
       playerVars: { autoplay: 0, controls: 0, rel: 0, modestbranding: 1, playsinline: 1, iv_load_policy: 3, disablekb: 1 },
       events: {
         onReady: () => { ytReady = true; player.setVolume(volume); },
-        onStateChange: e => { if (e.data === 0 && phase === 'playing') askScoreOrSkip(); },
+        onStateChange: e => {
+          if (e.data === 0 && phase === 'playing') askScoreOrSkip();
+          if (phase === 'playing' && (e.data === 1 || e.data === 2)) { const v = e.data === 2; if (v !== paused) { paused = v; $('tvPause').classList.toggle('hide', !v); broadcast(); } }
+        },
         onError: e => { if (phase === 'playing' || phase === 'loading') { msg('<div class="big">😕 Esse vídeo não toca aqui</div><div class="mid">Escolha outro vídeo para essa música no celular</div>', 4000); notify(current?.pid, { type: 'videoError', song: current?.song }); setTimeout(() => endSong(null), 4000); } },
       },
     });
@@ -427,16 +451,33 @@ function startTV() {
     $('tvStart').textContent = '✅ Som liberado! Escolha uma música no celular';
     $('tvStart').style.background = 'var(--card2)';
     try { document.documentElement.requestFullscreen(); } catch(_) {}
-    if (queue.length && phase === 'lobby') next();
+    if (queue.length && phase === 'lobby' && !hold) next();
   });
   $('tvStart').focus();
 
+  function setPaused(v) {
+    paused = v;
+    try { v ? player.pauseVideo() : player.playVideo(); } catch(_) {}
+    $('tvPause').classList.toggle('hide', !v);
+    broadcast();
+  }
+  function stopSong() {
+    if (!current || (phase !== 'playing' && phase !== 'loading')) return;
+    notify(current.pid, { type: 'stopped' });
+    try { player.stopVideo(); } catch(_) {}
+    paused = false; $('tvPause').classList.add('hide');
+    current = null; phase = 'lobby'; hold = true;
+    showLobby();
+    msg('<div class="big">⏹ Música parada</div><div class="mid">Quando quiserem, toquem em “Tocar a próxima” no celular</div>', 2500);
+    broadcast();
+  }
   function notify(pid, obj) { const c = conns.get(pid); if (c) try { c.send(obj); } catch(_) {} }
 
   async function next() {
     if (!queue.length) { phase = 'lobby'; current = null; showLobby(); broadcast(); return; }
+    if (hold) { phase = 'lobby'; current = null; showLobby(); broadcast(); return; }
     current = queue.shift();
-    phase = 'loading'; lines = [];
+    phase = 'loading'; lines = []; paused = false; $('tvPause').classList.add('hide');
     offset = ls.get('off_' + current.videoId, 0);
     broadcast();
     $('tvLobby').classList.add('hide'); $('tvStage').classList.remove('hide');
@@ -463,7 +504,7 @@ function startTV() {
   }
   function finishSong(score) {
     if (phase !== 'playing') return;
-    phase = 'result';
+    phase = 'result'; paused = false; $('tvPause').classList.add('hide');
     try { player.stopVideo(); } catch(_) {}
     if (score !== null && current) {
       const p = players.get(current.pid);
@@ -635,10 +676,20 @@ function startPhone() {
     else if (d.type === 'yourTurn') startSinging(d.qid);
     else if (d.type === 'tick') onTick(d);
     else if (d.type === 'final') { const sc = stopSinging(); send({ type: 'score', qid: d.qid, value: sc }); }
+    else if (d.type === 'stopped') { stopSinging(); toast('⏹ Música parada.'); }
     else if (d.type === 'videoError') { stopSinging(); toast('😕 Esse vídeo não toca na TV. Escolha outro.'); if (d.song) pickVideo(d.song); }
   }
   function render() {
     if (!state) return;
+    const playing = state.phase === 'playing' || state.phase === 'loading';
+    const showNext = state.phase === 'lobby' && state.hold && state.queue.length > 0;
+    $('nowBar').classList.toggle('hide', !playing && !showNext);
+    $('nbPlay').classList.toggle('hide', !playing);
+    $('nbNext').classList.toggle('hide', !showNext);
+    if (playing && state.current) $('nbTitle').innerHTML = (state.paused ? '⏸ Pausado · ' : '▶ Tocando · ') + '<b>' + esc(state.current.song.title) + '</b> · 🎤 ' + esc(state.current.name);
+    else if (showNext) $('nbTitle').innerHTML = 'Próxima: <b>' + esc(state.queue[0].song.title) + '</b> · 🎤 ' + esc(state.queue[0].name);
+    $('nbPause').textContent = state.paused ? '▶ Continuar' : '⏸ Pausar';
+    $('nbPause').classList.toggle('go', !!state.paused); $('nbPause').classList.toggle('sec', !state.paused);
     const c = state.current;
     $('nowTxt').innerHTML = c ? '<b style="font-size:1.1rem;color:#fff">' + esc(c.song.title) + '</b><br>' + esc(c.song.artist) + ' · 🎤 ' + esc(c.name) : 'Nada tocando. Escolha uma música!';
     $('qList').innerHTML = state.queue.length ? state.queue.map((q, i) => '<div class="q"><div class="n">' + (i + 1) + '</div><div class="t">' + esc(q.song.title) + '<span>' + esc(q.song.artist) + ' · 🎤 ' + esc(q.name) + '</span></div>' + (q.pid === myId ? '<button data-rm="' + q.qid + '">✕</button>' : '') + '</div>').join('') : '<div class="muted">Fila vazia.</div>';
@@ -646,6 +697,19 @@ function startPhone() {
     $('histList').innerHTML = state.history.length ? state.history.map(h => '<div class="rank"><span>' + esc(h.name) + ' · ' + esc(h.title) + '</span><b>' + h.score + '</b></div>').join('') : '<div class="muted">Ainda sem notas.</div>';
     $('offTxt').textContent = (state.offset > 0 ? '+' : '') + String(state.offset).replace('.', ',') + ' s';
   }
+  $('nbPause').addEventListener('click', () => { send({ type: 'cmd', cmd: 'pause' }); navigator.vibrate?.(20); });
+  $('nbSkip').addEventListener('click', () => { send({ type: 'cmd', cmd: 'skip' }); navigator.vibrate?.(20); });
+  $('nbNext').addEventListener('click', () => { send({ type: 'cmd', cmd: 'playnext' }); navigator.vibrate?.(20); });
+  let stopArm = null;
+  $('nbStop').addEventListener('click', () => {
+    if (!stopArm) {
+      $('nbStop').textContent = 'Toque de novo'; $('nbStop').classList.add('warn'); $('nbStop').classList.remove('sec');
+      stopArm = setTimeout(() => { stopArm = null; $('nbStop').textContent = '⏹ Parar'; $('nbStop').classList.remove('warn'); $('nbStop').classList.add('sec'); }, 3000);
+      return;
+    }
+    clearTimeout(stopArm); stopArm = null; $('nbStop').textContent = '⏹ Parar'; $('nbStop').classList.remove('warn'); $('nbStop').classList.add('sec');
+    send({ type: 'cmd', cmd: 'stop' }); navigator.vibrate?.(40);
+  });
   $('qList').addEventListener('click', e => { const b = e.target.closest('button[data-rm]'); if (b) send({ type: 'remove', qid: b.dataset.rm }); });
 
   // ---- pontuação pelo microfone ----
