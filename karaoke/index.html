@@ -77,7 +77,7 @@
   .vids{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   .vid{background:var(--card2);border:2px solid var(--line);border-radius:12px;overflow:hidden;color:var(--txt);text-align:left;padding:0}
   .vid img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
-  .vid div{padding:6px 8px;font-size:.75rem;line-height:1.25;height:3.4em;overflow:hidden}
+  .vid div{padding:6px 8px;font-size:.75rem;line-height:1.3;height:4.8em;overflow:hidden}
   .q{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
   .q:last-child{border:none}
   .q .n{width:28px;height:28px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;flex:none}
@@ -89,6 +89,7 @@
   #nowBar .ttl{font-size:.82rem;color:var(--mut);margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   #nowBar .ttl b{color:var(--txt)}
   #nowBar .row .btn{padding:13px 4px;font-size:.92rem}
+  #nowBar .lb{flex:.8!important;font-size:1.1rem!important}
   .btn.warn{background:var(--red)}
   .btn.go{background:var(--green);color:#052e12}
   #tvPause{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(8,4,20,.75);gap:2vh}
@@ -132,6 +133,7 @@
     <div id="lyrShade"></div>
     <div id="lyr"><div id="lyrPrev"></div><div id="lyrCur"></div><div id="lyrNext"></div></div>
     <div id="tvTop"><div class="pillTv" id="tvNow"></div><div class="pillTv">Sala <b id="tvCode2"></b></div></div>
+    <div id="tvToast" class="pillTv hide" style="position:absolute;top:10vh;left:50%;transform:translateX(-50%);font-size:3vh;background:rgba(34,197,94,.9);color:#052e12;font-weight:700"></div>
     <div id="tvPause" class="hide"><div class="big">⏸ Pausado</div><div class="mid">Toque em “Continuar” no celular</div></div>
   </div>
   <div id="tvMsg" class="hide"></div>
@@ -166,6 +168,14 @@
         <button class="btn sec" id="nbPause">⏸ Pausar</button>
         <button class="btn sec" id="nbStop">⏹ Parar</button>
         <button class="btn sec" id="nbSkip">⏭ Pular</button>
+      </div>
+      <div id="nbLyr" style="margin-top:8px">
+        <div class="row">
+          <button class="btn sec lb" data-c="off-" title="Letra atrasa">⏪</button>
+          <button class="btn" id="nbSync" style="flex:2.4;background:var(--violet)">👆 Sincronizar letra</button>
+          <button class="btn sec lb" data-c="off+" title="Letra adianta">⏩</button>
+        </div>
+        <div class="muted" style="font-size:.74rem;margin-top:6px;text-align:center" id="nbLyrTxt">Toque em <b>Sincronizar</b> na hora em que a <b>linha de baixo</b> da TV deveria começar.</div>
       </div>
       <button class="btn go hide" id="nbNext">▶ Tocar a próxima</button>
     </div>
@@ -205,8 +215,11 @@
         <h2>Letra fora do tempo?</h2>
         <div class="muted" style="margin-bottom:10px">Se a letra aparece <b>antes</b> da voz, toque em “Atrasar”. Se aparece <b>depois</b>, “Adiantar”. Fica salvo para essa música.</div>
         <div class="ctrl">
-          <button class="btn sec" data-cmd="off-">⏪ Atrasar letra</button>
-          <button class="btn sec" data-cmd="off+">⏩ Adiantar letra</button>
+          <button class="btn sec" data-cmd="off-">⏪ Atrasar 0,5 s</button>
+          <button class="btn sec" data-cmd="off+">⏩ Adiantar 0,5 s</button>
+          <button class="btn sec" data-cmd="off--">⏪⏪ Atrasar 2 s</button>
+          <button class="btn sec" data-cmd="off++">⏩⏩ Adiantar 2 s</button>
+          <button class="btn sec" data-cmd="syncreset" style="grid-column:1/3">↺ Zerar ajuste da letra</button>
         </div>
         <div class="muted" style="text-align:center;margin-top:8px">Ajuste atual: <b id="offTxt">0,0 s</b></div>
       </div>
@@ -293,28 +306,35 @@ function parseLRC(lrc) {
   }
   return out.sort((a, b) => a.t - b.t);
 }
-async function fetchLyrics(song, durHint) {
-  const norm = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const normT = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const lrcCache = {};
+async function lrcCandidates(song) {
+  const k = song.title + '|' + song.artist;
+  if (lrcCache[k]) return lrcCache[k];
   const urls = [
-    'https://lrclib.net/api/search?track_name=' + encodeURIComponent(song.title) + '&artist_name=' + encodeURIComponent(song.artist.split(/ & | e /)[0]),
-    'https://lrclib.net/api/search?q=' + encodeURIComponent(song.title + ' ' + song.artist),
+    'https://lrclib.net/api/search?track_name=' + encodeURIComponent(song.title) + '&artist_name=' + encodeURIComponent((song.artist || '').split(/ & | e /)[0]),
+    'https://lrclib.net/api/search?q=' + encodeURIComponent(song.title + ' ' + (song.artist || '')),
   ];
   for (const u of urls) {
     try {
       const r = await fetch(u); if (!r.ok) continue;
-      const list = (await r.json()).filter(x => x.syncedLyrics && !x.instrumental && norm(x.trackName).includes(norm(song.title).slice(0, 8)));
-      if (!list.length) continue;
-      list.sort((a, b) => Math.abs((a.duration || 0) - (durHint || a.duration || 0)) - Math.abs((b.duration || 0) - (durHint || b.duration || 0)));
-      const best = list[0];
-      return { lines: parseLRC(best.syncedLyrics), duration: best.duration };
+      const list = (await r.json()).filter(x => x.syncedLyrics && !x.instrumental && normT(x.trackName).includes(normT(song.title).slice(0, 8)));
+      if (list.length) return (lrcCache[k] = list);
     } catch (_) {}
   }
-  return null;
+  return (lrcCache[k] = []);
+}
+async function fetchLyrics(song, durHint) {
+  const list = (await lrcCandidates(song)).slice();
+  if (!list.length) return null;
+  if (durHint) list.sort((a, b) => Math.abs((a.duration || 0) - durHint) - Math.abs((b.duration || 0) - durHint));
+  const best = list[0];
+  return { lines: parseLRC(best.syncedLyrics), duration: best.duration };
 }
 
 // ------------------------- YOUTUBE -------------------------
 async function ytSearch(q) {
-  const cacheKey = 'yt_' + q.toLowerCase();
+  const cacheKey = 'yt2_' + q.toLowerCase();
   const cached = ls.get(cacheKey, null);
   if (cached) return cached;
   const u = 'https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&maxResults=6&q=' + encodeURIComponent(q) + '&key=' + YT_KEY;
@@ -322,6 +342,13 @@ async function ytSearch(q) {
   const j = await r.json();
   if (j.error) throw new Error(j.error.message || 'YouTube');
   const res = (j.items || []).map(it => ({ id: it.id.videoId, title: it.snippet.title.replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"'), ch: it.snippet.channelTitle, thumb: it.snippet.thumbnails?.medium?.url }));
+  try {
+    const ids = res.map(v => v.id).join(',');
+    const d = await (await fetch('https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=' + ids + '&key=' + YT_KEY)).json();
+    const dur = {};
+    (d.items || []).forEach(it => { const m = it.contentDetails.duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/); if (m) dur[it.id] = (+m[1] || 0) * 3600 + (+m[2] || 0) * 60 + (+m[3] || 0); });
+    res.forEach(v => v.dur = dur[v.id] || 0);
+  } catch (_) {}
   ls.set(cacheKey, res);
   return res;
 }
@@ -345,7 +372,7 @@ function startTV() {
   let queue = [];                  // {qid, pid, name, song, videoId}
   let current = null;              // item atual
   let phase = 'lobby';             // lobby | loading | playing | result
-  let lines = [], offset = 0, history = ls.get('hist', []);
+  let lines = [], fit = { a: 1, b: 0, pts: [] }, shownNext = -1, history = ls.get('hist', []);
   let player = null, ytReady = false, unlocked = false, volume = 80;
   let lastTickSent = 0, paused = false, hold = false;
 
@@ -355,7 +382,7 @@ function startTV() {
       current: current && { qid: current.qid, pid: current.pid, name: current.name, song: current.song },
       queue: queue.map(q => ({ qid: q.qid, pid: q.pid, name: q.name, song: q.song })),
       players: [...players.entries()].map(([pid, p]) => ({ pid, name: p.name, total: p.total, best: p.best, count: p.count, on: conns.has(pid) })),
-      history: history.slice(0, 15), offset, paused, hold,
+      history: history.slice(0, 15), offset: Math.round(fit.b * 10) / 10, tempo: fit.a, paused, hold,
     };
   }
   function broadcast() {
@@ -404,7 +431,7 @@ function startTV() {
       broadcast();
     } else if (d.type === 'add') {
       const p = players.get(pid); if (!p) return;
-      queue.push({ qid: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), pid, name: p.name, song: d.song, videoId: d.videoId });
+      queue.push({ qid: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), pid, name: p.name, song: d.song, videoId: d.videoId, videoDur: d.videoDur || 0 });
       broadcast();
       if (phase === 'lobby' && unlocked && !hold) next();
     } else if (d.type === 'remove') {
@@ -424,7 +451,12 @@ function startTV() {
     else if (c === 'playnext') { hold = false; if (phase === 'lobby' && queue.length) next(); else broadcast(); }
     else if (c === 'skip') { if (current) askScoreOrSkip(); }
     else if (c === 'restart') { player.seekTo(0, true); player.playVideo(); }
-    else if (c === 'off+' || c === 'off-') { offset = Math.round((offset + (c === 'off+' ? .5 : -.5)) * 10) / 10; if (current) ls.set('off_' + current.videoId, offset); broadcast(); }
+    else if (c === 'off+' || c === 'off-' || c === 'off++' || c === 'off--') {
+      const step = { 'off+': .5, 'off-': -.5, 'off++': 2, 'off--': -2 }[c];
+      fit.b = Math.round((fit.b + step) * 100) / 100; fit.pts = []; saveFit(); broadcast(); tvToast((step > 0 ? '⏩ Letra adiantada ' : '⏪ Letra atrasada ') + Math.abs(step).toString().replace('.', ',') + ' s');
+    }
+    else if (c === 'sync') { syncTap(); }
+    else if (c === 'syncreset') { fit = { a: 1, b: 0, pts: [] }; saveFit(); broadcast(); }
     else if (c === 'vol+' || c === 'vol-') { volume = Math.max(10, Math.min(100, volume + (c === 'vol+' ? 10 : -10))); player.setVolume(volume); }
     else if (c === 'fs') { try { document.documentElement.requestFullscreen(); } catch(_) {} }
   }
@@ -455,6 +487,26 @@ function startTV() {
   });
   $('tvStart').focus();
 
+  function saveFit() { if (current) ls.set('fit_' + current.videoId, fit); }
+  // Toque no instante em que a linha "próxima" (a de baixo na TV) deveria começar
+  function syncTap() {
+    if (phase !== 'playing' || !lines.length || shownNext < 0 || !lines[shownNext]) return;
+    let vt; try { vt = player.getCurrentTime() - 0.15; } catch(_) { return; }
+    const lt = lines[shownNext].t;
+    fit.pts.push([vt, lt]); fit.pts = fit.pts.slice(-6);
+    const xs = fit.pts.map(p => p[0]), span = Math.max(...xs) - Math.min(...xs);
+    if (fit.pts.length >= 2 && span >= 20) {
+      const n = fit.pts.length, mx = xs.reduce((a, b) => a + b) / n, my = fit.pts.reduce((a, p) => a + p[1], 0) / n;
+      let sxy = 0, sxx = 0; fit.pts.forEach(([x, y]) => { sxy += (x - mx) * (y - my); sxx += (x - mx) ** 2; });
+      let a = sxx ? sxy / sxx : 1; a = Math.max(0.9, Math.min(1.1, a));
+      fit.a = a; fit.b = my - a * mx;
+    } else {
+      fit.b = lt - fit.a * vt;
+    }
+    saveFit(); broadcast(); tvToast('✅ Letra sincronizada');
+  }
+  let toastT = null;
+  function tvToast(t) { $('tvToast').textContent = t; $('tvToast').classList.remove('hide'); clearTimeout(toastT); toastT = setTimeout(() => $('tvToast').classList.add('hide'), 1500); }
   function setPaused(v) {
     paused = v;
     try { v ? player.pauseVideo() : player.playVideo(); } catch(_) {}
@@ -478,13 +530,13 @@ function startTV() {
     if (hold) { phase = 'lobby'; current = null; showLobby(); broadcast(); return; }
     current = queue.shift();
     phase = 'loading'; lines = []; paused = false; $('tvPause').classList.add('hide');
-    offset = ls.get('off_' + current.videoId, 0);
+    fit = ls.get('fit_' + current.videoId, null) || { a: 1, b: 0, pts: [] }; shownNext = -1;
     broadcast();
     $('tvLobby').classList.add('hide'); $('tvStage').classList.remove('hide');
     $('tvNow').innerHTML = '🎤 <b>' + esc(current.name) + '</b> · ' + esc(current.song.title) + ' — ' + esc(current.song.artist);
     msg('<div class="mid">Agora é a vez de</div><div class="big">🎤 ' + esc(current.name) + '</div><div class="mid">' + esc(current.song.title) + ' — ' + esc(current.song.artist) + '</div><div class="mid" style="font-size:2.6vh">Carregando a letra…</div>');
     $('lyrPrev').textContent = ''; $('lyrCur').textContent = ''; $('lyrNext').textContent = '';
-    const lyr = await fetchLyrics(current.song, null);
+    const lyr = await fetchLyrics(current.song, current.videoDur || null);
     lines = lyr ? lyr.lines : [];
     if (!lines.length) $('lyrNext').textContent = 'Letra sincronizada não encontrada para essa música — solta a voz assim mesmo! 🎶';
     await new Promise(r => setTimeout(r, 2500));
@@ -526,11 +578,15 @@ function startTV() {
     requestAnimationFrame(frame);
     if (phase !== 'playing' || !player || !ytReady || !lines.length) return;
     let t;
-    try { t = player.getCurrentTime() + offset; } catch(_) { return; }
+    try { t = fit.a * player.getCurrentTime() + fit.b; } catch(_) { return; }
     let i = -1;
     for (let k = 0; k < lines.length; k++) { if (lines[k].t <= t) i = k; else break; }
     const cur = lines[i], nxt = lines[i + 1];
-    const curTxt = cur ? (cur.text || '♪ ♪ ♪') : (lines[0] ? '♪ prepare-se… ♪' : '');
+    shownNext = i + 1;
+    const gap = !cur || !cur.text, untilNext = nxt ? nxt.t - t : 99;
+    let curTxt;
+    if (gap && nxt && untilNext <= 3.5) curTxt = ['', '●', '● ●', '● ● ●', '● ● ●'][Math.ceil(untilNext)] || '● ● ●';
+    else curTxt = cur ? (cur.text || '♪ ♪ ♪') : (lines[0] ? '♪ prepare-se… ♪' : '');
     if ($('lyrCur').textContent !== curTxt) {
       $('lyrCur').textContent = curTxt;
       $('lyrPrev').textContent = (lines[i - 1] && lines[i - 1].text) || '';
@@ -645,17 +701,27 @@ function startPhone() {
     try { vids = await ytSearch(q); }
     catch (e) { $('sheet').innerHTML = '<h3>Não consegui buscar no YouTube</h3><div class="muted" style="margin:10px 0">' + esc(e.message) + '</div><button class="btn sec" id="mClose">Fechar</button>'; $('mClose').onclick = closeModal; return; }
     const kinds = [['playback','🎼 Playback (sem voz)'],['karaoke','🎤 Karaokê'],['original','🎵 Original']];
+    const lrcs = await lrcCandidates(song);
+    const lds = lrcs.map(x => x.duration).filter(Boolean);
+    vids.forEach((v, i) => {
+      v.i = i;
+      v.diff = v.dur && lds.length ? Math.min(...lds.map(d => Math.abs(d - v.dur))) : 999;
+      v.badge = !lds.length ? '' : v.diff <= 3 ? '<span style="color:var(--green)">✅ Letra no tempo</span>' : v.diff <= 12 ? '<span style="color:var(--amber)">≈ Quase no tempo</span>' : '<span style="color:var(--mut)">⚠️ Tempo diferente</span>';
+    });
+    const order = vids.slice().sort((a, b) => (a.diff <= 3 ? 0 : a.diff <= 12 ? 1 : 2) - (b.diff <= 3 ? 0 : b.diff <= 12 ? 1 : 2) || a.i - b.i);
+    const fmtD = d => d ? Math.floor(d / 60) + ':' + String(d % 60).padStart(2, '0') : '';
     $('sheet').innerHTML =
       '<h3>' + esc(song.title) + '</h3><div class="muted" style="margin-bottom:10px">' + esc(song.artist) + ' · escolha o vídeo que vai tocar na TV</div>' +
       '<div class="cats">' + kinds.map(([k, t]) => '<button data-k="' + k + '"' + (k === kind ? ' class="on"' : '') + '>' + t + '</button>').join('') + '</div>' +
-      '<div class="muted" style="margin-bottom:10px">Dica: prefira <b>playback</b> — o vídeo sem voz, só a música. Evite vídeos que já têm letra escrita, para não ficar duas letras na tela.</div>' +
-      '<div class="vids">' + (vids.map((v, i) => '<button class="vid" data-v="' + i + '">' + (v.thumb ? '<img src="' + esc(v.thumb) + '" alt="">' : '') + '<div>' + esc(v.title) + '</div></button>').join('') || '<div class="muted">Nada encontrado.</div>') + '</div>' +
+      '<div class="muted" style="margin-bottom:10px">' + (lds.length ? 'Escolha um com <b style="color:var(--green)">✅ Letra no tempo</b>: ele tem a mesma duração da letra, então a letra acompanha a música.' : 'Não achei letra sincronizada dessa música — vai tocar sem letra.') + ' Evite vídeos que já têm letra escrita.</div>' +
+      (!order.some(v => v.diff <= 3) && lds.length ? '<div class="muted" style="margin-bottom:10px">Nenhum vídeo bateu certinho. Tente outra aba (Karaokê / Original) ou escolha e use o <b>👆 Sincronizar</b> durante a música.</div>' : '') +
+      '<div class="vids">' + (order.map(v => '<button class="vid" data-v="' + v.i + '">' + (v.thumb ? '<img src="' + esc(v.thumb) + '" alt="">' : '') + '<div>' + (v.badge ? v.badge + ' · ' : '') + fmtD(v.dur) + '<br>' + esc(v.title) + '</div></button>').join('') || '<div class="muted">Nada encontrado.</div>') + '</div>' +
       '<button class="btn sec" id="mClose" style="margin-top:12px">Cancelar</button>';
     $('mClose').onclick = closeModal;
     $('sheet').querySelectorAll('.cats button').forEach(b => b.onclick = () => pickVideo(song, b.dataset.k));
     $('sheet').querySelectorAll('.vid').forEach(b => b.onclick = () => {
       const v = vids[+b.dataset.v];
-      send({ type: 'add', song: { title: song.title, artist: song.artist || v.ch }, videoId: v.id });
+      send({ type: 'add', song: { title: song.title, artist: song.artist || v.ch }, videoId: v.id, videoDur: v.dur || 0 });
       closeModal();
       toast('✅ “' + song.title + '” entrou na fila!');
     });
@@ -685,6 +751,7 @@ function startPhone() {
     const showNext = state.phase === 'lobby' && state.hold && state.queue.length > 0;
     $('nowBar').classList.toggle('hide', !playing && !showNext);
     $('nbPlay').classList.toggle('hide', !playing);
+    $('nbLyr').classList.toggle('hide', !playing);
     $('nbNext').classList.toggle('hide', !showNext);
     if (playing && state.current) $('nbTitle').innerHTML = (state.paused ? '⏸ Pausado · ' : '▶ Tocando · ') + '<b>' + esc(state.current.song.title) + '</b> · 🎤 ' + esc(state.current.name);
     else if (showNext) $('nbTitle').innerHTML = 'Próxima: <b>' + esc(state.queue[0].song.title) + '</b> · 🎤 ' + esc(state.queue[0].name);
@@ -695,8 +762,12 @@ function startPhone() {
     $('qList').innerHTML = state.queue.length ? state.queue.map((q, i) => '<div class="q"><div class="n">' + (i + 1) + '</div><div class="t">' + esc(q.song.title) + '<span>' + esc(q.song.artist) + ' · 🎤 ' + esc(q.name) + '</span></div>' + (q.pid === myId ? '<button data-rm="' + q.qid + '">✕</button>' : '') + '</div>').join('') : '<div class="muted">Fila vazia.</div>';
     $('rankList').innerHTML = state.players.length ? [...state.players].sort((a, b) => b.total - a.total).map((p, i) => '<div class="rank"><span>' + (['🥇','🥈','🥉'][i] || '🎤') + ' ' + esc(p.name) + (p.pid === myId ? ' (você)' : '') + '</span><b>' + p.total + ' pts</b></div>').join('') : '<div class="muted">Ninguém pontuou ainda.</div>';
     $('histList').innerHTML = state.history.length ? state.history.map(h => '<div class="rank"><span>' + esc(h.name) + ' · ' + esc(h.title) + '</span><b>' + h.score + '</b></div>').join('') : '<div class="muted">Ainda sem notas.</div>';
-    $('offTxt').textContent = (state.offset > 0 ? '+' : '') + String(state.offset).replace('.', ',') + ' s';
+    const offS = (state.offset > 0 ? '+' : '') + String(state.offset).replace('.', ',') + ' s' + (state.tempo && Math.abs(state.tempo - 1) > 0.004 ? ' · andamento ' + Math.round(state.tempo * 100) + '%' : '');
+    $('offTxt').textContent = offS;
+    if (playing) $('nbLyrTxt').innerHTML = (state.offset || (state.tempo && state.tempo !== 1)) ? 'Ajuste da letra: <b>' + offS + '</b> · toque de novo em Sincronizar em outra parte da música para acertar o andamento' : 'Toque em <b>Sincronizar</b> na hora em que a <b>linha de baixo</b> da TV deveria começar.';
   }
+  $('nbSync').addEventListener('click', () => { send({ type: 'cmd', cmd: 'sync' }); navigator.vibrate?.(30); const b = $('nbSync'); b.textContent = '✅ Sincronizado!'; setTimeout(() => b.textContent = '👆 Sincronizar letra', 900); });
+  document.querySelectorAll('#nbLyr .lb').forEach(b => b.addEventListener('click', () => { send({ type: 'cmd', cmd: b.dataset.c }); navigator.vibrate?.(15); }));
   $('nbPause').addEventListener('click', () => { send({ type: 'cmd', cmd: 'pause' }); navigator.vibrate?.(20); });
   $('nbSkip').addEventListener('click', () => { send({ type: 'cmd', cmd: 'skip' }); navigator.vibrate?.(20); });
   $('nbNext').addEventListener('click', () => { send({ type: 'cmd', cmd: 'playnext' }); navigator.vibrate?.(20); });
