@@ -6,6 +6,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#1F3BFF">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Na Bucha">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Na Bucha · Orçamento de pintura</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -301,6 +305,8 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
         <div class="op"><button class="sec" data-entrada="mao" style="display:flex;align-items:center;justify-content:center;gap:10px"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 7l3 3"/></svg> Preencher na mão</button>
         <p class="hint">Você escolhe e digita cada campo.</p></div>
         <p class="hint"><a href="../ajuda/" style="color:inherit;font-weight:700">Como funciona? Veja o passo a passo</a></p>
+        <button class="sec" id="instalar" hidden style="display:none;align-items:center;justify-content:center;gap:8px">Instalar o app no celular</button>
+        <p class="hint" id="instalar-ios" hidden>Para ter o Na Bucha na tela do iPhone: toque em Compartilhar e depois em "Adicionar à Tela de Início".</p>
         <p class="hint" id="ola-precos" hidden>Primeira vez? Seus preços já vêm prontos. <button class="link" data-cfg>Conferir Meus preços</button></p>
       </div>
       <div class="card voz" id="voz" data-estado="pronto">
@@ -1527,6 +1533,20 @@ function trenaSVG(expr,cls){
 $('#ola-trena').innerHTML=trenaSVG('oi');$('#voz-tr-lendo').innerHTML=trenaSVG('medindo');$('#voz-tr-erro').innerHTML=trenaSVG('triste');
 document.addEventListener('click',e=>{if(e.target.closest('[data-cfg]'))show('cfg');if(e.target.closest('[data-usar-dias]')){O.diasM=dd(calc().dias);save();renderDias();refresh()}});
 show('orc');
+})();
+</script>
+<script>
+// App instalável: atualiza sozinho (ver sw.js). Botão "Instalar" só aparece quando o celular permite.
+(function(){
+  if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function(){});
+  var inst=document.getElementById('instalar'), ios=document.getElementById('instalar-ios'), pedido=null;
+  var instalado=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+  function reg(n){try{window.nbReg&&nbReg.ev('app',n)}catch(e){}}
+  if(instalado){reg('abriu-instalado');return}
+  window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();pedido=e;inst.hidden=false;inst.style.display='flex'});
+  inst.addEventListener('click',function(){if(!pedido)return;pedido.prompt();pedido.userChoice.then(function(r){reg(r.outcome==='accepted'?'instalou':'recusou-instalar');pedido=null;inst.hidden=true;inst.style.display='none'})});
+  var eIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)&&!/crios|fxios/i.test(navigator.userAgent);
+  if(eIOS) ios.hidden=false;
 })();
 </script>
 </body>
