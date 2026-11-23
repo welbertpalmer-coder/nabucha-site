@@ -6,7 +6,7 @@
   const URL_REG = 'https://hello-world-black-sun-acbf.contato-nabucha.workers.dev/registro';
   const VERSAO = '2026-11-08b';
   const PEND = 'nb-coment-pend';
-  const pagina = location.pathname.indexOf('orcamento') >= 0 ? 'orcamento' : (location.pathname.indexOf('privacidade') >= 0 ? 'privacidade' : 'inicio');
+  const pagina = location.pathname.indexOf('orcamento') >= 0 ? 'orcamento' : (location.pathname.indexOf('privacidade') >= 0 ? 'privacidade' : (location.pathname.indexOf('ajuda') >= 0 ? 'ajuda' : 'inicio'));
   const local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 
   let vid = '?';
