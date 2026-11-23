@@ -33,6 +33,9 @@
   #tvStage{position:absolute;inset:0;background:#000}
   #ytWrap{position:absolute;inset:0}
   #ytWrap iframe{width:100%;height:100%}
+  #pitchBox{position:absolute;right:2.5vw;top:10vh;width:30vw;height:20vh;background:rgba(10,6,25,.55);border-radius:2vh;overflow:hidden}
+  #pitchBox canvas{width:100%;height:100%;display:block}
+  #pitchNote{position:absolute;top:1vh;left:1.2vw;font-size:2.6vh;font-weight:800;color:var(--amber);text-shadow:0 .2vh .6vh #000}
   #lyrShade{position:absolute;left:0;right:0;bottom:0;height:48vh;background:linear-gradient(transparent,rgba(5,2,15,.92) 45%);pointer-events:none}
   #lyr{position:absolute;left:4vw;right:4vw;bottom:6vh;text-align:center;pointer-events:none}
   #lyrCur{font-size:7.2vh;font-weight:800;line-height:1.15;filter:drop-shadow(0 .4vh .8vh rgba(0,0,0,.9));background:linear-gradient(90deg,var(--amber) var(--p,0%),#fff var(--p,0%));-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -131,6 +134,7 @@
   <div id="tvStage" class="hide">
     <div id="ytWrap"><div id="yt"></div></div>
     <div id="lyrShade"></div>
+    <div id="pitchBox" class="hide"><canvas id="pitchCv" width="600" height="220"></canvas><div id="pitchNote">—</div></div>
     <div id="lyr"><div id="lyrPrev"></div><div id="lyrCur"></div><div id="lyrNext"></div></div>
     <div id="tvTop"><div class="pillTv" id="tvNow"></div><div class="pillTv">Sala <b id="tvCode2"></b></div></div>
     <div id="tvToast" class="pillTv hide" style="position:absolute;top:10vh;left:50%;transform:translateX(-50%);font-size:3vh;background:rgba(34,197,94,.9);color:#052e12;font-weight:700"></div>
@@ -400,7 +404,7 @@ function startTV() {
   let phase = 'lobby';             // lobby | loading | playing | result
   let lines = [], fit = { a: 1, b: 0, pts: [] }, shownNext = -1, history = ls.get('hist', []);
   let player = null, ytReady = false, unlocked = false, volume = 80;
-  let lastTickSent = 0, paused = false, hold = false;
+  let lastTickSent = 0, paused = false, hold = false, pitchHist = [];
   let vctx = null, micGain = null, echoWet = null, micVol = 1.2, echoOn = false, voiceCall = null, voiceEl = null, voiceOn = false;
 
   function snapshot() {
@@ -475,6 +479,10 @@ function startTV() {
       queue = queue.filter(q => q.qid !== d.qid); broadcast();
     } else if (d.type === 'cmd') {
       cmd(d.cmd);
+    } else if (d.type === 'ready') {
+      if (phase === 'ready' && current && d.qid === current.qid && readyResolve) readyResolve(true);
+    } else if (d.type === 'pitch') {
+      if (phase === 'playing' && current && d.qid === current.qid) { pitchHist.push({ t: performance.now(), f: d.f }); if (pitchHist.length > 120) pitchHist.splice(0, pitchHist.length - 120); }
     } else if (d.type === 'score') {
       if (!current || d.qid !== current.qid || phase !== 'playing') return;
       finishSong(Math.max(0, Math.min(100, Math.round(d.value))));
@@ -487,7 +495,7 @@ function startTV() {
     if (c === 'pause') { if (phase !== 'playing') return; setPaused(!paused); }
     else if (c === 'stop') { stopSong(); }
     else if (c === 'playnext') { hold = false; if (phase === 'lobby' && queue.length) next(); else broadcast(); }
-    else if (c === 'skip') { if (current) askScoreOrSkip(); }
+    else if (c === 'skip') { if (phase === 'ready' && readyResolve) { readyResolve(false); endSong(); } else if (current) askScoreOrSkip(); }
     else if (c === 'restart') { player.seekTo(0, true); player.playVideo(); }
     else if (c === 'off+' || c === 'off-' || c === 'off++' || c === 'off--') {
       const step = { 'off+': .5, 'off-': -.5, 'off++': 2, 'off--': -2 }[c];
@@ -591,7 +599,8 @@ function startTV() {
     broadcast();
   }
   function stopSong() {
-    if (!current || (phase !== 'playing' && phase !== 'loading')) return;
+    if (!current || (phase !== 'playing' && phase !== 'loading' && phase !== 'ready')) return;
+    if (readyResolve) readyResolve(false);
     notify(current.pid, { type: 'stopped' });
     try { player.stopVideo(); } catch(_) {}
     paused = false; $('tvPause').classList.add('hide');
@@ -618,11 +627,26 @@ function startTV() {
     if (!lines.length) $('lyrNext').textContent = 'Letra sincronizada não encontrada para essa música — solta a voz assim mesmo! 🎶';
     await new Promise(r => setTimeout(r, 2500));
     if (!ytReady) await new Promise(r => { const iv = setInterval(() => { if (ytReady) { clearInterval(iv); r(); } }, 200); });
+    // espera o cantor tocar em "Estou pronto!" (libera o microfone e ninguém perde o começo)
+    phase = 'ready'; broadcast();
+    const go = await waitReady(current);
+    if (!go || !current) return;
     hideMsg();
-    phase = 'playing'; broadcast();
+    phase = 'playing'; pitchHist = []; broadcast();
     player.loadVideoById(current.videoId);
     player.setVolume(volume);
     notify(current.pid, { type: 'yourTurn', qid: current.qid });
+  }
+  let readyResolve = null;
+  function waitReady(item) {
+    return new Promise(res => {
+      readyResolve = v => { readyResolve = null; clearInterval(iv); res(v); };
+      notify(item.pid, { type: 'getReady', qid: item.qid, song: item.song });
+      let left = conns.has(item.pid) ? 25 : 5;
+      const draw = () => msg('<div class="mid">Agora é a vez de</div><div class="big">🎤 ' + esc(item.name) + '</div><div class="mid">' + esc(item.song.title) + ' — ' + esc(item.song.artist) + '</div><div class="mid" style="margin-top:2vh;color:var(--amber)">Toque em <b>“Estou pronto!”</b> no celular</div><div class="mid" style="font-size:2.4vh">começa sozinho em ' + left + ' s</div>');
+      draw();
+      const iv = setInterval(() => { left--; if (left <= 0) readyResolve && readyResolve(true); else draw(); }, 1000);
+    });
   }
 
   function askScoreOrSkip() {
@@ -651,8 +675,33 @@ function startTV() {
   function showLobby() { $('tvStage').classList.add('hide'); $('tvLobby').classList.remove('hide'); try { player.stopVideo(); } catch(_) {} }
 
   // ---- letra sincronizada ----
+  const NOTES = ['Dó','Dó#','Ré','Ré#','Mi','Fá','Fá#','Sol','Sol#','Lá','Lá#','Si'];
+  function drawPitch() {
+    const box = $('pitchBox'), on = phase === 'playing' && pitchHist.length > 0;
+    box.classList.toggle('hide', !on);
+    if (!on) return;
+    const cv = $('pitchCv'), g = cv.getContext('2d'), W = cv.width, H = cv.height, now = performance.now(), span = 6000;
+    g.clearRect(0, 0, W, H);
+    g.strokeStyle = 'rgba(255,255,255,.08)'; g.lineWidth = 1;
+    for (let k = 0; k <= 6; k++) { const y = H * k / 6; g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); }
+    const lo = 40, hi = 79, yOf = m => H - (Math.max(lo, Math.min(hi, m)) - lo) / (hi - lo) * H;
+    let prev = null; g.lineWidth = 6; g.lineCap = 'round';
+    for (const p of pitchHist) {
+      const age = now - p.t; if (age > span) { prev = null; continue; }
+      const x = W - age / span * W;
+      if (!p.f) { prev = null; continue; }
+      const m = 69 + 12 * Math.log2(p.f / 440), y = yOf(m);
+      if (prev && Math.abs(m - prev[2]) > 9) prev = null;
+      if (prev) { g.strokeStyle = 'rgba(251,191,36,' + (1 - age / span * .7) + ')'; g.beginPath(); g.moveTo(prev[0], prev[1]); g.lineTo(x, y); g.stroke(); }
+      prev = [x, y, m];
+    }
+    const last = pitchHist[pitchHist.length - 1];
+    if (last && last.f && now - last.t < 400) { const m = Math.round(69 + 12 * Math.log2(last.f / 440)); $('pitchNote').textContent = '🎤 ' + NOTES[((m % 12) + 12) % 12]; }
+    else $('pitchNote').textContent = '🎤 …';
+  }
   function frame() {
     requestAnimationFrame(frame);
+    drawPitch();
     if (phase !== 'playing' || !player || !ytReady || !lines.length) return;
     let t;
     try { t = fit.a * player.getCurrentTime() + fit.b; } catch(_) { return; }
@@ -816,7 +865,8 @@ function startPhone() {
   // ---- estado vindo da TV ----
   function onData(d) {
     if (d.type === 'state') { state = d; render(); }
-    else if (d.type === 'yourTurn') startSinging(d.qid);
+    else if (d.type === 'getReady') showReady(d);
+    else if (d.type === 'yourTurn') { closeModal(); startSinging(d.qid); }
     else if (d.type === 'tick') onTick(d);
     else if (d.type === 'final') { const sc = stopSinging(); send({ type: 'score', qid: d.qid, value: sc }); }
     else if (d.type === 'stopped') { stopSinging(); toast('⏹ Música parada.'); }
@@ -824,7 +874,7 @@ function startPhone() {
   }
   function render() {
     if (!state) return;
-    const playing = state.phase === 'playing' || state.phase === 'loading';
+    const playing = state.phase === 'playing' || state.phase === 'loading' || state.phase === 'ready';
     const showNext = state.phase === 'lobby' && state.hold && state.queue.length > 0;
     $('nowBar').classList.toggle('hide', !playing && !showNext);
     $('nbPlay').classList.toggle('hide', !playing);
@@ -879,6 +929,27 @@ function startPhone() {
   document.querySelectorAll('[data-vc]').forEach(b => b.addEventListener('click', () => send({ type: 'cmd', cmd: b.dataset.vc })));
   paintVoice();
 
+  // ---- "Estou pronto!" (o toque também libera o microfone, inclusive no iPhone) ----
+  function showReady(d) {
+    navigator.vibrate?.([120, 80, 120]);
+    $('modal').classList.remove('hide');
+    $('sheet').innerHTML = '<h3 style="font-size:1.3rem">🎤 É a sua vez!</h3><div class="muted" style="margin:6px 0 16px">' + esc(d.song.title) + ' — ' + esc(d.song.artist) + '</div>' +
+      '<button class="btn" id="rdyGo" style="padding:22px;font-size:1.25rem;background:var(--green);color:#052e12">✅ Estou pronto!</button>' +
+      '<div class="muted" style="text-align:center;margin-top:10px">A música começa quando você tocar (ou sozinha em alguns segundos).</div>';
+    $('rdyGo').onclick = async () => {
+      $('rdyGo').disabled = true; $('rdyGo').textContent = 'Abrindo o microfone…';
+      await openMic();
+      send({ type: 'ready', qid: d.qid });
+      $('rdyGo').textContent = '🎶 Começando!';
+      setTimeout(closeModal, 600);
+    };
+  }
+  async function openMic() {
+    if (mic && mic.active) return true;
+    try { mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: true, latency: 0, channelCount: 1 } }); return true; }
+    catch (_) { mic = null; return false; }
+  }
+
   // ---- pontuação pelo microfone ----
   let mic = null, actx = null, an = null, buf = null, singing = null, loopT = null, lastTick = { active: false, at: 0 }, wake = null;
   async function startSinging(qid) {
@@ -888,7 +959,7 @@ function startPhone() {
     navigator.vibrate?.([80, 60, 80]);
     try { wake = await navigator.wakeLock?.request('screen'); } catch(_) {}
     try {
-      mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: true, latency: 0, channelCount: 1 } });
+      if (!(await openMic())) throw new Error('mic');
       if (voiceWanted) startVoice();
       actx = new (window.AudioContext || window.webkitAudioContext)();
       const src = actx.createMediaStreamSource(mic);
@@ -917,6 +988,7 @@ function startPhone() {
   function analyse() {
     if (!singing || !an) return;
     const { rms, f } = detectPitch();
+    send({ type: 'pitch', qid: singing.qid, f: f ? Math.round(f) : 0 });
     $('myMeter').style.width = Math.min(100, rms * 600) + '%';
     const active = lastTick.active && performance.now() - lastTick.at < 800;
     if (active) {
