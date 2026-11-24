@@ -84,6 +84,12 @@ button:focus-visible,.chip:focus-visible,a:focus-visible,summary:focus-visible{o
 .room.falta{border-color:#E5484D;border-width:2px}
 .entrada .mic{flex-direction:row}.entrada .sec{width:100%;min-height:56px;font-size:17px}
 .entrada .op{display:flex;flex-direction:column;gap:6px}
+.jeito-res{margin:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap}.jeito-res .link{min-height:44px}
+.ex-bar{display:flex;flex-direction:column;gap:8px;align-items:stretch;background:#C8FF2E;color:#0B1030;border-radius:14px;padding:14px;text-align:center}
+.ex-bar .mic{font:inherit;font-weight:700;font-size:17px;min-height:56px;border:0;border-radius:99px;background:#0B1030;color:#fff;cursor:pointer}
+.ex-bar .link{color:#0B1030}
+.motivo{position:fixed;left:12px;right:12px;bottom:84px;z-index:60;max-width:560px;margin:0 auto;background:var(--surface);color:var(--ink);border:1.5px solid var(--line);border-radius:16px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.25);display:flex;flex-direction:column;gap:10px}
+.motivo[hidden]{display:none}.motivo-cab{display:flex;justify-content:space-between;align-items:center}.motivo .chip{min-height:44px}
 .voz-links{display:flex;justify-content:center}
 .voz[data-estado="enviando"] .voz-links,.voz[data-estado="gravando"] #voz-mao,.voz[data-estado="gravando"] #voz-todos{display:none}
 .ic{width:22px;height:22px;flex:none}
@@ -299,11 +305,12 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
 
     <section id="p1" style="display:flex;flex-direction:column;gap:14px">
       <div class="card entrada" id="entrada" hidden>
-        <div class="ola"><span class="tr-mini" id="ola-trena"></span><div><h2>Bora orçar?</h2><p class="hint">Como quer começar este orçamento?</p></div></div>
-        <div class="op"><button class="mic" data-entrada="voz"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg> Falar o serviço</button>
-        <p class="hint">Grave um áudio como no WhatsApp. O Na Bucha preenche e você só confere.</p></div>
-        <div class="op"><button class="sec" data-entrada="mao" style="display:flex;align-items:center;justify-content:center;gap:10px"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 7l3 3"/></svg> Preencher na mão</button>
-        <p class="hint">Você escolhe e digita cada campo.</p></div>
+        <div class="ola"><span class="tr-mini" id="ola-trena"></span><div><h2>Bora orçar?</h2><p class="hint">Coloque as medidas dos cômodos e o Na Bucha monta o orçamento pronto para o WhatsApp.</p></div></div>
+        <div class="op"><button class="mic" data-entrada="mao"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 7l3 3"/></svg> Começar meu orçamento</button></div>
+        <div class="op"><button class="sec" id="ver-exemplo">Ver um exemplo pronto</button>
+        <p class="hint">Veja em 10 segundos como fica a folha que vai para o cliente.</p></div>
+        <p class="hint" id="voz-link"><button class="link" data-entrada="voz" style="min-height:44px">Prefere falar? Grave um áudio</button> e o Na Bucha preenche para você.</p>
+        <p class="hint" id="voz-iab" hidden>Para preencher falando, abra o Na Bucha no Chrome ou no Safari (no Facebook ou Instagram: toque nos três pontinhos e em "Abrir no navegador").</p>
         <p class="hint"><a href="../ajuda/" style="color:inherit;font-weight:700">Como funciona? Veja o passo a passo</a></p>
         <button class="sec" id="instalar" hidden style="display:none;align-items:center;justify-content:center;gap:8px">Instalar o app no celular</button>
         <p class="hint" id="instalar-ios" hidden>Para ter o Na Bucha na tela do iPhone: toque em Compartilhar e depois em "Adicionar à Tela de Início".</p>
@@ -325,28 +332,6 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
         <div class="row2" data-v="feito"><button class="sec" id="voz-desfazer">Desfazer</button><button class="mic" id="voz-mais"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg> Gravar mais</button></div>
         <div class="voz-links"><button class="link" id="voz-mao" data-entrada="mao">Prefiro preencher na mão</button><button class="link" id="voz-todos" data-entrada="mao">Ver todos os campos</button></div>
       </div>
-      <div class="card">
-        <h2>Como vai cobrar este serviço?</h2>
-        <div class="cmp jeito" id="jeito">
-          <button class="opt" data-jeito="custo"><strong>Custos + lucro</strong><span>Dias, equipe e gastos, mais o seu lucro</span></button>
-          <button class="opt" data-jeito="diaria"><strong>Por diária</strong><span>Dias de serviço × diária</span></button>
-          <button class="opt" data-jeito="m2"><strong>Por m²</strong><span>Mede os cômodos, preço por m²</span></button>
-          <button class="opt" data-jeito="fechado"><strong>Preço fechado</strong><span>Você diz o valor no fim</span></button>
-        </div>
-        <p class="hint" id="jeito-hint"></p>
-      </div>
-      <div class="card">
-        <h2>Cliente</h2>
-        <label>Nome do cliente<input id="c-nome" autocomplete="off"></label>
-        <button class="link" id="cli-escolher" hidden style="align-self:flex-start">Escolher dos meus clientes</button>
-        <details><summary>WhatsApp e endereço <span>Opcional</span></summary>
-          <div class="in row">
-            <label>WhatsApp<input id="c-whats" inputmode="tel" autocomplete="off"></label>
-            <label>Bairro ou endereço<input id="c-local" autocomplete="off"></label>
-          </div>
-        </details>
-      </div>
-      <div id="slot1"></div>
       <div class="card" id="rooms-card">
         <h2 id="rooms-h">Cômodos</h2>
         <p class="hint" id="rooms-hint">Só largura e comprimento, em metros. O resto vem do padrão: toque em "ajustar" se for diferente.</p>
@@ -362,6 +347,18 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
           <button class="chip add" data-add="Outro">+ Outro</button>
         </div>
         </div>
+      </div>
+      <div id="slot1"></div>
+      <div class="card">
+        <h2 id="jeito-h">Como vai cobrar este serviço?</h2>
+        <p class="jeito-res" id="jeito-res" hidden></p>
+        <div class="cmp jeito" id="jeito">
+          <button class="opt" data-jeito="custo"><strong>Custos + lucro</strong><span>Dias, equipe e gastos, mais o seu lucro</span></button>
+          <button class="opt" data-jeito="diaria"><strong>Por diária</strong><span>Dias de serviço × diária</span></button>
+          <button class="opt" data-jeito="m2"><strong>Por m²</strong><span>Mede os cômodos, preço por m²</span></button>
+          <button class="opt" data-jeito="fechado"><strong>Preço fechado</strong><span>Você diz o valor no fim</span></button>
+        </div>
+        <p class="hint" id="jeito-hint"></p>
       </div>
     </section>
 
@@ -445,6 +442,18 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
         </div>
         <label class="money" id="fech-l">Valor da mão de obra<input id="fech" inputmode="decimal"></label>
         <p class="verdict" id="verdict"></p>
+        <p class="hint ref-precos" id="ref-precos" hidden>Esse valor usa a diária e os preços de referência do app. <button class="link" data-cfg style="min-height:44px">Ajustar para os meus preços</button></p>
+      </div>
+      <div class="card" id="cli-card">
+        <h2>Cliente</h2>
+        <label>Nome do cliente<input id="c-nome" autocomplete="off"></label>
+        <button class="link" id="cli-escolher" hidden style="align-self:flex-start">Escolher dos meus clientes</button>
+        <details><summary>WhatsApp e endereço <span>Opcional</span></summary>
+          <div class="in row">
+            <label>WhatsApp<input id="c-whats" inputmode="tel" autocomplete="off"></label>
+            <label>Bairro ou endereço<input id="c-local" autocomplete="off"></label>
+          </div>
+        </details>
       </div>
       <div class="card">
         <h2>Condições</h2>
@@ -555,6 +564,7 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
   <div class="sheet-col">
     <div class="sheet" id="sheet"></div>
     <div class="actions">
+      <div class="ex-bar" id="ex-bar" hidden><b>Isto é um exemplo.</b><span>O seu sai igual, com o seu nome e os seus preços.</span><button class="mic" id="ex-fazer">Fazer o meu agora</button><button class="link" id="ex-voltar" style="min-height:44px">Voltar</button></div>
       <div class="festa" id="festa" hidden><span class="tr-mini" id="festa-trena"></span><div><h3>Mandou! Agora é fechar.</h3><p>Se o cliente pedir desconto, lembra do seu piso.</p><button class="link" style="color:#C8FF2E" data-coment="pos-envio" data-coment-nota>Dar nota para o Na Bucha</button></div></div>
       <a class="wa" id="wa" href="#" target="_blank" rel="noopener">Enviar no WhatsApp</a>
       <div class="acts-min">
@@ -606,6 +616,7 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
     <p class="nb-sug"><span>Achou algo estranho ou tem uma ideia?</span> <button class="link" data-coment="rec">Sugestão ou problema</button></p>
   </div>
 </div>
+<div class="motivo" id="motivo" hidden role="dialog" aria-labelledby="motivo-t"><div class="motivo-cab"><b id="motivo-t">Travou em alguma coisa?</b><button class="link" id="motivo-x" aria-label="Fechar">Fechar</button></div><p class="hint" style="margin:0">Um toque e você ajuda a melhorar o Na Bucha.</p><div class="chips"><button class="chip" data-motivo="sem-obra">Não tenho obra agora</button><button class="chip" data-motivo="muito-campo">Muita coisa para preencher</button><button class="chip" data-motivo="preco">O preço não bate</button><button class="chip" data-motivo="olhando">Só estava olhando</button></div></div>
 <div class="toast" id="toast" hidden></div>
 
 <script>
@@ -657,7 +668,7 @@ const MODOS={custo:'Custos + lucro',diaria:'Por diária',m2:'Por m²',fechado:'P
 function novoOrc(c,exemplo){
   const o={cliente:{nome:'',whats:'',local:''},rooms:[],situs:['repintura'],liso:false,linha:c.linha,sv:{},
     mat:{inclui:false,valor:'',auto:true},modo:c.modo,rep:{},acab:'fosco',diasM:'',erroM:'',ajud:0,
-    outros:{alim:'',comb:'',ferr:'',alug:''},medir:false,lucro:c.lucro,fechado:'',prazo:'',prazoAuto:true,entrada:null,vozCampos:null,vozRes:'',validade:c.validade,pay:c.pay.slice(),showMat:c.showMat,obs:'',step:1};
+    outros:{alim:'',comb:'',ferr:'',alug:''},medir:true,lucro:c.lucro,fechado:'',prazo:'',prazoAuto:true,entrada:null,vozCampos:null,vozRes:'',validade:c.validade,pay:c.pay.slice(),showMat:c.showMat,obs:'',step:1};
   c.svcs.forEach(s=>o.sv[s.k]={on:false,dem:s.demBase});
   if(exemplo){o.cliente={nome:'Dona Marta (exemplo)',whats:'',local:'Centro'};o.situs=['cor'];
     o.rooms=[sala('Sala','4','5'),sala('Quarto','3','3,5')]}
@@ -809,14 +820,17 @@ const JEITO_HINT={custo:'Diga os dias e a equipe abaixo. Não sabe os dias? Meç
   fechado:'O valor você digita na revisão. Os dias servem para o prazo e para o seu piso (o mínimo que pode cobrar).'};
 function renderJeito(){
   $$('#jeito [data-jeito]').forEach(b=>{const on=b.dataset.jeito===O.modo;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
+  const ab=!!O.jeitoAberto;$('#jeito').hidden=!ab;$('#jeito-hint').hidden=!ab;$('#jeito-res').hidden=ab;
+  $('#jeito-h').textContent=ab?'Como vai cobrar este serviço?':'Cobrança';
+  $('#jeito-res').innerHTML=`<span>${esc(MODOS[O.modo]||'')}</span><button class="link" data-jeito-abrir>trocar</button>`;
   $('#jeito-hint').textContent=JEITO_HINT[O.modo]||'';
   const m=porM2(),fech=!m&&!O.medir&&!O.rooms.length;
-  $('#rooms-h').textContent=m?'Cômodos':'Medidas (opcional)';
-  $('#rooms-hint').textContent=m?'Só largura e comprimento, em metros. O resto vem do padrão: toque em "ajustar" se for diferente.':'Servem para calcular o material e sugerir os dias. Só largura e comprimento, em metros.';
+  $('#rooms-h').textContent='Cômodos';
+  $('#rooms-hint').textContent=m?'Só largura e comprimento, em metros. O resto vem do padrão: toque em "ajustar" se for diferente.':'Só largura e comprimento, em metros. O Na Bucha calcula o material e sugere os dias. Sem medidas? Diga os dias logo abaixo.';
   $('#medir').hidden=!fech;$('#rooms-in').hidden=fech;
   // card de dias: no 1º passo quando não é por m²; na revisão quando é
   const slot=m?$('#slot3'):$('#slot1');if($('#dias-card').parentNode!==slot)slot.appendChild($('#dias-card'));
-  $('.steps [data-go="1"]').textContent=m?'1 · Cômodos':'1 · Serviço';
+  $('.steps [data-go="1"]').textContent='1 · Cômodos';
 }
 function renderDias(){
   $('#dias').value=O.diasM;$('#erro').value=O.erroM;$('#aj-n').textContent=nAjud();
@@ -828,7 +842,7 @@ function renderOrc(){
   ['p1','p2','p3'].forEach((p,i)=>$('#'+p).hidden=O.step!==i+1);
   $$('.steps button').forEach(b=>{const n=+b.dataset.go;b.classList.toggle('on',n===O.step);b.classList.toggle('done',n<O.step);b.setAttribute('aria-current',n===O.step?'step':'false')});
   renderDias();if(O.step===1)renderRooms();if(O.step===2)renderP2();if(O.step===3)renderP3();
-  $('#first').hidden=true;$('#ola-precos').hidden=!!C.visto;
+  $('#first').hidden=true;$('#ref-precos').hidden=!!C.visto;
   renderEntrada();
 }
 
@@ -949,7 +963,8 @@ $('#add-room').addEventListener('click',e=>{const b=e.target.closest('[data-add]
   const r=sala(n==='Outro'?'Cômodo':n,'','');if(ext){r.modo='area';r.teto=false;r.portas=0;r.janelas=0}
   O.rooms.push(r);save();renderRooms();refresh();
   const el=document.querySelector(`[data-room="${r.id}"]`);el.scrollIntoView({behavior:'smooth',block:'center'});const inp=el.querySelector(ext?'[data-f="ap"]':'[data-f="l"]');if(inp)inp.focus({preventScroll:true})});
-$('#jeito').addEventListener('click',e=>{const b=e.target.closest('[data-jeito]');if(!b)return;O.modo=b.dataset.jeito;save();renderOrc();refresh()});
+$('#jeito').addEventListener('click',e=>{const b=e.target.closest('[data-jeito]');if(!b)return;O.modo=b.dataset.jeito;O.jeitoAberto=false;R.ev('jeito-trocou',O.modo);save();renderOrc();refresh()});
+document.addEventListener('click',e=>{if(!e.target.closest('[data-jeito-abrir]'))return;O.jeitoAberto=true;save();renderJeito()});
 $('#medir').addEventListener('click',()=>{O.medir=true;save();renderJeito()});
 $('#situ').addEventListener('click',e=>{const b=e.target.closest('[data-situ]');if(!b)return;const k=b.dataset.situ;let a=O.situs.slice();
   if(a.includes(k)){a=a.filter(x=>x!==k);if(!a.length)a=['repintura']}
@@ -1094,7 +1109,7 @@ function sheet(k){
   <div class="sh-foot"><span>Feito no <b>Na Bucha</b></span><span>nabucha.com.br</span></div>`;
 }
 let lastFocus;
-function abrirFolha(){R.ev('folha-abriu');
+function abrirFolha(){const ex=ehExemplo();if(!ex)R.ev('folha-abriu');
   const k=calc();
   if(!k.lines.length){toast('Marque pelo menos um serviço');return}
   if(O.modo==='fechado'&&!k.maoFe){toast('Digite o valor da mão de obra');return}
@@ -1103,6 +1118,7 @@ function abrirFolha(){R.ev('folha-abriu');
   guardar(false);$('#sheet').innerHTML=sheet(k);
   const t=encodeURIComponent(texto(k));const ph=String(O.cliente.whats||'').replace(/\D/g,'').replace(/^55/,'');
   $('#wa').href=ph.length>=10?`https://wa.me/55${ph}?text=${t}`:`https://wa.me/?text=${t}`;
+  $('#ex-bar').hidden=!ex;$('#wa').hidden=ex;$('.acts-min').hidden=ex;$('.actions .note').hidden=ex;
   $('#festa').hidden=true;lastFocus=document.activeElement;$('#sheet-wrap').hidden=false;$('.bar').hidden=true;document.body.style.overflow='hidden';$('#sheet-wrap').scrollTop=0;$('#close').focus({preventScroll:true});
 }
 function closeSheet(){$('#sheet-wrap').hidden=true;renderBar();document.body.style.overflow='';if(lastFocus)lastFocus.focus()}
@@ -1494,7 +1510,7 @@ function vozAplicar(d,texto){
   if(Number.isInteger(d.ajudantes)&&d.ajudantes>=0){O.ajud=Math.min(10,d.ajudantes);campos.add('dias');if(d.ajudantes)feito.push(d.ajudantes+(d.ajudantes>1?' ajudantes':' ajudante'))}
   if(s(d.prazo)){O.prazo=s(d.prazo);O.prazoAuto=false}
   if(s(d.obs)){O.obs=O.obs?O.obs+'\n'+s(d.obs):s(d.obs)}
-  if(!O.cliente.nome)falta.push('nome do cliente');
+  if(!O.cliente.nome)falta.push('nome do cliente (no passo 3)');
   if((O.modo==='diaria'||O.modo==='custo')&&!calc().diasU){falta.push('quantos dias o serviço leva');campos.add('dias')}
   if(O.modo==='m2'&&!O.rooms.length){falta.push('medidas dos cômodos');campos.add('rooms')}
   if(falta.some(f=>f.startsWith('medidas')))campos.add('rooms');
@@ -1518,14 +1534,14 @@ function renderEntrada(){
   $('#entrada').hidden=!!e||O.step!==1;
   box.hidden=e!=='voz';
   $('.steps').hidden=!e;
-  const cards={jeito:$('#jeito').closest('.card'),cliente:$('#c-nome').closest('.card'),dias:$('#slot1'),rooms:$('#rooms-card')};
+  const cards={jeito:$('#jeito').closest('.card'),dias:$('#slot1'),rooms:$('#rooms-card')};
   Object.entries(cards).forEach(([k,el])=>{el.hidden=!e||(e==='voz'&&!(campos||[]).includes(k))});
   $('#voz-mao').hidden=!!campos;$('#voz-todos').hidden=!campos;
   const ocupado=['gravando','enviando'].includes(box.dataset.estado);
   if(e==='voz'&&!ocupado){if(campos)vozSet('feito',O.vozRes||'');else if(box.dataset.estado==='feito')vozSet('pronto','')}
   renderBar();
 }
-document.addEventListener('click',e=>{const b=e.target.closest('[data-entrada]');if(!b)return;O.entrada=b.dataset.entrada;R.ev('entrada',O.entrada);if(!window.__nbT0)window.__nbT0=Date.now();save();renderOrc();refresh();
+document.addEventListener('click',e=>{const b=e.target.closest('[data-entrada]');if(!b)return;if(b.dataset.entrada==='mao'&&ehExemplo()){O=novoOrc(C,false);aplicarSituacao()}O.entrada=b.dataset.entrada;R.ev('entrada',O.entrada);if(!window.__nbT0)window.__nbT0=Date.now();save();renderOrc();refresh();
   if(O.entrada==='voz')vozGravar();else window.scrollTo(0,0)});
 // Mascote: a capivara do Na Bucha (imagens em /img/capi). Expressões: oi, medindo (pensando), feliz, triste (ops)
 function trenaSVG(expr,cls){
@@ -1534,6 +1550,26 @@ function trenaSVG(expr,cls){
   return `<img class="trena capi ${cls||''}" src="../img/capi/capi-${f}.webp" alt="Capi, a capivara do Na Bucha, ${alt}" decoding="async">`;
 }
 
+// ---------- primeira visita: exemplo pronto, voz e pergunta de saída ----------
+function ehExemplo(){return /\(exemplo\)/i.test(O.cliente.nome||'')}
+$('#ver-exemplo').addEventListener('click',()=>{R.ev('exemplo-abriu');if(!ehExemplo()){O=novoOrc(C,true);aplicarSituacao()}if(O.modo==='fechado')O.modo='custo';save();abrirFolha()});
+$('#ex-fazer').addEventListener('click',()=>{R.ev('exemplo-fazer-o-meu');O=novoOrc(C,false);aplicarSituacao();O.entrada='mao';R.ev('entrada','mao');if(!window.__nbT0)window.__nbT0=Date.now();save();closeSheet();renderOrc();refresh();window.scrollTo(0,0)});
+$('#ex-voltar').addEventListener('click',closeSheet);
+// No navegador de dentro do Facebook/Instagram o microfone costuma vir bloqueado: lá a voz não é oferecida
+if(/Instagram|FBAN|FBAV|FB_IAB/i.test(navigator.userAgent)){$('#voz-link').hidden=true;$('#voz-iab').hidden=false}
+// "Travou em alguma coisa?": aparece uma vez por celular, para quem ainda não mandou orçamento,
+// quando a pessoa fica 45 s parada ou volta para o app depois de sair
+const MKEY='nabucha-motivo-v1',T0=Date.now();let ultToque=Date.now(),saiuEm=0;
+function jaPerguntou(){try{return !!localStorage.getItem(MKEY)}catch(e){return true}}
+function podeMotivo(){return !jaPerguntou()&&view==='orc'&&$('#sheet-wrap').hidden&&$('#motivo').hidden&&(C.num||1)<=1&&Date.now()-T0>20000&&!['gravando','enviando'].includes($('#voz').dataset.estado)}
+function mostrarMotivo(por){if(!podeMotivo())return;R.ev('motivo-perguntou',por,true);$('#motivo').hidden=false}
+function fecharMotivo(k){try{localStorage.setItem(MKEY,k)}catch(e){}$('#motivo').hidden=true}
+['click','input','keydown','touchstart'].forEach(t=>document.addEventListener(t,()=>{ultToque=Date.now()},{passive:true,capture:true}));
+setInterval(()=>{if(document.visibilityState==='visible'&&Date.now()-ultToque>45000)mostrarMotivo('parado')},5000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saiuEm=Date.now();else if(saiuEm&&Date.now()-saiuEm>15000){ultToque=Date.now();mostrarMotivo('voltou')}});
+$('#motivo').addEventListener('click',e=>{const b=e.target.closest('[data-motivo]');if(!b)return;const k=b.dataset.motivo;R.ev('saida-motivo',k);fecharMotivo(k);
+  toast(k==='sem-obra'?'Tranquilo! Quando tiver obra, é só voltar aqui.':'Valeu! Isso ajuda a melhorar o Na Bucha.')});
+$('#motivo-x').addEventListener('click',()=>{R.ev('saida-motivo','fechou');fecharMotivo('fechou')});
 $('#ola-trena').innerHTML=trenaSVG('oi');$('#voz-tr-lendo').innerHTML=trenaSVG('medindo');$('#voz-tr-erro').innerHTML=trenaSVG('triste');
 document.addEventListener('click',e=>{if(e.target.closest('[data-cfg]'))show('cfg');if(e.target.closest('[data-usar-dias]')){O.diasM=dd(calc().dias);save();renderDias();refresh()}});
 show('orc');

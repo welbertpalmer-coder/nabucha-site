@@ -1,0 +1,65 @@
+# Primeira visita mais leve (24/11/2026): começar na mão, exemplo pronto, cliente na revisão, cobrança recolhida, pergunta de saída
+import threading,http.server,functools,sys,os,json
+from playwright.sync_api import sync_playwright
+srv=http.server.ThreadingHTTPServer(('127.0.0.1',8086),functools.partial(http.server.SimpleHTTPRequestHandler,directory='/home/claude/nabucha-site'))
+threading.Thread(target=srv.serve_forever,daemon=True).start()
+sys.stderr=open(os.devnull,'w')
+ok=True;SH=os.environ.get('SHOTS')
+def chk(n,c,x=''):
+    global ok; print(('OK  ' if c else 'FALHOU ')+n,x); ok=ok and c
+def shot(pg,n):
+    if SH: pg.screenshot(path=f'{SH}/{n}.png',full_page=True)
+with sync_playwright() as p:
+    b=p.chromium.launch(executable_path='/usr/bin/google-chrome')
+    ctx=b.new_context(viewport={'width':390,'height':844}); pg=ctx.new_page(); errs=[]
+    pg.on('pageerror',lambda e:errs.append(str(e)))
+    pg.goto('http://localhost:8086/orcamento/'); pg.evaluate('localStorage.clear()'); pg.reload(); pg.wait_for_timeout(800)
+    shot(pg,'1-primeira-tela')
+    chk('primeira tela: começar meu orçamento', pg.is_visible('#entrada [data-entrada="mao"]'))
+    chk('primeira tela: exemplo pronto', pg.is_visible('#ver-exemplo'))
+    chk('primeira tela: voz como link', pg.is_visible('#voz-link [data-entrada="voz"]'))
+    chk('sem convite de Meus preços', not pg.is_visible('#ola-precos') and not pg.is_visible('#first'))
+    # exemplo
+    pg.click('#ver-exemplo'); pg.wait_for_timeout(500); shot(pg,'2-exemplo')
+    chk('exemplo abre a folha', pg.is_visible('#sheet-wrap'))
+    chk('faixa de exemplo e sem WhatsApp', pg.is_visible('#ex-bar') and not pg.is_visible('#wa'))
+    H=pg.evaluate("JSON.parse(localStorage.getItem('nabucha-hist-v1')||'[]')"); chk('exemplo fora do histórico', len(H)==0)
+    pg.click('#ex-fazer'); pg.wait_for_timeout(500); shot(pg,'3-passo1-limpo')
+    O=pg.evaluate("JSON.parse(localStorage.getItem('nabucha-proto-v5')).O")
+    chk('fazer o meu: orçamento limpo', O['cliente']['nome']=='' and len(O['rooms'])==0, O['cliente'])
+    chk('passo 1 com cômodos à mostra', pg.is_visible('#add-room') and not pg.is_visible('#medir'))
+    chk('cobrança recolhida', pg.is_visible('#jeito-res') and not pg.is_visible('#jeito'))
+    chk('cliente não está no passo 1', not pg.is_visible('#c-nome'))
+    tops=pg.evaluate("['#rooms-card','#slot1','#jeito-res'].map(s=>document.querySelector(s).getBoundingClientRect().top)")
+    chk('ordem: cômodos, dias, cobrança', tops[0]<tops[1]<tops[2], tops)
+    chk('total aparece no passo 1', pg.is_visible('#total'))
+    # trocar a cobrança
+    pg.click('[data-jeito-abrir]'); pg.wait_for_timeout(200); chk('trocar abre as opções', pg.is_visible('#jeito'))
+    pg.click('#jeito [data-jeito="m2"]'); pg.wait_for_timeout(200)
+    chk('escolher recolhe de novo', not pg.is_visible('#jeito') and 'm²' in pg.inner_text('#jeito-res'))
+    pg.click('[data-jeito-abrir]'); pg.click('#jeito [data-jeito="custo"]'); pg.wait_for_timeout(200)
+    # medir uma sala e ver o total
+    pg.click('#add-room [data-add="Sala"]'); pg.wait_for_timeout(300)
+    pg.fill('[data-room] [data-f="l"]','4'); pg.fill('[data-room] [data-f="c"]','5'); pg.wait_for_timeout(300)
+    tot=pg.inner_text('#total'); chk('total sobe com a medida', tot.strip()!='R$ 0,00', tot); shot(pg,'4-passo1-medido')
+    pg.click('#next'); pg.wait_for_timeout(300); pg.click('#next'); pg.wait_for_timeout(300); shot(pg,'5-revisao')
+    chk('cliente na revisão', pg.is_visible('#c-nome'))
+    chk('aviso de preços de referência na revisão', pg.is_visible('#ref-precos'))
+    pg.fill('#c-nome','Seu João'); pg.wait_for_timeout(200)
+    pg.click('#next'); pg.wait_for_timeout(500)
+    chk('chega à folha', pg.is_visible('#sheet-wrap') and pg.is_visible('#wa') and not pg.is_visible('#ex-bar'))
+    chk('cliente na folha', 'Seu João' in pg.inner_text('#sheet'))
+    shot(pg,'6-folha')
+    chk('sem erros de programa', not errs, errs)
+    # pergunta de saída (simula 46 s parado)
+    pg2=ctx.new_page(); pg2.goto('http://localhost:8086/orcamento/'); pg2.evaluate('localStorage.clear()'); pg2.reload(); pg2.wait_for_timeout(500)
+    pg2.evaluate("(()=>{const n=Date.now;Date.now=()=>n()+60000})()"); pg2.wait_for_timeout(5600)
+    chk('pergunta aparece depois de parado', pg2.is_visible('#motivo')); shot(pg2,'7-motivo')
+    pg2.click('#motivo [data-motivo="sem-obra"]'); pg2.wait_for_timeout(200)
+    chk('responder fecha e guarda', not pg2.is_visible('#motivo') and pg2.evaluate("localStorage.getItem('nabucha-motivo-v1')")=='sem-obra')
+    # navegador do Facebook: sem voz
+    ctx3=b.new_context(viewport={'width':390,'height':844},user_agent='Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/120 Mobile Safari/537.36 [FBAN/EMA;FBLC/pt_BR;FBAV/400.0]')
+    pg3=ctx3.new_page(); pg3.goto('http://localhost:8086/orcamento/'); pg3.wait_for_timeout(600)
+    chk('Facebook: voz escondida com explicação', not pg3.is_visible('#voz-link') and pg3.is_visible('#voz-iab')); shot(pg3,'8-facebook')
+    b.close()
+print('TUDO OK' if ok else 'TEM FALHA')

@@ -13,13 +13,15 @@ with sync_playwright() as p:
     pg.goto('http://localhost:8085/orcamento/'); pg.evaluate('localStorage.clear()'); pg.reload(); pg.wait_for_timeout(800)
     chk('sem histórico: linha escondida', pg.is_hidden('#hist-row'))
     # usar o exemplo: entrar na mão e avançar até a folha
-    if pg.is_visible('#entrada'): pg.click('#entrada [data-entrada="mao"]'); pg.wait_for_timeout(300)
-    for i in range(3): pg.click('#next'); pg.wait_for_timeout(400)
+    # 24/11: o exemplo abre direto na folha pelo botão "Ver um exemplo pronto"
+    pg.click('#ver-exemplo'); pg.wait_for_timeout(400)
     H0=pg.evaluate("JSON.parse(localStorage.getItem('nabucha-hist-v1')||'[]')")
     chk('exemplo não entra no histórico', len(H0)==0)
-    pg.click('#close'); pg.wait_for_timeout(300); pg.click('[data-go="1"]'); pg.wait_for_timeout(300)
+    pg.click('#ex-fazer'); pg.wait_for_timeout(300)
+    pg.click('#add-room [data-add="Sala"]'); pg.fill('[data-room] [data-f="l"]','4'); pg.fill('[data-room] [data-f="c"]','5')
+    for i in range(2): pg.click('#next'); pg.wait_for_timeout(400)
     pg.fill('#c-nome','Dona Marta'); pg.wait_for_timeout(200)
-    for i in range(3): pg.click('#next'); pg.wait_for_timeout(400)
+    pg.click('#next'); pg.wait_for_timeout(400)
     chk('folha aberta', pg.is_visible('#sheet-wrap'))
     H=pg.evaluate("JSON.parse(localStorage.getItem('nabucha-hist-v1')||'[]')")
     chk('ao abrir a folha entra no histórico', len(H)==1, H and H[0]['cliente'])
@@ -32,6 +34,7 @@ with sync_playwright() as p:
     chk('linha Meus orçamentos aparece', pg.is_visible('#hist-row'))
     # novo orçamento com outro cliente
     if pg.is_visible('#entrada'): pg.click('#entrada [data-entrada="mao"]'); pg.wait_for_timeout(300)
+    pg.fill('#dias','2'); pg.click('#next'); pg.wait_for_timeout(300); pg.click('#next'); pg.wait_for_timeout(300)
     pg.fill('#c-nome','Seu Zé'); pg.wait_for_timeout(200)
     pg.click('#hist-abrir'); pg.wait_for_timeout(300)
     chk('lista abre com 1 item', pg.locator('.hi').count()==1)
