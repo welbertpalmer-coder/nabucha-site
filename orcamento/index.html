@@ -411,7 +411,7 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
         <h2>Dias e equipe</h2>
         <div class="row">
           <label>Dias de serviço<input id="dias" inputmode="decimal"></label>
-          <label>Margem de erro (dias)<input id="erro" inputmode="decimal"></label>
+          <label>Dias para imprevisto<input id="erro" inputmode="decimal"></label>
         </div>
         <p class="hint" id="dias-hint"></p>
         <div class="step" style="min-height:44px">Ajudantes <button id="aj-menos" aria-label="Menos um ajudante">−</button><span id="aj-n">0</span><button id="aj-mais" aria-label="Mais um ajudante">+</button></div>
@@ -565,7 +565,7 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
     <div class="sheet" id="sheet"></div>
     <div class="actions">
       <div class="ex-bar" id="ex-bar" hidden><b>Isto é um exemplo.</b><span>O seu sai igual, com o seu nome e os seus preços.</span><button class="mic" id="ex-fazer">Fazer o meu agora</button><button class="link" id="ex-voltar" style="min-height:44px">Voltar</button></div>
-      <div class="festa" id="festa" hidden><span class="tr-mini" id="festa-trena"></span><div><h3>Mandou! Agora é fechar.</h3><p>Se o cliente pedir desconto, lembra do seu piso.</p><button class="link" style="color:#C8FF2E" data-coment="pos-envio" data-coment-nota>Dar nota para o Na Bucha</button></div></div>
+      <div class="festa" id="festa" hidden><span class="tr-mini" id="festa-trena"></span><div><h3>Mandou! Agora é fechar.</h3><p>Se o cliente pedir desconto, lembra do seu valor mínimo.</p><button class="link" style="color:#C8FF2E" data-coment="pos-envio" data-coment-nota>Dar nota para o Na Bucha</button></div></div>
       <a class="wa" id="wa" href="#" target="_blank" rel="noopener">Enviar no WhatsApp</a>
       <div class="acts-min">
         <button class="link" id="copy">Copiar texto</button>
@@ -817,7 +817,7 @@ const porM2=()=>O.modo==='m2';
 function nAjud(){return O.ajud===true?1:Math.max(0,Math.floor(Number(O.ajud)||0))}
 const JEITO_HINT={custo:'Diga os dias e a equipe abaixo. Não sabe os dias? Meça os cômodos e o Na Bucha sugere.',
   diaria:'Diga os dias abaixo. Não sabe? Meça os cômodos e o Na Bucha sugere.',m2:'',
-  fechado:'O valor você digita na revisão. Os dias servem para o prazo e para o seu piso (o mínimo que pode cobrar).'};
+  fechado:'O valor você digita na revisão. Os dias servem para o prazo e para o seu valor mínimo (abaixo dele você tem prejuízo).'};
 function renderJeito(){
   $$('#jeito [data-jeito]').forEach(b=>{const on=b.dataset.jeito===O.modo;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
   const ab=!!O.jeitoAberto;$('#jeito').hidden=!ab;$('#jeito-hint').hidden=!ab;$('#jeito-res').hidden=ab;
@@ -870,7 +870,7 @@ function renderCfg(){
   $('#cfg-diaria').value=C.diaria;$('#cfg-validade').value=C.validade;$('#cfg-prep').value=C.prep;$('#cfg-showmat').checked=!!C.showMat;
   $('#cfg-pay').innerHTML=PAYS.map(p=>`<button class="chip ${C.pay.includes(p)?'on':''}" data-pay="${p}" aria-pressed="${C.pay.includes(p)}">${p}</button>`).join('');
   $('#cfg-adv').innerHTML=C.svcs.map(s=>`<div class="cfg-svc" data-ca="${s.k}"><strong>${esc(s.nome)}</strong>
-    <label>Seu ritmo: m² por dia, numa demão<input inputmode="decimal" data-ca-f="prod" value="${esc(s.prod)}"></label>
+    <label>Quanto você rende por dia (m², 1 demão)<input inputmode="decimal" data-ca-f="prod" value="${esc(s.prod)}"></label>
     ${s.m?(typeof s.m.rend==='object'?`<div class="row3">${Object.keys(LINHA).map(l=>`<label>Rende ${LINHA[l]} (m²/demão)<input inputmode="decimal" data-rend="${l}" value="${esc(s.m.rend[l])}"></label>`).join('')}</div>`
       :`<label>Rende por demão (m² por ${esc(s.m.g)})<input inputmode="decimal" data-ca-m="rend" value="${esc(s.m.rend)}"></label>`)+
       `<div class="row"><label class="money">Preço ${esc(s.m.g)}<input inputmode="decimal" data-ca-m="pg" value="${esc(s.m.pg)}"></label><label class="money">Preço ${esc(s.m.p)}<input inputmode="decimal" data-ca-m="pp" value="${esc(s.m.pp)}"></label></div>`:'<p class="hint">Sem material calculado.</p>'}
@@ -880,13 +880,13 @@ function renderCfg(){
 // ---------- atualização dos números ----------
 function refreshDias(k){
   $('#dias').placeholder=k.dias?dd(k.dias):'';$('#erro').placeholder=String(k.erroAuto);
-  $('#dias-hint').innerHTML=(k.dias?`Sugestão pelas medidas e pelo seu ritmo: <b>${dd(k.dias)} dias</b>${k.repDias?` (com ${dd(k.repDias)} de reparos)`:''}. Mude se souber melhor.`:(porM2()?'':'Sem medidas: digite os dias que você acha que leva.'))+
-    ` A margem de erro vale ${nAjud()?'para você e '+(nAjud()>1?'os ajudantes':'o ajudante'):'para a equipe toda'}.`+
+  $('#dias-hint').innerHTML=(k.dias?`Sugestão pelas medidas e pelo que você rende por dia: <b>${dd(k.dias)} dias</b>${k.repDias?` (com ${dd(k.repDias)} de reparos)`:''}. Mude se souber melhor.`:(porM2()?'':'Sem medidas: digite os dias que você acha que leva.'))+
+    ` Os dias para imprevisto (chuva, secagem) valem ${nAjud()?'para você e '+(nAjud()>1?'os ajudantes':'o ajudante'):'para a equipe toda'}.`+
     (!vazio(O.diasM)&&k.dias&&Math.abs(k.dias-k.diasU)>=2&&Math.abs(k.dias-k.diasU)/Math.max(k.dias,k.diasU)>=0.3?
-      `<span class="voz-falta" style="display:block;margin-top:8px">Você pôs <b>${dd(k.diasU)} dias</b>, mas pelas medidas e pelo seu ritmo dá <b>${dd(k.dias)}</b>. Confira. <button class="link" data-usar-dias>Usar ${dd(k.dias)} dias</button></span>`:'');
+      `<span class="voz-falta" style="display:block;margin-top:8px">Você pôs <b>${dd(k.diasU)} dias</b>, mas pelas medidas e pelo que você rende dá <b>${dd(k.dias)}</b>. Confira. <button class="link" data-usar-dias>Usar ${dd(k.dias)} dias</button></span>`:'');
   $('#outros-sum').textContent=k.outros?brl0(k.outros):'Opcional';
   const fl=$('#floor');fl.hidden=!k.piso;
-  fl.innerHTML=`<span>Seu piso · só você vê</span><strong>${brl(k.piso)}</strong><span>${dd(k.diasU)} dias + ${dd(k.erro)} de margem × ${brl0(k.dPint+k.dAj)}${k.dAj?` (você + ${nAjud()} ajudante${nAjud()>1?'s':''})`:''}${k.outros?' + '+brl0(k.outros)+' de outros custos':''}. Abaixo disso, se der problema, você paga para trabalhar.</span>`;
+  fl.innerHTML=`<span>Seu valor mínimo · só você vê</span><strong>${brl(k.piso)}</strong><span>${dd(k.diasU)} dias + ${dd(k.erro)} para imprevisto × ${brl0(k.dPint+k.dAj)}${k.dAj?` (você + ${nAjud()} ajudante${nAjud()>1?'s':''})`:''}${k.outros?' + '+brl0(k.outros)+' de outros custos':''}. Abaixo disso, se der problema, você paga para trabalhar.</span>`;
 }
 function refresh(){
   const k=calc();
@@ -909,16 +909,16 @@ function refresh(){
       if(semMed&&O.mat.inclui&&O.mat.auto)$('#mat-val').value='';
       if(!semMed&&O.mat.inclui&&O.mat.auto){$('#mat-val').value=k.matCusto.toFixed(2).replace('.',',')}
       refreshDias(k);
-      const sub=(v)=>k.piso&&v&&v<k.piso-0.5?'<span class="bad">abaixo do piso</span>':'';
-      $('#v-cu').textContent=brl0(k.maoCu);$('#d-cu').innerHTML=`piso + ${dd(k.lucroP)}%`;
+      const sub=(v)=>k.piso&&v&&v<k.piso-0.5?'<span class="bad">abaixo do mínimo</span>':'';
+      $('#v-cu').textContent=brl0(k.maoCu);$('#d-cu').innerHTML=`mínimo + ${dd(k.lucroP)}%`;
       $('#v-di').textContent=brl0(k.maoDi);$('#d-di').innerHTML=sub(k.maoDi)||(k.diasU?`${dd(k.diasU)} dias × ${brl0(k.dPint+k.dAj)}`:'');
       $('#v-m2').textContent=k.P+k.T?brl0(k.maoM2):'—';$('#d-m2').innerHTML=!(k.P+k.T)?'Precisa das medidas':sub(k.maoM2)||(k.diasU?`${brl0(k.maoM2/k.diasU)} por dia`:'');
       $('#v-fe').textContent=k.maoFe?brl0(k.maoFe):'—';$('#d-fe').innerHTML=sub(k.maoFe)||'Você digita o valor';
       let v='';
       if(O.modo==='custo'&&k.piso){const luc=k.maoCu-k.piso;v=`Lucro de <b>${brl0(luc)}</b> (${dd(luc/k.maoCu*100)}% do preço). Se pedirem desconto, não desça de ${brl0(k.piso)}.`}
-      else if(O.modo==='diaria'&&k.erro&&k.mao&&Math.abs(k.mao+k.erro*(k.dPint+k.dAj)+k.outros-k.piso)<0.5)v=`Cobrando só os ${dd(k.diasU)} dias. Se a obra passar do prazo, os ${dd(k.erro)} dia(s) de margem (${brl0(k.erro*(k.dPint+k.dAj))})${k.outros?' e os outros custos':''} ficam por sua conta. Para cobrar a margem, use Custos + lucro.`;
-      else if(k.piso&&k.mao&&k.mao<k.piso-0.5)v=`<span class="bad">Atenção:</span> ${brl0(k.mao)} fica ${brl0(k.piso-k.mao)} abaixo do seu piso. Se a obra atrasar, você tem prejuízo.`;
-      else if(k.piso&&k.mao){const luc=k.mao-k.piso;v=`Sobra <b>${brl0(luc)}</b> acima do piso (${dd(luc/k.mao*100)}% do preço).`}
+      else if(O.modo==='diaria'&&k.erro&&k.mao&&Math.abs(k.mao+k.erro*(k.dPint+k.dAj)+k.outros-k.piso)<0.5)v=`Cobrando só os ${dd(k.diasU)} dias. Se a obra passar do prazo, os ${dd(k.erro)} dia(s) para imprevisto (${brl0(k.erro*(k.dPint+k.dAj))})${k.outros?' e os outros custos':''} ficam por sua conta. Para cobrar esses dias, use Custos + lucro.`;
+      else if(k.piso&&k.mao&&k.mao<k.piso-0.5)v=`<span class="bad">Atenção:</span> ${brl0(k.mao)} fica ${brl0(k.piso-k.mao)} abaixo do seu valor mínimo. Se a obra atrasar, você tem prejuízo.`;
+      else if(k.piso&&k.mao){const luc=k.mao-k.piso;v=`Sobra <b>${brl0(luc)}</b> acima do seu mínimo (${dd(luc/k.mao*100)}% do preço).`}
       $('#verdict').innerHTML=v;
       if(O.prazoAuto){const pz=k.diasU+k.erro;O.prazo=pz?String(Math.ceil(pz)):'';$('#prazo').value=O.prazo}
     }
