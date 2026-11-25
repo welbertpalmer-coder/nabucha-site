@@ -37,7 +37,7 @@ header{display:flex;align-items:center;justify-content:space-between;gap:10px;ba
 .brand{font-family:var(--display);font-weight:700;font-size:17px;letter-spacing:-.01em;display:flex;align-items:center;gap:8px;white-space:nowrap}
 .brand .sym{width:34px;height:34px;border-radius:50%;background:#0B1030;display:grid;place-items:center;flex:none}.brand .sym svg{width:24px}
 .tag{font-family:var(--body);font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#C8FF2E;margin-top:2px}
-.hd-right{display:flex;align-items:center;gap:8px}
+.hd-right{display:flex;align-items:center;gap:8px}.hd-right[hidden]{display:none}
 .tab{font:inherit;font-size:13px;font-weight:700;border:1.5px solid rgba(244,241,234,.45);background:transparent;color:#F4F1EA;border-radius:99px;padding:0 11px;min-height:44px;cursor:pointer;white-space:nowrap}
 .tab.on{background:#C8FF2E;color:#0B1030;border-color:#C8FF2E}
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
@@ -1160,7 +1160,7 @@ function guardar(enviado,numEnv){
 }
 // serviço com pagamento em aberto não sai da lista quando passa de 30
 function aparar(){for(let j=H.length-1;H.length>HMAX&&j>=0;j--){const pi=pagInfo(H[j]);if(!(pi&&!pi.quit))H.splice(j,1)}}
-function renderHistRow(){$('#hist-row').hidden=!H.length&&!K.length;const atr=r2(rastreados().reduce((x,o)=>x+o.i.atraso,0));$('#hist-row-t').innerHTML=`<b>Meus</b> · ${H.length} orç. · ${K.length} cliente${K.length===1?'':'s'}${atr?` · <span class="atr">${brl0(atr)} atrasado</span>`:''}`;$('#rec-abrir').hidden=!H.some(h=>stOf(h)==='fechado');$('#cli-escolher').hidden=!K.length}
+function renderHistRow(){$('#hist-row').hidden=!H.length&&!K.length;document.querySelector('.hd-right').hidden=!H.length&&!K.length&&view!=='cfg';const atr=r2(rastreados().reduce((x,o)=>x+o.i.atraso,0));$('#hist-row-t').innerHTML=`<b>Meus</b> · ${H.length} orç. · ${K.length} cliente${K.length===1?'':'s'}${atr?` · <span class="atr">${brl0(atr)} atrasado</span>`:''}`;$('#rec-abrir').hidden=!H.some(h=>stOf(h)==='fechado');$('#cli-escolher').hidden=!K.length}
 const TAG={rascunho:['Rascunho',''],enviado:['Enviado','env'],fechado:['Fechou','fec'],perdido:['Não fechou','per']};
 let delPend=null,filtroCli=null;
 function stOf(h){return h.st||(h.enviado?'enviado':'rascunho')}
@@ -1560,7 +1560,8 @@ $('#ex-fazer').addEventListener('click',()=>{R.ev('exemplo-fazer-o-meu');O=novoO
 $('#ex-voltar').addEventListener('click',closeSheet);
 $('#teste-quarto').addEventListener('click',()=>{R.ev('teste-quarto');O.rooms.push(sala('Quarto (teste)','3','4'));save();renderRooms();refresh()});
 // Link com ?exemplo=1 (usado nos grupos) abre direto o orçamento de exemplo
-try{if(new URLSearchParams(location.search).get('exemplo')==='1'&&!ehExemplo())setTimeout(()=>$('#ver-exemplo').click(),400)}catch(e){}
+// Primeira visita (ou link com ?exemplo=1) abre direto no exemplo, sem apagar rascunho de ninguém
+try{const semRasc=!O.rooms.length&&!O.cliente.nome,param=new URLSearchParams(location.search).get('exemplo')==='1';if(!ehExemplo()&&semRasc&&(param||(!H.length&&!K.length)))setTimeout(()=>$('#ver-exemplo').click(),400)}catch(e){}
 // No navegador de dentro do Facebook/Instagram o microfone costuma vir bloqueado: lá a voz não é oferecida
 if(/Instagram|FBAN|FBAV|FB_IAB/i.test(navigator.userAgent)){$('#voz-link').hidden=true;$('#voz-iab').hidden=false}
 // "Travou em alguma coisa?": aparece uma vez por celular, para quem ainda não mandou orçamento,
