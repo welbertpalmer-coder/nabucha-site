@@ -472,6 +472,7 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
   <!-- MEUS PREÇOS -->
   <div id="v-cfg" style="display:flex;flex-direction:column;gap:14px" hidden>
     <h1>Meus preços</h1>
+    <p class="hint" id="cfg-1a" hidden style="font-size:15px;color:var(--ink)"><b>Passo 1 do seu orçamento.</b> Os preços já vêm prontos: ajuste só o que for diferente do que você cobra e toque em Confirmar.</p>
     <p class="hint">Preenche uma vez. Todo orçamento novo já sai com isso. Fica salvo neste celular.</p>
     <div class="card">
       <h2>O essencial</h2>
@@ -932,13 +933,14 @@ function refresh(){
 function renderBar(){
   const cfg=view==='cfg';
   $('#back').hidden=cfg||O.step===1;
-  $('#next').textContent=cfg?'Salvar e voltar':O.step===3?'Ver orçamento':'Avançar';
+  $('#cfg-1a').hidden=!(cfg&&window.__precos1);
+  $('#next').textContent=cfg?(window.__precos1?'Confirmar e começar':'Salvar e voltar'):O.step===3?'Ver orçamento':'Avançar';
   $('#next').hidden=!cfg&&O.step===1&&(!O.entrada||(O.entrada==='voz'&&!O.vozCampos));
   $('.bar').hidden=(!cfg&&!$('#sheet-wrap').hidden)||(!cfg&&O.step===1&&(!O.entrada||(O.entrada==='voz'&&!O.vozCampos)));
   $('#tab-orc').classList.toggle('on',!cfg);$('#tab-cfg').classList.toggle('on',cfg);
   $('#v-orc').hidden=cfg;$('#v-cfg').hidden=!cfg;$('.tot').style.visibility=cfg?'hidden':'';
 }
-function show(v){view=v;if(v==='cfg')R.ev('meus-precos','',true);if(v==='cfg'){C.visto=true;renderCfg()}else renderOrc();renderBar();refresh();save();window.scrollTo(0,0)}
+function show(v){view=v;if(v!=='cfg')window.__precos1=false;if(v==='cfg')R.ev('meus-precos','',true);if(v==='cfg'){C.visto=true;renderCfg()}else renderOrc();renderBar();refresh();save();window.scrollTo(0,0)}
 function goStep(n){R.ev('passo',String(n),true);
   const k=calc();
   if(n>1&&porM2()&&k.P+k.T===0){toast('Preencha as medidas de um cômodo');O.step=1}
@@ -1545,7 +1547,10 @@ function renderEntrada(){
   renderBar();
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-entrada]');if(!b)return;if(b.dataset.entrada==='mao'&&ehExemplo()){O=novoOrc(C,false);aplicarSituacao()}O.entrada=b.dataset.entrada;R.ev('entrada',O.entrada);if(!window.__nbT0)window.__nbT0=Date.now();save();renderOrc();refresh();
+  if(O.entrada==='mao'&&precosPrimeiro())return;
   if(O.entrada==='voz')vozGravar();else window.scrollTo(0,0)});
+// Primeiro orçamento de verdade: confere Meus preços antes (já vêm preenchidos)
+function precosPrimeiro(){if(C.visto||ehExemplo())return false;window.__precos1=true;R.ev('precos-primeiro');show('cfg');return true}
 // Mascote: a capivara do Na Bucha (imagens em /img/capi). Expressões: oi, medindo (pensando), feliz, triste (ops)
 function trenaSVG(expr,cls){
   const f={oi:'celular',medindo:'pensando',feliz:'feliz',triste:'ops'}[expr]||'pensando';
@@ -1556,7 +1561,7 @@ function trenaSVG(expr,cls){
 // ---------- primeira visita: exemplo pronto, voz e pergunta de saída ----------
 function ehExemplo(){return /\(exemplo\)/i.test(O.cliente.nome||'')}
 $('#ver-exemplo').addEventListener('click',()=>{R.ev('exemplo-abriu');if(!ehExemplo()){O=novoOrc(C,true);aplicarSituacao()}if(O.modo==='fechado')O.modo='custo';save();abrirFolha()});
-$('#ex-fazer').addEventListener('click',()=>{R.ev('exemplo-fazer-o-meu');O=novoOrc(C,false);aplicarSituacao();O.entrada='mao';R.ev('entrada','mao');if(!window.__nbT0)window.__nbT0=Date.now();save();closeSheet();renderOrc();refresh();window.scrollTo(0,0)});
+$('#ex-fazer').addEventListener('click',()=>{R.ev('exemplo-fazer-o-meu');O=novoOrc(C,false);aplicarSituacao();O.entrada='mao';R.ev('entrada','mao');if(!window.__nbT0)window.__nbT0=Date.now();save();closeSheet();renderOrc();refresh();if(!precosPrimeiro())window.scrollTo(0,0)});
 $('#ex-voltar').addEventListener('click',closeSheet);
 $('#teste-quarto').addEventListener('click',()=>{R.ev('teste-quarto');O.rooms.push(sala('Quarto (teste)','3','4'));save();renderRooms();refresh()});
 // Link com ?exemplo=1 (usado nos grupos) abre direto o orçamento de exemplo
