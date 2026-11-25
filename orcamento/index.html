@@ -208,6 +208,7 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
 .sh-head p{margin:2px 0 0;font-size:13px;opacity:.9}
 .sh-who{display:flex;gap:12px;align-items:center;min-width:0}
 .sh-logo{background:#FFFFFF;border-radius:10px;padding:6px;width:64px;height:64px;flex:none;display:flex;align-items:center;justify-content:center}
+.sh-logo-ex{border:1.5px dashed #9AA0B8;font-size:11px;font-weight:700;color:#565B75;text-align:center;line-height:1.2}
 .sh-logo img{max-width:100%;max-height:100%;object-fit:contain}
 .logo-row{display:flex;gap:12px;align-items:center}
 .logo-prev{width:72px;height:72px;flex:none;border:1.5px dashed var(--line);border-radius:12px;background:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:12px;color:#565B75;text-align:center;overflow:hidden}
@@ -498,7 +499,7 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
         <label>Seu WhatsApp<input id="p-whats" inputmode="tel" autocomplete="tel"></label>
         <label>Cidade<input id="p-cidade" autocomplete="address-level2"></label>
       </div>
-      <details><summary>Logo e CNPJ <span>Opcional</span></summary>
+      <details id="det-logo"><summary>Logo e CNPJ <span>Opcional</span></summary>
         <div class="in">
           <label>CNPJ ou MEI<input id="p-cnpj" inputmode="numeric" autocomplete="off" placeholder="00.000.000/0001-00"></label>
           <div class="logo-row">
@@ -1092,7 +1093,7 @@ function sheet(k){
       k.reps.filter(r=>!r.aviso).map(r=>`<tr><td>Reparo: ${esc(r.nome)}</td><td class="r">${brl(num(r.preco))}</td></tr>`).join('')
     :escopo(k).map(t=>`<tr><td>${esc(t)}</td><td class="r">✓</td></tr>`).join('')+`<tr><td><strong>Mão de obra</strong></td><td class="r">${brl(k.mao)}</td></tr>`;
   return`
-  <div class="sh-head"><div class="sh-who">${okLogo()?`<div class="sh-logo"><img src="${okLogo()}" alt=""></div>`:''}<div><h3>${esc(p.nome)||'<span style="opacity:.7">Orçamento de pintura</span>'}</h3><p>${esc(p.whats)}${p.cidade?' · '+esc(p.cidade):''}</p>${p.cnpj?`<p>CNPJ ${esc(p.cnpj)}</p>`:''}</div></div>
+  <div class="sh-head"><div class="sh-who">${okLogo()?`<div class="sh-logo"><img src="${okLogo()}" alt=""></div>`:(ehExemplo()?'<div class="sh-logo sh-logo-ex">Sua logo aqui</div>':'')}<div><h3>${esc(p.nome)||'<span style="opacity:.7">Orçamento de pintura</span>'}</h3><p>${esc(p.whats)}${p.cidade?' · '+esc(p.cidade):''}</p>${p.cnpj?`<p>CNPJ ${esc(p.cnpj)}</p>`:''}</div></div>
   <div class="sh-num">Orçamento<b>Nº ${numero()}</b>${hoje}</div></div>
   <div class="sh-body">
     <div class="sh-sec"><h4>Cliente</h4><strong>${esc(c.nome)||'—'}</strong>${c.local?'<br>'+esc(c.local):''}</div>
@@ -1550,7 +1551,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-entrada]')
   if(O.entrada==='mao'&&precosPrimeiro())return;
   if(O.entrada==='voz')vozGravar();else window.scrollTo(0,0)});
 // Primeiro orçamento de verdade: confere Meus preços antes (já vêm preenchidos)
-function precosPrimeiro(){if(C.visto||ehExemplo())return false;window.__precos1=true;R.ev('precos-primeiro');show('cfg');return true}
+function precosPrimeiro(){if(C.visto||ehExemplo())return false;window.__precos1=true;const d=document.getElementById('det-logo');if(d)d.open=true;R.ev('precos-primeiro');show('cfg');return true}
 // Mascote: a capivara do Na Bucha (imagens em /img/capi). Expressões: oi, medindo (pensando), feliz, triste (ops)
 function trenaSVG(expr,cls){
   const f={oi:'celular',medindo:'pensando',feliz:'feliz',triste:'ops'}[expr]||'pensando';
