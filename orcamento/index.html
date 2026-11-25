@@ -280,6 +280,8 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
 @media (orientation:landscape) and (min-width:640px){#rec-wrap .hist{max-width:980px}.rec-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .alerta{background:#4A1A0E;color:#FFC9B8}:root:not([data-theme="light"]) .alerta a{color:#FFC9B8}:root:not([data-theme="light"]) .ok-box,:root:not([data-theme="light"]) .st.pago{background:#123D26;color:#9BF0BF}:root:not([data-theme="light"]) .st.atrasada{background:#4A1A0E;color:#FFC9B8}:root:not([data-theme="light"]) .hist-row .atr{color:#FF8A5C}}
 :root[data-theme="dark"] .alerta{background:#4A1A0E;color:#FFC9B8}:root[data-theme="dark"] .alerta a{color:#FFC9B8}:root[data-theme="dark"] .ok-box,:root[data-theme="dark"] .st.pago{background:#123D26;color:#9BF0BF}:root[data-theme="dark"] .st.atrasada{background:#4A1A0E;color:#FFC9B8}:root[data-theme="dark"] .hist-row .atr{color:#FF8A5C}
+.entrada .ter{font:inherit;font-weight:700;font-size:15px;min-height:48px;border:0;background:none;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;opacity:.85}
+.entrada .ter[hidden]{display:none}.entrada .rodape{text-align:center}.entrada .rodape a{color:inherit;font-weight:600}
 </style>
 <script src="/registro.js"></script>
 <link rel="stylesheet" href="/tema-2026.css">
@@ -305,13 +307,12 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
 
     <section id="p1" style="display:flex;flex-direction:column;gap:14px">
       <div class="card entrada" id="entrada" hidden>
-        <div class="ola"><span class="tr-mini" id="ola-trena"></span><div><h2>Bora orçar?</h2><p class="hint">Coloque as medidas dos cômodos e o Na Bucha monta o orçamento pronto para o WhatsApp.</p></div></div>
-        <div class="op"><button class="mic" id="ver-exemplo">Ver como fica em 10 segundos</button>
-        <p class="hint">Um orçamento de exemplo pronto, do jeito que chega no WhatsApp do cliente.</p></div>
-        <div class="op"><button class="sec" data-entrada="mao" style="display:flex;align-items:center;justify-content:center;gap:8px"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 7l3 3"/></svg> Começar meu orçamento</button></div>
-        <p class="hint" id="voz-link"><button class="link" data-entrada="voz" style="min-height:44px">Prefere falar? Grave um áudio</button> e o Na Bucha preenche para você.</p>
-        <p class="hint" id="voz-iab" hidden>Para preencher falando, abra o Na Bucha no Chrome ou no Safari (no Facebook ou Instagram: toque nos três pontinhos e em "Abrir no navegador").</p>
-        <p class="hint"><a href="../ajuda/" style="color:inherit;font-weight:700">Como funciona? Veja o passo a passo</a></p>
+        <div class="ola"><span class="tr-mini" id="ola-trena"></span><div><h2>Bora orçar?</h2><p class="hint">Orçamento pronto para o WhatsApp em minutos.</p></div></div>
+        <button class="mic" id="ver-exemplo">Ver um exemplo em 10 segundos</button>
+        <button class="sec" data-entrada="mao">Começar meu orçamento</button>
+        <button class="ter" id="voz-link" data-entrada="voz"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg> Prefiro gravar um áudio</button>
+        <p class="hint" id="voz-iab" hidden style="text-align:center">Para gravar áudio, abra no Chrome ou Safari (três pontinhos › Abrir no navegador).</p>
+        <p class="hint rodape"><a href="../ajuda/">Como funciona?</a></p>
         <button class="sec" id="instalar" hidden style="display:none;align-items:center;justify-content:center;gap:8px">Instalar o app no celular</button>
         <p class="hint" id="instalar-ios" hidden>Para ter o Na Bucha na tela do iPhone: toque em Compartilhar e depois em "Adicionar à Tela de Início".</p>
         <p class="hint" id="ola-precos" hidden>Primeira vez? Seus preços já vêm prontos. <button class="link" data-cfg>Conferir Meus preços</button></p>
@@ -1591,7 +1592,7 @@ show('orc');
   window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();pedido=e;inst.hidden=false;inst.style.display='flex'});
   inst.addEventListener('click',function(){if(!pedido)return;pedido.prompt();pedido.userChoice.then(function(r){reg(r.outcome==='accepted'?'instalou':'recusou-instalar');pedido=null;inst.hidden=true;inst.style.display='none'})});
   var eIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)&&!/crios|fxios/i.test(navigator.userAgent);
-  if(eIOS) ios.hidden=false;
+  var hr=document.getElementById('hist-row');if(eIOS&&hr&&!hr.hidden) ios.hidden=false;
 })();
 </script>
 </body>
