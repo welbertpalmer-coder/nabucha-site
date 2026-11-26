@@ -88,6 +88,11 @@ button:focus-visible,.chip:focus-visible,a:focus-visible,summary:focus-visible{o
 .ex-bar{display:flex;flex-direction:column;gap:8px;align-items:stretch;background:#C8FF2E;color:#0B1030;border-radius:14px;padding:14px;text-align:center}
 .ex-bar .mic{font:inherit;font-weight:700;font-size:17px;min-height:56px;border:0;border-radius:99px;background:#0B1030;color:#fff;cursor:pointer}
 .ex-bar .link{color:#0B1030}
+.pos{display:flex;flex-direction:column;gap:10px}.pos .note{color:#F4F1EA;opacity:.8;text-align:center;margin:0;font-size:13px}
+.ex-tag{margin:0;text-align:center;font-size:13px;font-weight:700;color:#F4F1EA}
+.envio{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#sheet-wrap .envio .wa,#sheet-wrap .envio .pdf{min-height:52px;font-size:15px;padding:0 8px;text-align:center;line-height:1.15}
+#sheet-wrap .actions .pdf{color:#F4F1EA}
 .pdf{font:inherit;font-weight:700;font-size:16px;background:transparent;color:inherit;border:1.5px solid currentColor;border-radius:12px;min-height:50px;cursor:pointer}
 @media print{body *{visibility:hidden!important}#sheet,#sheet *{visibility:visible!important}#sheet{position:absolute;left:0;top:0;width:100%}}
 .motivo{position:fixed;left:12px;right:12px;bottom:84px;z-index:60;max-width:560px;margin:0 auto;background:var(--surface);color:var(--ink);border:1.5px solid var(--line);border-radius:16px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.25);display:flex;flex-direction:column;gap:10px}
@@ -568,14 +573,11 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
 
 <div class="sheet-wrap" id="sheet-wrap" hidden>
   <div class="sheet-col">
+    <p class="ex-tag" id="ex-dica" hidden>Exemplo: é assim que o seu cliente recebe. Os botões de envio ficam aqui embaixo.</p>
     <div class="sheet" id="sheet"></div>
-    <div class="actions">
+    <div class="pos">
       <div class="ex-bar" id="ex-bar" hidden><b>Isto é um exemplo.</b><span>O seu sai igual, com o seu nome e os seus preços.</span><button class="mic" id="ex-fazer">Fazer o meu agora</button><button class="link" id="ex-voltar" style="min-height:44px">Voltar</button></div>
       <div class="festa" id="festa" hidden><span class="tr-mini" id="festa-trena"></span><div><h3>Mandou! Agora é fechar.</h3><p>Se o cliente pedir desconto, lembra do seu valor mínimo.</p><button class="link" style="color:#C8FF2E" data-coment="pos-envio" data-coment-nota>Dar nota para o Na Bucha</button></div></div>
-      <p class="hint" id="ex-dica" hidden style="text-align:center;font-weight:700">No seu orçamento, é aqui que você manda para o cliente. Teste com este exemplo:</p>
-      <a class="wa" id="wa" href="#" target="_blank" rel="noopener">Enviar como texto no WhatsApp</a>
-      <button class="pdf" id="pdf">Enviar como PDF</button>
-      <p class="hint" style="text-align:center;margin-top:-4px">O PDF abre a lista do celular: escolha WhatsApp ou outro app.</p>
       <div class="acts-min">
         <button class="link" id="copy">Copiar texto</button>
         <button class="link" id="close">Voltar e editar</button>
@@ -584,6 +586,9 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
         <button class="link" data-coment="folha">Sugestão ou problema</button>
       </div>
       <p class="note">Envie agora pelo WhatsApp ou copie o texto pronto.</p>
+    </div>
+    <div class="actions">
+      <div class="envio"><a class="wa" id="wa" href="#" target="_blank" rel="noopener">Texto no WhatsApp</a><button class="pdf" id="pdf">PDF no WhatsApp</button></div>
     </div>
   </div>
 </div>
@@ -1129,7 +1134,7 @@ function abrirFolha(){const ex=ehExemplo();if(!ex)R.ev('folha-abriu');
   guardar(false);$('#sheet').innerHTML=sheet(k);
   const t=encodeURIComponent(texto(k));const ph=String(O.cliente.whats||'').replace(/\D/g,'').replace(/^55/,'');
   $('#wa').href=ph.length>=10?`https://wa.me/55${ph}?text=${t}`:`https://wa.me/?text=${t}`;
-  $('#ex-bar').hidden=!ex;$('#ex-dica').hidden=!ex;$('.acts-min').hidden=ex;$('.actions .note').hidden=ex;
+  $('#ex-bar').hidden=!ex;$('#ex-dica').hidden=!ex;$('.acts-min').hidden=ex;$('.pos .note').hidden=ex;
   $('#festa').hidden=true;lastFocus=document.activeElement;$('#sheet-wrap').hidden=false;prepararPdf();$('.bar').hidden=true;document.body.style.overflow='hidden';$('#sheet-wrap').scrollTop=0;$('#close').focus({preventScroll:true});
 }
 function closeSheet(){$('#sheet-wrap').hidden=true;renderBar();document.body.style.overflow='';if(lastFocus)lastFocus.focus()}
