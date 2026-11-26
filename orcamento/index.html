@@ -573,8 +573,9 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
       <div class="ex-bar" id="ex-bar" hidden><b>Isto é um exemplo.</b><span>O seu sai igual, com o seu nome e os seus preços.</span><button class="mic" id="ex-fazer">Fazer o meu agora</button><button class="link" id="ex-voltar" style="min-height:44px">Voltar</button></div>
       <div class="festa" id="festa" hidden><span class="tr-mini" id="festa-trena"></span><div><h3>Mandou! Agora é fechar.</h3><p>Se o cliente pedir desconto, lembra do seu valor mínimo.</p><button class="link" style="color:#C8FF2E" data-coment="pos-envio" data-coment-nota>Dar nota para o Na Bucha</button></div></div>
       <p class="hint" id="ex-dica" hidden style="text-align:center;font-weight:700">No seu orçamento, é aqui que você manda para o cliente. Teste com este exemplo:</p>
-      <a class="wa" id="wa" href="#" target="_blank" rel="noopener">Enviar no WhatsApp</a>
-      <button class="pdf" id="pdf">Salvar em PDF</button>
+      <a class="wa" id="wa" href="#" target="_blank" rel="noopener">Enviar como texto no WhatsApp</a>
+      <button class="pdf" id="pdf">Enviar como PDF</button>
+      <p class="hint" style="text-align:center;margin-top:-4px">O PDF abre a lista do celular: escolha WhatsApp ou outro app.</p>
       <div class="acts-min">
         <button class="link" id="copy">Copiar texto</button>
         <button class="link" id="close">Voltar e editar</button>
@@ -1129,12 +1130,13 @@ function abrirFolha(){const ex=ehExemplo();if(!ex)R.ev('folha-abriu');
   const t=encodeURIComponent(texto(k));const ph=String(O.cliente.whats||'').replace(/\D/g,'').replace(/^55/,'');
   $('#wa').href=ph.length>=10?`https://wa.me/55${ph}?text=${t}`:`https://wa.me/?text=${t}`;
   $('#ex-bar').hidden=!ex;$('#ex-dica').hidden=!ex;$('.acts-min').hidden=ex;$('.actions .note').hidden=ex;
-  $('#festa').hidden=true;lastFocus=document.activeElement;$('#sheet-wrap').hidden=false;$('.bar').hidden=true;document.body.style.overflow='hidden';$('#sheet-wrap').scrollTop=0;$('#close').focus({preventScroll:true});
+  $('#festa').hidden=true;lastFocus=document.activeElement;$('#sheet-wrap').hidden=false;prepararPdf();$('.bar').hidden=true;document.body.style.overflow='hidden';$('#sheet-wrap').scrollTop=0;$('#close').focus({preventScroll:true});
 }
 function closeSheet(){$('#sheet-wrap').hidden=true;renderBar();document.body.style.overflow='';if(lastFocus)lastFocus.focus()}
 $('#close').addEventListener('click',closeSheet);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#sheet-wrap').hidden)closeSheet()});
-$('#wa').addEventListener('click',()=>{if(ehExemplo()){R.ev('exemplo-whatsapp');return}R.ev('whatsapp-enviou');R.ev('jeito-de-cobrar',O.modo||'?');R.ev('comodos',String(Math.min((O.rooms||[]).length,6))+((O.rooms||[]).length>=6?'+':''));if(window.__nbT0){const m=(Date.now()-window.__nbT0)/60000;R.ev('tempo-ate-enviar',m<2?'menos de 2 min':m<5?'2 a 5 min':m<10?'5 a 10 min':'mais de 10 min')}guardar(true,C.num);C.num++;save();$('#festa-trena').innerHTML=trenaSVG('feliz');$('#festa').hidden=false});
+$('#wa').addEventListener('click',()=>{if(ehExemplo()){R.ev('exemplo-whatsapp');return}enviado('whatsapp-enviou')});
+function enviado(ev){R.ev(ev);R.ev('jeito-de-cobrar',O.modo||'?');R.ev('comodos',String(Math.min((O.rooms||[]).length,6))+((O.rooms||[]).length>=6?'+':''));if(window.__nbT0){const m=(Date.now()-window.__nbT0)/60000;R.ev('tempo-ate-enviar',m<2?'menos de 2 min':m<5?'2 a 5 min':m<10?'5 a 10 min':'mais de 10 min')}guardar(true,C.num);C.num++;save();$('#festa-trena').innerHTML=trenaSVG('feliz');$('#festa').hidden=false}
 $('#novo').addEventListener('click',()=>{if(H.some(h=>h.id===O.id))guardar(false);O=novoOrc(C,false);aplicarSituacao();save();closeSheet();show('orc');toast('Orçamento novo. Seus preços continuam salvos.')});
 $('#copy').addEventListener('click',()=>{R.ev('copiou-texto');const t=texto(calc());
   const fall=()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Texto copiado')}catch(e){toast('Não deu para copiar')}ta.remove()};
@@ -1568,7 +1570,21 @@ function ehExemplo(){return /\(exemplo\)/i.test(O.cliente.nome||'')}
 $('#ver-exemplo').addEventListener('click',()=>{R.ev('exemplo-abriu');if(!ehExemplo()){O=novoOrc(C,true);aplicarSituacao()}if(O.modo==='fechado')O.modo='custo';save();abrirFolha()});
 $('#ex-fazer').addEventListener('click',()=>{R.ev('exemplo-fazer-o-meu');O=novoOrc(C,false);aplicarSituacao();O.entrada='mao';R.ev('entrada','mao');if(!window.__nbT0)window.__nbT0=Date.now();save();closeSheet();renderOrc();refresh();if(!precosPrimeiro())window.scrollTo(0,0)});
 $('#ex-voltar').addEventListener('click',closeSheet);
-$('#pdf').addEventListener('click',()=>{R.ev(ehExemplo()?'exemplo-pdf':'pdf');try{window.print()}catch(e){toast('Use o menu do navegador: Compartilhar ou Imprimir, e Salvar como PDF')}});
+// PDF do orçamento: gera no celular (html2canvas + jsPDF, carregados só quando a folha abre) e abre a lista de compartilhar
+let pdfPronto=null;
+function carregaJs(u){return new Promise((ok,er)=>{if(document.querySelector('script[src="'+u+'"]'))return ok();const sc=document.createElement('script');sc.src=u;sc.onload=ok;sc.onerror=er;document.head.appendChild(sc)})}
+function nomePdf(){const n=(O.cliente.nome||'cliente').replace(/\(exemplo\)/i,'exemplo').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/gi,'-').replace(/^-|-$/g,'');return 'Orcamento-'+(n||'cliente')+'.pdf'}
+async function gerarPdf(){await carregaJs('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');await carregaJs('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+  const el=$('#sheet');const cv=await html2canvas(el,{scale:2,backgroundColor:'#FFFFFF',useCORS:true});const w=cv.width/2,h=cv.height/2;
+  const doc=new window.jspdf.jsPDF({unit:'px',format:[w,h],orientation:w>h?'l':'p',hotfixes:['px_scaling']});doc.addImage(cv.toDataURL('image/jpeg',.92),'JPEG',0,0,w,h);
+  return new File([doc.output('blob')],nomePdf(),{type:'application/pdf'})}
+function prepararPdf(){pdfPronto=null;setTimeout(()=>{if($('#sheet-wrap').hidden)return;pdfPronto=gerarPdf().catch(()=>null)},350)}
+function baixarPdf(f){const u=URL.createObjectURL(f),a=document.createElement('a');a.href=u;a.download=f.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast('PDF salvo. Agora é só anexar no WhatsApp.')}
+$('#pdf').addEventListener('click',async()=>{const ex=ehExemplo();R.ev(ex?'exemplo-pdf':'pdf-tocou');const b=$('#pdf'),txt=b.textContent;
+  let f=null;try{if(!pdfPronto)pdfPronto=gerarPdf();b.textContent='Preparando o PDF…';b.disabled=true;f=await pdfPronto}catch(e){f=null}finally{b.textContent=txt;b.disabled=false}
+  if(!f){toast('Não deu para gerar o PDF aqui. Use "Enviar como texto".');pdfPronto=null;return}
+  if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'Orçamento'});if(!ex)enviado('pdf-enviou')}catch(e){if(e&&e.name==='NotAllowedError')toast('PDF pronto. Toque de novo para enviar.')}}
+  else{baixarPdf(f);if(!ex)enviado('pdf-enviou')}});
 $('#teste-quarto').addEventListener('click',()=>{R.ev('teste-quarto');O.rooms.push(sala('Quarto (teste)','3','4'));save();renderRooms();refresh()});
 // Link com ?exemplo=1 (usado nos grupos) abre direto o orçamento de exemplo
 // Primeira visita (ou link com ?exemplo=1) abre direto no exemplo, sem apagar rascunho de ninguém
