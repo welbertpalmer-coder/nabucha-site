@@ -88,6 +88,8 @@ button:focus-visible,.chip:focus-visible,a:focus-visible,summary:focus-visible{o
 .ex-bar{display:flex;flex-direction:column;gap:8px;align-items:stretch;background:#C8FF2E;color:#0B1030;border-radius:14px;padding:14px;text-align:center}
 .ex-bar .mic{font:inherit;font-weight:700;font-size:17px;min-height:56px;border:0;border-radius:99px;background:#0B1030;color:#fff;cursor:pointer}
 .ex-bar .link{color:#0B1030}
+.pdf{font:inherit;font-weight:700;font-size:16px;background:transparent;color:inherit;border:1.5px solid currentColor;border-radius:12px;min-height:50px;cursor:pointer}
+@media print{body *{visibility:hidden!important}#sheet,#sheet *{visibility:visible!important}#sheet{position:absolute;left:0;top:0;width:100%}}
 .motivo{position:fixed;left:12px;right:12px;bottom:84px;z-index:60;max-width:560px;margin:0 auto;background:var(--surface);color:var(--ink);border:1.5px solid var(--line);border-radius:16px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.25);display:flex;flex-direction:column;gap:10px}
 .motivo[hidden]{display:none}.motivo-cab{display:flex;justify-content:space-between;align-items:center}.motivo .chip{min-height:44px}
 .voz-links{display:flex;justify-content:center}
@@ -570,7 +572,9 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
     <div class="actions">
       <div class="ex-bar" id="ex-bar" hidden><b>Isto é um exemplo.</b><span>O seu sai igual, com o seu nome e os seus preços.</span><button class="mic" id="ex-fazer">Fazer o meu agora</button><button class="link" id="ex-voltar" style="min-height:44px">Voltar</button></div>
       <div class="festa" id="festa" hidden><span class="tr-mini" id="festa-trena"></span><div><h3>Mandou! Agora é fechar.</h3><p>Se o cliente pedir desconto, lembra do seu valor mínimo.</p><button class="link" style="color:#C8FF2E" data-coment="pos-envio" data-coment-nota>Dar nota para o Na Bucha</button></div></div>
+      <p class="hint" id="ex-dica" hidden style="text-align:center;font-weight:700">No seu orçamento, é aqui que você manda para o cliente. Teste com este exemplo:</p>
       <a class="wa" id="wa" href="#" target="_blank" rel="noopener">Enviar no WhatsApp</a>
+      <button class="pdf" id="pdf">Salvar em PDF</button>
       <div class="acts-min">
         <button class="link" id="copy">Copiar texto</button>
         <button class="link" id="close">Voltar e editar</button>
@@ -1124,13 +1128,13 @@ function abrirFolha(){const ex=ehExemplo();if(!ex)R.ev('folha-abriu');
   guardar(false);$('#sheet').innerHTML=sheet(k);
   const t=encodeURIComponent(texto(k));const ph=String(O.cliente.whats||'').replace(/\D/g,'').replace(/^55/,'');
   $('#wa').href=ph.length>=10?`https://wa.me/55${ph}?text=${t}`:`https://wa.me/?text=${t}`;
-  $('#ex-bar').hidden=!ex;$('#wa').hidden=ex;$('.acts-min').hidden=ex;$('.actions .note').hidden=ex;
+  $('#ex-bar').hidden=!ex;$('#ex-dica').hidden=!ex;$('.acts-min').hidden=ex;$('.actions .note').hidden=ex;
   $('#festa').hidden=true;lastFocus=document.activeElement;$('#sheet-wrap').hidden=false;$('.bar').hidden=true;document.body.style.overflow='hidden';$('#sheet-wrap').scrollTop=0;$('#close').focus({preventScroll:true});
 }
 function closeSheet(){$('#sheet-wrap').hidden=true;renderBar();document.body.style.overflow='';if(lastFocus)lastFocus.focus()}
 $('#close').addEventListener('click',closeSheet);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#sheet-wrap').hidden)closeSheet()});
-$('#wa').addEventListener('click',()=>{R.ev('whatsapp-enviou');R.ev('jeito-de-cobrar',O.modo||'?');R.ev('comodos',String(Math.min((O.rooms||[]).length,6))+((O.rooms||[]).length>=6?'+':''));if(window.__nbT0){const m=(Date.now()-window.__nbT0)/60000;R.ev('tempo-ate-enviar',m<2?'menos de 2 min':m<5?'2 a 5 min':m<10?'5 a 10 min':'mais de 10 min')}guardar(true,C.num);C.num++;save();$('#festa-trena').innerHTML=trenaSVG('feliz');$('#festa').hidden=false});
+$('#wa').addEventListener('click',()=>{if(ehExemplo()){R.ev('exemplo-whatsapp');return}R.ev('whatsapp-enviou');R.ev('jeito-de-cobrar',O.modo||'?');R.ev('comodos',String(Math.min((O.rooms||[]).length,6))+((O.rooms||[]).length>=6?'+':''));if(window.__nbT0){const m=(Date.now()-window.__nbT0)/60000;R.ev('tempo-ate-enviar',m<2?'menos de 2 min':m<5?'2 a 5 min':m<10?'5 a 10 min':'mais de 10 min')}guardar(true,C.num);C.num++;save();$('#festa-trena').innerHTML=trenaSVG('feliz');$('#festa').hidden=false});
 $('#novo').addEventListener('click',()=>{if(H.some(h=>h.id===O.id))guardar(false);O=novoOrc(C,false);aplicarSituacao();save();closeSheet();show('orc');toast('Orçamento novo. Seus preços continuam salvos.')});
 $('#copy').addEventListener('click',()=>{R.ev('copiou-texto');const t=texto(calc());
   const fall=()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Texto copiado')}catch(e){toast('Não deu para copiar')}ta.remove()};
@@ -1564,6 +1568,7 @@ function ehExemplo(){return /\(exemplo\)/i.test(O.cliente.nome||'')}
 $('#ver-exemplo').addEventListener('click',()=>{R.ev('exemplo-abriu');if(!ehExemplo()){O=novoOrc(C,true);aplicarSituacao()}if(O.modo==='fechado')O.modo='custo';save();abrirFolha()});
 $('#ex-fazer').addEventListener('click',()=>{R.ev('exemplo-fazer-o-meu');O=novoOrc(C,false);aplicarSituacao();O.entrada='mao';R.ev('entrada','mao');if(!window.__nbT0)window.__nbT0=Date.now();save();closeSheet();renderOrc();refresh();if(!precosPrimeiro())window.scrollTo(0,0)});
 $('#ex-voltar').addEventListener('click',closeSheet);
+$('#pdf').addEventListener('click',()=>{R.ev(ehExemplo()?'exemplo-pdf':'pdf');try{window.print()}catch(e){toast('Use o menu do navegador: Compartilhar ou Imprimir, e Salvar como PDF')}});
 $('#teste-quarto').addEventListener('click',()=>{R.ev('teste-quarto');O.rooms.push(sala('Quarto (teste)','3','4'));save();renderRooms();refresh()});
 // Link com ?exemplo=1 (usado nos grupos) abre direto o orçamento de exemplo
 // Primeira visita (ou link com ?exemplo=1) abre direto no exemplo, sem apagar rascunho de ninguém
