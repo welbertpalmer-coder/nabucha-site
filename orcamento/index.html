@@ -290,6 +290,9 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
 :root[data-theme="dark"] .alerta{background:#4A1A0E;color:#FFC9B8}:root[data-theme="dark"] .alerta a{color:#FFC9B8}:root[data-theme="dark"] .ok-box,:root[data-theme="dark"] .st.pago{background:#123D26;color:#9BF0BF}:root[data-theme="dark"] .st.atrasada{background:#4A1A0E;color:#FFC9B8}:root[data-theme="dark"] .hist-row .atr{color:#FF8A5C}
 .entrada .ter{font:inherit;font-weight:700;font-size:15px;min-height:48px;border:0;background:none;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;opacity:.85}
 .entrada .ter[hidden]{display:none}.entrada .rodape{text-align:center}.entrada .rodape a{color:inherit;font-weight:600}
+.rapido{border:2px solid #1F3BFF}.rapido h2{margin:0 0 6px}.rap-op{display:flex;flex-wrap:wrap;gap:8px}
+#v-cfg.rap>*:not(#rapido):not(h1){display:none!important}body.rap .bar{visibility:hidden}
+.media{border:2px solid #1F3BFF;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;margin-top:10px}.media h3{font-family:var(--display);font-size:18px;margin:0}.media p{margin:0}
 </style>
 <script src="/registro.js"></script>
 <link rel="stylesheet" href="/tema-2026.css">
@@ -480,6 +483,11 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
   <!-- MEUS PREÇOS -->
   <div id="v-cfg" style="display:flex;flex-direction:column;gap:14px" hidden>
     <h1>Meus preços</h1>
+    <div class="card rapido" id="rapido" hidden>
+      <p class="sub" id="rap-passo" style="margin:0">1 de 4</p>
+      <div id="rap-corpo"></div>
+      <button class="link" id="rap-pular" style="align-self:flex-start;min-height:44px">Pular e ver tudo</button>
+    </div>
     <p class="hint" id="cfg-1a" hidden style="font-size:15px;color:var(--ink)"><b>Passo 1 do seu orçamento.</b> Os preços já vêm prontos: ajuste só o que for diferente do que você cobra e toque em Confirmar.</p>
     <p class="hint">Preenche uma vez. Todo orçamento novo já sai com isso. Fica salvo neste celular.</p>
     <div class="card">
@@ -559,6 +567,10 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
         </div>
       </details>
     </div>
+    <div class="card">
+      <label class="check"><input type="checkbox" id="cfg-media">Compartilhar meus preços, sem nome nem telefone, para a média da cidade</label>
+      <p class="hint" style="margin:0">A média da cidade é montada com os preços de quem compartilha. Só quem compartilha vê a média.</p>
+    </div>
   </div>
   <p class="nb-sug"><span>Achou algo estranho ou tem uma ideia?</span> <button class="link" data-coment="rodape">Sugestão ou problema</button></p>
 </div>
@@ -578,6 +590,7 @@ details .in{display:flex;flex-direction:column;gap:10px;margin-top:8px}
     <div class="pos">
       <div class="ex-bar" id="ex-bar" hidden><b>Isto é um exemplo.</b><span>O seu sai igual, com o seu nome e os seus preços.</span><button class="mic" id="ex-fazer">Fazer o meu agora</button><button class="link" id="ex-voltar" style="min-height:44px">Voltar</button></div>
       <div class="festa" id="festa" hidden><span class="tr-mini" id="festa-trena"></span><div><h3>Mandou! Agora é fechar.</h3><p>Se o cliente pedir desconto, lembra do seu valor mínimo.</p><button class="link" style="color:#C8FF2E" data-coment="pos-envio" data-coment-nota>Dar nota para o Na Bucha</button></div></div>
+      <div class="media" id="media" hidden></div>
       <div class="acts-min">
         <button class="link" id="copy">Copiar texto</button>
         <button class="link" id="close">Voltar e editar</button>
@@ -681,7 +694,7 @@ const LUCROS=[['15','Serviço simples'],['20','Normal'],['25',''],['30','Alto pa
 const MODOS={custo:'Custos + lucro',diaria:'Por diária',m2:'Por m²',fechado:'Preço fechado'};
 function novoOrc(c,exemplo){
   const o={cliente:{nome:'',whats:'',local:''},rooms:[],situs:['repintura'],liso:false,linha:c.linha,sv:{},
-    mat:{inclui:false,valor:'',auto:true},modo:c.modo,rep:{},acab:'fosco',diasM:'',erroM:'',ajud:0,
+    mat:{inclui:false,valor:'',auto:true},modo:c.modo,rep:{},acab:'fosco',diasM:'',erroM:'',ajud:+(c.equipe||0)||0,
     outros:{alim:'',comb:'',ferr:'',alug:''},medir:true,lucro:c.lucro,fechado:'',prazo:'',prazoAuto:true,entrada:null,vozCampos:null,vozRes:'',validade:c.validade,pay:c.pay.slice(),showMat:c.showMat,obs:'',step:1};
   c.svcs.forEach(s=>o.sv[s.k]={on:false,dem:s.demBase});
   if(exemplo){o.cliente={nome:'Dona Marta (exemplo)',whats:'',local:'Centro'};o.situs=['cor'];
@@ -698,6 +711,17 @@ if(!C){try{const v4=JSON.parse(localStorage.getItem('nabucha-proto-v4')||'null')
 if(!C){C=clone(DEF_CFG);try{const old=JSON.parse(localStorage.getItem('nabucha-proto-v3')||localStorage.getItem('nabucha-proto-v1')||'null');if(old&&old.pintor)C.pintor=old.pintor}catch(e){}
   O=novoOrc(C,true);aplicarSituacao()}
 let view='orc';
+// Configuração rápida (primeira vez): 4 perguntas curtas antes do formulário de Meus preços.
+const RAP=[
+  {q:'Como você cobra mais?',op:[['m2','Por m²'],['diaria','Por diária'],['custo','Custos + lucro'],['fechado','Preço fechado']],ev:'rapido-cobra',
+   set:v=>{C.modo=v;if(!O.rooms.length&&!O.cliente.nome&&O.step===1)O.modo=v}},
+  {q:'Quanto é a sua diária?',valor:true},
+  {q:'Trabalha com ajudante?',op:[['0','Sozinho'],['1','1 ajudante'],['2','2 ou mais']],ev:'rapido-equipe',
+   set:v=>{C.equipe=v;if(!O.rooms.length&&!O.cliente.nome)O.ajud=+v}},
+  {q:'Que tinta você mais usa?',op:[['premium','Premium'],['standard','Standard'],['economica','Econômica']],ev:'rapido-tinta',
+   set:v=>{C.linha=v}}
+];
+let rapI=-1;
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify({C,O}))}catch(e){}};
 // v5 guardava uma situação só (O.situ); passa a ser lista
 if(O.situ||!Array.isArray(O.situs)){O.situs=[O.situ&&SITU[O.situ]?O.situ:'repintura'];delete O.situ;save()}
@@ -882,7 +906,7 @@ function renderCfg(){
     <div class="room-top"><input class="sv-name" data-rf="nome" value="${esc(r.nome)}" aria-label="Nome do reparo"><button class="x" data-rdel="${r.k}">Remover</button></div>
     <div class="row"><label>Soma na obra (dias)<input inputmode="decimal" data-rf="dias" value="${esc(r.dias)}"></label>
     <label class="money">Preço no orçamento por m²<input inputmode="decimal" data-rf="preco" value="${esc(r.preco)}"></label></div></div>`).join('');
-  $('#cfg-diaria').value=C.diaria;$('#cfg-validade').value=C.validade;$('#cfg-prep').value=C.prep;$('#cfg-showmat').checked=!!C.showMat;
+  $('#cfg-media').checked=C.compartilha===true;$('#cfg-diaria').value=C.diaria;$('#cfg-validade').value=C.validade;$('#cfg-prep').value=C.prep;$('#cfg-showmat').checked=!!C.showMat;
   $('#cfg-pay').innerHTML=PAYS.map(p=>`<button class="chip ${C.pay.includes(p)?'on':''}" data-pay="${p}" aria-pressed="${C.pay.includes(p)}">${p}</button>`).join('');
   $('#cfg-adv').innerHTML=C.svcs.map(s=>`<div class="cfg-svc" data-ca="${s.k}"><strong>${esc(s.nome)}</strong>
     <label>Quanto você rende por dia (m², 1 demão)<input inputmode="decimal" data-ca-f="prod" value="${esc(s.prod)}"></label>
@@ -951,7 +975,7 @@ function renderBar(){
   $('#tab-orc').classList.toggle('on',!cfg);$('#tab-cfg').classList.toggle('on',cfg);
   $('#v-orc').hidden=cfg;$('#v-cfg').hidden=!cfg;$('.tot').style.visibility=cfg?'hidden':'';
 }
-function show(v){view=v;if(v!=='cfg')window.__precos1=false;if(v==='cfg')R.ev('meus-precos','',true);if(v==='cfg'){C.visto=true;renderCfg()}else renderOrc();renderBar();refresh();save();window.scrollTo(0,0)}
+function show(v){view=v;if(v!=='cfg'){window.__precos1=false;if(rapI>=0){rapI=-1;rapRender()}}if(v==='cfg')R.ev('meus-precos','',true);if(v==='cfg'){C.visto=true;renderCfg()}else renderOrc();renderBar();refresh();save();window.scrollTo(0,0)}
 function goStep(n){R.ev('passo',String(n),true);
   const k=calc();
   if(n>1&&porM2()&&k.P+k.T===0){toast('Preencha as medidas de um cômodo');O.step=1}
@@ -1135,13 +1159,13 @@ function abrirFolha(){const ex=ehExemplo();if(!ex)R.ev('folha-abriu');
   const t=encodeURIComponent(texto(k));const ph=String(O.cliente.whats||'').replace(/\D/g,'').replace(/^55/,'');
   $('#wa').href=ph.length>=10?`https://wa.me/55${ph}?text=${t}`:`https://wa.me/?text=${t}`;
   $('#ex-bar').hidden=!ex;$('#ex-dica').hidden=!ex;$('.acts-min').hidden=ex;$('.pos .note').hidden=ex;
-  $('#festa').hidden=true;lastFocus=document.activeElement;$('#sheet-wrap').hidden=false;prepararPdf();$('.bar').hidden=true;document.body.style.overflow='hidden';$('#sheet-wrap').scrollTop=0;$('#close').focus({preventScroll:true});
+  $('#festa').hidden=true;$('#media').hidden=true;lastFocus=document.activeElement;$('#sheet-wrap').hidden=false;prepararPdf();$('.bar').hidden=true;document.body.style.overflow='hidden';$('#sheet-wrap').scrollTop=0;$('#close').focus({preventScroll:true});
 }
 function closeSheet(){$('#sheet-wrap').hidden=true;renderBar();document.body.style.overflow='';if(lastFocus)lastFocus.focus()}
 $('#close').addEventListener('click',closeSheet);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#sheet-wrap').hidden)closeSheet()});
 $('#wa').addEventListener('click',()=>{if(ehExemplo()){R.ev('exemplo-whatsapp');return}enviado('whatsapp-enviou')});
-function enviado(ev){R.ev(ev);R.ev('jeito-de-cobrar',O.modo||'?');R.ev('comodos',String(Math.min((O.rooms||[]).length,6))+((O.rooms||[]).length>=6?'+':''));if(window.__nbT0){const m=(Date.now()-window.__nbT0)/60000;R.ev('tempo-ate-enviar',m<2?'menos de 2 min':m<5?'2 a 5 min':m<10?'5 a 10 min':'mais de 10 min')}guardar(true,C.num);C.num++;save();$('#festa-trena').innerHTML=trenaSVG('feliz');$('#festa').hidden=false}
+function enviado(ev){R.ev(ev);R.ev('jeito-de-cobrar',O.modo||'?');R.ev('comodos',String(Math.min((O.rooms||[]).length,6))+((O.rooms||[]).length>=6?'+':''));if(window.__nbT0){const m=(Date.now()-window.__nbT0)/60000;R.ev('tempo-ate-enviar',m<2?'menos de 2 min':m<5?'2 a 5 min':m<10?'5 a 10 min':'mais de 10 min')}guardar(true,C.num);C.num++;save();$('#festa-trena').innerHTML=trenaSVG('feliz');$('#festa').hidden=false;if(C.compartilha===true)compartilhar();renderMedia()}
 $('#novo').addEventListener('click',()=>{if(H.some(h=>h.id===O.id))guardar(false);O=novoOrc(C,false);aplicarSituacao();save();closeSheet();show('orc');toast('Orçamento novo. Seus preços continuam salvos.')});
 $('#copy').addEventListener('click',()=>{R.ev('copiou-texto');const t=texto(calc());
   const fall=()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Texto copiado')}catch(e){toast('Não deu para copiar')}ta.remove()};
@@ -1562,7 +1586,34 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-entrada]')
   if(O.entrada==='mao'&&precosPrimeiro())return;
   if(O.entrada==='voz')vozGravar();else window.scrollTo(0,0)});
 // Primeiro orçamento de verdade: confere Meus preços antes (já vêm preenchidos)
-function precosPrimeiro(){if(C.visto||ehExemplo())return false;window.__precos1=true;const d=document.getElementById('det-logo');if(d)d.open=true;R.ev('precos-primeiro');show('cfg');return true}
+function precosPrimeiro(){if(C.visto||ehExemplo())return false;window.__precos1=true;const d=document.getElementById('det-logo');if(d)d.open=true;R.ev('precos-primeiro');if(!C.rapido)rapI=0;show('cfg');rapRender();return true}
+function rapRender(){const on=view==='cfg'&&rapI>=0&&rapI<RAP.length;$('#rapido').hidden=!on;$('#v-cfg').classList.toggle('rap',on);document.body.classList.toggle('rap',on);if(!on)return;
+  const p=RAP[rapI];$('#rap-passo').textContent=(rapI+1)+' de '+RAP.length;
+  $('#rap-corpo').innerHTML='<h2>'+p.q+'</h2>'+(p.valor
+    ?'<label class="money">Sua diária<input id="rap-diaria" inputmode="decimal" value="'+esc(C.diaria)+'"></label><p class="hint">Já vem um valor médio. Mude se a sua for diferente.</p><button class="mic" id="rap-ok" style="width:100%">Continuar</button>'
+    :'<div class="rap-op">'+p.op.map(o=>'<button class="chip" data-rv="'+o[0]+'">'+o[1]+'</button>').join('')+'</div>');
+  window.scrollTo(0,0)}
+function rapProx(){rapI++;save();if(rapI>=RAP.length){R.ev('rapido-terminou');rapFim()}else rapRender()}
+function rapFim(){rapI=-1;C.rapido=true;save();rapRender();renderCfg();window.scrollTo(0,0)}
+$('#rapido').addEventListener('click',e=>{
+  const b=e.target.closest('[data-rv]');
+  if(b){const p=RAP[rapI];p.set(b.dataset.rv);R.ev(p.ev,b.dataset.rv);rapProx();return}
+  if(e.target.closest('#rap-ok')){const v=$('#rap-diaria').value.trim();if(v)C.diaria=v;R.ev('rapido-diaria');rapProx();return}
+  if(e.target.closest('#rap-pular')){R.ev('rapido-pulou',String(rapI+1));rapFim()}});
+$('#rapido').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='rap-diaria'){e.preventDefault();$('#rap-ok').click()}});
+// Média da cidade: só para quem escolhe compartilhar os próprios preços (sem nome nem telefone).
+function precosResumo(){const sv={};C.svcs.slice(0,6).forEach(x=>{if(x.base)sv[x.k]=x.base});
+  return JSON.stringify({m:C.modo,d:C.diaria,a:C.ajud,l:C.lucro,t:C.linha,e:C.equipe||'',c:String(C.pintor.cidade||'').slice(0,40),sv}).slice(0,300)}
+function compartilhar(){R.ev('precos-compartilhados',precosResumo())}
+function renderMedia(){const el=$('#media');if(ehExemplo()){el.hidden=true;return}
+  const cid=esc(C.pintor.cidade||'sua cidade'),nota='<p class="hint" style="margin:0">A média da cidade é montada com os preços de quem compartilha. Compartilhe os seus pra ver também.</p>';
+  if(C.compartilha===true)el.innerHTML='<h3>Média de '+cid+'</h3><p>Seus preços já entram na média, sem nome nem telefone. Ela aparece aqui quando tiver pintores suficientes na sua cidade.</p>';
+  else if(C.compartilha===false)el.innerHTML=nota+'<button class="link" data-media="sim" style="align-self:flex-start;min-height:44px">Compartilhar meus preços</button>';
+  else el.innerHTML='<h3>Quer saber se tá cobrando certo?</h3><p>Seus preços entram na média de '+cid+', sem nome nem telefone. Você vê a média assim que tiver pintores suficientes.</p><button class="mic" data-media="sim" style="width:100%">Sim, quero comparar</button><button class="link" data-media="nao" style="min-height:44px">Agora não</button>'+nota;
+  el.hidden=false}
+$('#media').addEventListener('click',e=>{const b=e.target.closest('[data-media]');if(!b)return;
+  if(b.dataset.media==='sim'){C.compartilha=true;R.ev('media-sim');compartilhar()}else{C.compartilha=false;R.ev('media-nao')}save();renderMedia()});
+$('#cfg-media').addEventListener('change',e=>{C.compartilha=e.target.checked;R.ev(C.compartilha?'media-sim':'media-nao','meus-precos');if(C.compartilha)compartilhar();save()});
 // Mascote: a capivara do Na Bucha (imagens em /img/capi). Expressões: oi, medindo (pensando), feliz, triste (ops)
 function trenaSVG(expr,cls){
   const f={oi:'celular',medindo:'pensando',feliz:'feliz',triste:'ops'}[expr]||'pensando';

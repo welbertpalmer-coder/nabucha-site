@@ -1,6 +1,7 @@
 /* Na Bucha — registro anônimo de uso, erros e comentários.
    Manda para o servidor do Na Bucha (Cloudflare) só: o que foi usado (passos), erros e comentários.
-   Nunca manda nome de cliente, telefone de cliente, medidas, valores nem o áudio.
+   Nunca manda nome de cliente, telefone de cliente, medidas, valores do orçamento nem o áudio.
+   Só se o pintor escolher compartilhar, manda os preços de referência dele (sem nome) para a média da cidade.
    Para desligar tudo: apague a linha <script src="/registro.js"> das páginas. */
 (function () {
   const URL_REG = 'https://hello-world-black-sun-acbf.contato-nabucha.workers.dev/registro';
